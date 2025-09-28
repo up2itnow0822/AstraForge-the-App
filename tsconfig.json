@@ -2,10 +2,13 @@
   "compilerOptions": {
     "module": "ES2020",
     "target": "ES2020",
-    "outDir": "out",
-    "lib": ["ES2020", "DOM"],
+    "outDir": "extension/out",
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
     "sourceMap": true,
-    "rootDir": ".",
+    "rootDir": "src",
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -14,5 +17,14 @@
     "skipLibCheck": true,
     "moduleResolution": "node"
   },
-  "exclude": ["node_modules", "out", "temp_folder", "archive", "tests"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "out",
+    "temp_folder",
+    "archive",
+    "tests"
+  ]
 }

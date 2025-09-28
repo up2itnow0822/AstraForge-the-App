@@ -1,6 +1,6 @@
 {
   "name": "astraforge-ide",
-  "displayName": "AstraForge IDE V2 🚀✨",
+  "displayName": "AstraForge IDE V2 \ud83d\ude80\u2728",
   "description": "Revolutionary V2: Complete self-evolving AI ecosystem with quantum algorithms, emergent behavior, recursive self-modification, and inter-agent evolution",
   "version": "2.0.0",
   "publisher": "astraforge",
@@ -14,9 +14,9 @@
   "categories": [
     "Extension Packs"
   ],
-  "main": "./out/extension.js",
+  "main": "./extension/out/extension.js",
   "files": [
-    "out/**/*",
+    "extension/out/**/*",
     "media/**/*",
     "package.json",
     "README.md",
@@ -35,23 +35,23 @@
         },
         {
           "id": "astraforge.metaLearning",
-          "name": "🧠 Meta-Learning"
+          "name": "\ud83e\udde0 Meta-Learning"
         },
         {
           "id": "astraforge.emergentBehavior",
-          "name": "🌟 Emergent Behavior"
+          "name": "\ud83c\udf1f Emergent Behavior"
         },
         {
           "id": "astraforge.quantumDecision",
-          "name": "🔮 Quantum Decision Making"
+          "name": "\ud83d\udd2e Quantum Decision Making"
         },
         {
           "id": "astraforge.agentEvolution",
-          "name": "🧬 Agent Evolution"
+          "name": "\ud83e\uddec Agent Evolution"
         },
         {
           "id": "astraforge.selfModification",
-          "name": "⚙️ Self-Modification"
+          "name": "\u2699\ufe0f Self-Modification"
         }
       ]
     },
