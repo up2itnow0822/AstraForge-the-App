@@ -222,7 +222,8 @@ this.initializeMetaLearning();
       if (!tasksByPhase.has(phase)) {
         tasksByPhase.set(phase, []);
       }
-      tasksByPhase.get(phase)!.push(task);
+      const phaseTasks = tasksByPhase.get(phase);
+      phaseTasks?.push(task);
     });
 
     const phaseOrder = ['setup', 'tests', 'implementation', 'integration', 'polish'];
