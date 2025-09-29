@@ -369,7 +369,18 @@ function displayConferenceResult(message) {
         <strong>Vote Summary</strong>
         <ul>
           ${result.voteResults
-            .map(vote => `<li>${escapeHtml(vote.option)} — ${vote.votes} votes</li>`)
+            .map(vote => {
+              if (
+                vote &&
+                typeof vote === 'object' &&
+                typeof vote.option === 'string' &&
+                typeof vote.votes === 'number'
+              ) {
+                return `<li>${escapeHtml(vote.option)} — ${vote.votes} votes</li>`;
+              } else {
+                return `<li><em>Invalid vote entry</em></li>`;
+              }
+            })
             .join('')}
         </ul>
       </div>
