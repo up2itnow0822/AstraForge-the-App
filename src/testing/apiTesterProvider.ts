@@ -262,7 +262,6 @@ export class ApiTesterProvider implements vscode.WebviewViewProvider {
       | ProvidersListMessage
       | ConferenceTestResult
       | Record<string, unknown>
-      | any
   ) {
     if (this._view) {
       this._view.postMessage({ type, data });
