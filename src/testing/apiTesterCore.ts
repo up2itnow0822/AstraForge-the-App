@@ -436,14 +436,21 @@ export class ApiTesterCore {
   private async estimateTokens(text: string, model: string): Promise<number> {
     try {
       const { encoding_for_model } = await import('tiktoken');
-      const encoder = encoding_for_model(model);
+      let encoder;
+      try {
+        encoder = encoding_for_model(model);
+      } catch (err) {
+        // Model not supported by tiktoken, fall back to character-based estimation
+        return Math.ceil(text.length / 4);
+      }
       try {
         const tokens = encoder.encode(text);
         return tokens.length;
       } finally {
         encoder.free();
       }
-    } catch {
+    } catch (err) {
+      // Import failed or other unexpected error
       return Math.ceil(text.length / 4);
     }
   }
