@@ -93,7 +93,7 @@ node out/testing/apiTesterCLI.js --help
 ```bash
 node out/testing/apiTesterCLI.js test \
   --api OpenRouter \
-  --key "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" \
+  --key "$OPENROUTER_API_KEY" \
   --model "x-ai/grok-4" \
   --prompt "Hello from AstraForge! Tell me about AI coding assistants."
 ```
@@ -102,7 +102,7 @@ node out/testing/apiTesterCLI.js test \
 ```bash
 node out/testing/apiTesterCLI.js test \
   --api OpenRouter \
-  --key "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" \
+  --key "$OPENROUTER_API_KEY" \
   --model "google/gemini-2.5-pro" \
   --prompt "How would you structure a React todo app?"
 ```
@@ -111,7 +111,7 @@ node out/testing/apiTesterCLI.js test \
 ```bash
 node out/testing/apiTesterCLI.js test \
   --api OpenRouter \
-  --key "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" \
+  --key "$OPENROUTER_API_KEY" \
   --model "anthropic/claude-sonnet-4" \
   --prompt "Write a TypeScript function to validate email addresses."
 ```
@@ -120,7 +120,7 @@ node out/testing/apiTesterCLI.js test \
 ```bash
 node out/testing/apiTesterCLI.js test \
   --api OpenRouter \
-  --key "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" \
+  --key "$OPENROUTER_API_KEY" \
   --workflow "Create a simple calendar app with React and TypeScript"
 ```
 
@@ -136,7 +136,7 @@ echo "Explain REST APIs" >> test_prompts.txt
 # Run batch test
 node out/testing/apiTesterCLI.js test \
   --api OpenRouter \
-  --key "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" \
+  --key "$OPENROUTER_API_KEY" \
   --model "x-ai/grok-4" \
   --file "test_prompts.txt" \
   --output "results.json"
@@ -169,7 +169,7 @@ npm run compile
 Get-Content .env
 
 # Should show:
-# OPENROUTER_API_KEY=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
+# OPENROUTER_API_KEY=sk-or-v1-XXXXXXXXXXXXXXXX
 # OPENROUTER_MODELS_TO_USE=x-ai/grok-4, google/gemini-2.5-pro, anthropic/claude-sonnet-4
 ```
 
@@ -201,7 +201,7 @@ node C:\Users\up2it\Desktop\AstraForge\out\testing\apiTesterCLI.js --help
 cd C:\Users\up2it\Desktop\AstraForge
 
 # Quick single test
-node out/testing/apiTesterCLI.js test --api OpenRouter --key "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" --model "x-ai/grok-4" --prompt "Hello AstraForge!"
+node out/testing/apiTesterCLI.js test --api OpenRouter --key "$OPENROUTER_API_KEY" --model "x-ai/grok-4" --prompt "Hello AstraForge!"
 ```
 
 ### **For UI Testing**

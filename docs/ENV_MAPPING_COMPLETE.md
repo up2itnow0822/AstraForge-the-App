@@ -9,7 +9,7 @@ Your OpenRouter API and 3-LLM models have been successfully mapped to both the C
 ### ✅ Your `.env` File (Corrected)
 ```env
 # OpenRouter API for LLM models, all three LLMs should use the same API
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=sk-or-v1-XXXXXXXXXXXXXXXX
 
 # Use all three models for the 3 LLM panel
 OPENROUTER_MODELS_TO_USE=x-ai/grok-4, google/gemini-2.5-pro, anthropic/claude-sonnet-4
