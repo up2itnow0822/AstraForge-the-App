@@ -12,7 +12,7 @@ async function testOpenRouterAPI() {
   if (apiKey) {
     console.log('✅ API Key length:', apiKey.length);
     console.log('✅ API Key starts with sk-or-v1-:', apiKey.startsWith('sk-or-v1-'));
-    console.log('✅ API Key first 20 chars:', apiKey.substring(0, 20) + '...');
+    console.log('✅ API Key format: sk-or-v1-[REDACTED]');
   }
   
   console.log('✅ Models configured:', models);

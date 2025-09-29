@@ -87,7 +87,7 @@ node out/testing/apiTesterCLI.js test \
 ### **Fix 3: Environment Variable Method**
 ```powershell
 # Set environment variable
-$env:OPENROUTER_API_KEY = "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"
+$env:OPENROUTER_API_KEY = "YOUR_ACTUAL_API_KEY_HERE"
 
 # Test with environment
 node out/testing/apiTesterCLI.js test --api OpenRouter --prompt "Hello"
@@ -157,7 +157,7 @@ node troubleshoot_enetunreach.js
 ### **Method 1: Use PowerShell Instead**
 ```powershell
 # Direct API test with PowerShell
-$headers = @{ "Authorization" = "Bearer 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" }
+$headers = @{ "Authorization" = "Bearer $env:OPENROUTER_API_KEY" }
 Invoke-RestMethod -Uri "https://openrouter.ai/api/v1/models" -Headers $headers
 ```
 
