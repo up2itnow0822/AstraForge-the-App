@@ -4,7 +4,14 @@
  */
 
 import * as vscode from 'vscode';
-import { LLMConfig, LLMProvider, _LLMResponse, _VoteResult, _ConferenceResult } from './interfaces';
+import {
+  LLMConfig,
+  LLMProvider,
+  LLMRole,
+  _LLMResponse,
+  _VoteResult,
+  _ConferenceResult,
+} from './interfaces';
 import { createProvider } from './providers';
 import { LLMCache } from './cache';
 
@@ -14,8 +21,8 @@ export class LLMManager {
   private cache: LLMCache;
   private readonly maxConcurrentRequests: number;
 
-  constructor() {
-    this.panel = vscode.workspace.getConfiguration('astraforge').get('llmPanel', []);
+  constructor(initialPanel?: LLMConfig[]) {
+    this.panel = initialPanel ?? this.loadPanelFromEnvironment();
     this.cache = new LLMCache(
       3600, // 1 hour TTL
       60, // 60 requests per minute
@@ -25,13 +32,55 @@ export class LLMManager {
       .getConfiguration('astraforge')
       .get('maxConcurrentRequests', 3);
 
-    this.initializeProviders();
+    this.initializeProviders(true);
+  }
+
+  /**
+   * Override the LLM panel configuration at runtime
+   */
+  public setPanel(panel: LLMConfig[]): void {
+    this.panel = panel ?? [];
+    this.initializeProviders(true);
+  }
+
+  private loadPanelFromEnvironment(): LLMConfig[] {
+    const configuredPanel =
+      vscode.workspace
+        .getConfiguration('astraforge')
+        .get<LLMConfig[]>('llmPanel', []) ?? [];
+
+    if (configuredPanel.length > 0) {
+      return configuredPanel;
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    const models = (process.env.OPENROUTER_MODELS_TO_USE || '')
+      .split(',')
+      .map(model => model.trim())
+      .filter(model => model.length > 0);
+
+    if (!apiKey || models.length === 0) {
+      return configuredPanel;
+    }
+
+    const roles: LLMRole[] = ['concept', 'development', 'coding', 'review'];
+
+    return models.map((model, index) => ({
+      provider: 'OpenRouter',
+      key: apiKey,
+      model,
+      role: roles[index] ?? 'secondary',
+    }));
   }
 
   /**
    * Initialize providers for all configured LLMs
    */
-  private initializeProviders(): void {
+  private initializeProviders(reset: boolean = false): void {
+    if (reset) {
+      this.providers.clear();
+    }
+
     for (const config of this.panel) {
       if (!this.providers.has(config.provider)) {
         try {
