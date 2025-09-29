@@ -17,6 +17,8 @@ import { AdaptiveWorkflowRL } from '../rl/adaptiveWorkflow';
 import { CollaborationServer } from '../server/collaborationServer';
 import { MetaLearningIntegration, createMetaLearningSystem } from '../meta-learning';
 import { EmergentBehaviorSystem } from '../emergent-behavior';
+import { SpecKitManager, SpecKitWorkflow } from '../spec-kit/specKitManager';
+import { TaskList, Task } from '../spec-kit/taskGenerator';
 import { logger } from '../utils/logger';
 import * as path from 'path';
 
@@ -84,6 +86,17 @@ private metaLearning?: MetaLearningIntegration;
 /** Emergent behavior system for breakthrough detection */
 private emergentBehaviorSystem?: EmergentBehaviorSystem;
 
+/** Spec Kit manager for specification-driven workflows */
+private readonly specKitManager: SpecKitManager;
+
+private specWorkflowId?: string;
+
+private currentSpecWorkflow?: SpecKitWorkflow;
+
+private specKitInitialized = false;
+
+private readonly testMode: boolean;
+
 private _workflowRL!: AdaptiveWorkflowRL;
 
 private _collaborationServer?: CollaborationServer;
@@ -98,15 +111,17 @@ private _workspaceId!: string;
 * @param gitManager - Git integration for version control
 * @param emergentBehaviorSystem - System for emergent behavior detection
 */
-constructor(
-private readonly _llmManager: LLMManager,
-private readonly _vectorDB: VectorDB,
-private readonly _gitManager: GitManager,
-emergentBehaviorSystem?: EmergentBehaviorSystem
-) {
+  constructor(
+    private readonly _llmManager: LLMManager,
+    private readonly _vectorDB: VectorDB,
+    private readonly _gitManager: GitManager,
+    emergentBehaviorSystem?: EmergentBehaviorSystem,
+    testMode: boolean = false
+  ) {
 this._workflowRL = new AdaptiveWorkflowRL();
 this._workspaceId = `workspace_${Date.now()}`;
 this.emergentBehaviorSystem = emergentBehaviorSystem;
+this.testMode = testMode;
 this.metrics = {
 startTime: Date.now(),
 phaseStartTime: Date.now(),
@@ -115,10 +130,147 @@ userFeedback: [],
 iterations: 0,
 };
 
+this.specKitManager = new SpecKitManager(_llmManager, _vectorDB, _gitManager);
+
 this.initializeCollaboration();
 this.initializeMetaLearning();
-this.initializeEmergentBehavior();
-}
+    this.initializeEmergentBehavior();
+  }
+
+  private async ensureSpecKitInitialized(): Promise<void> {
+    if (this.specKitInitialized || this.testMode) {
+      return;
+    }
+
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+      logger.warn('Spec Kit initialization skipped: no workspace folder available.');
+      return;
+    }
+
+    try {
+      await this.specKitManager.initializeSpecKit(workspaceFolder.uri.fsPath);
+      this.specKitInitialized = true;
+      logger.info('🧰 Spec Kit initialized successfully');
+    } catch (error) {
+      logger.warn('Failed to initialize Spec Kit:', error);
+    }
+  }
+
+  private async runSpecDrivenWorkflow(idea: string, option?: string): Promise<void> {
+    await this.ensureSpecKitInitialized();
+
+    if (!this.specKitInitialized) {
+      return;
+    }
+
+    try {
+      await this.announceSpecProgress('Specification', 'Generating comprehensive specification...');
+
+      const specRequest = {
+        userIdea: idea,
+        projectContext: option === 'letPanelDecide' ? 'Multi-LLM collaboration requested' : undefined,
+        constraints: ['VS Code extension environment', 'TypeScript/Node.js stack'],
+      };
+
+      const workflowId = await this.specKitManager.createSpecification(specRequest);
+      this.specWorkflowId = workflowId;
+      this.currentSpecWorkflow = this.specKitManager.getWorkflow(workflowId);
+
+      if (!this.currentSpecWorkflow) {
+        throw new Error('Failed to create specification workflow');
+      }
+
+      await this.announceSpecProgress('Planning', 'Creating technical implementation plan...');
+      await this.specKitManager.createImplementationPlan(workflowId);
+      this.currentSpecWorkflow = this.specKitManager.getWorkflow(workflowId);
+      this.buildPlan = this.currentSpecWorkflow?.plan?.content ?? this.buildPlan;
+
+      await this.announceSpecProgress('Tasks', 'Generating detailed task list...');
+      await this.specKitManager.generateTasks(workflowId);
+      this.currentSpecWorkflow = this.specKitManager.getWorkflow(workflowId);
+
+      if (this.currentSpecWorkflow?.tasks) {
+        await this.announceSpecProgress('Implementation', 'Executing spec-driven tasks following TDD principles...');
+        await this.executeSpecKitTasks(this.currentSpecWorkflow.tasks);
+      }
+
+      await this.announceSpecProgress('Deployment', 'Preparing spec outputs for deployment...');
+      logger.info('✅ Spec-driven workflow completed successfully');
+    } catch (error) {
+      logger.warn('Spec-driven workflow encountered an issue:', error);
+    }
+  }
+
+  private async announceSpecProgress(phaseName: string, description: string): Promise<void> {
+    this.metrics.phaseStartTime = Date.now();
+    this.metrics.iterations++;
+
+    this._collaborationServer?.broadcastToWorkspace(this._workspaceId, 'progress', {
+      phase: phaseName,
+      description,
+      progress: this.metrics.iterations,
+    });
+
+    vscode.window.showInformationMessage(`🚀 ${phaseName}: ${description}`);
+  }
+
+  private async executeSpecKitTasks(taskList: TaskList): Promise<void> {
+    const tasksByPhase = new Map<string, Task[]>();
+    taskList.tasks.forEach(task => {
+      const phase = task.phase || 'implementation';
+      if (!tasksByPhase.has(phase)) {
+        tasksByPhase.set(phase, []);
+      }
+      const phaseTasks = tasksByPhase.get(phase);
+      phaseTasks?.push(task);
+    });
+
+    const phaseOrder = ['setup', 'tests', 'implementation', 'integration', 'polish'];
+
+    for (const phase of phaseOrder) {
+      const phaseTasks = tasksByPhase.get(phase) || [];
+      if (phaseTasks.length === 0) {
+        continue;
+      }
+
+      logger.info(`🔄 Executing Spec Kit ${phase} phase (${phaseTasks.length} tasks)...`);
+
+      const parallelTasks = phaseTasks.filter(task => task.isParallel);
+      const sequentialTasks = phaseTasks.filter(task => !task.isParallel);
+
+      if (parallelTasks.length > 0) {
+        await Promise.all(parallelTasks.map(task => this.executeSpecKitTask(task)));
+      }
+
+      for (const task of sequentialTasks) {
+        await this.executeSpecKitTask(task);
+      }
+
+      logger.info(`✅ Spec Kit ${phase} phase completed`);
+    }
+  }
+
+  private async executeSpecKitTask(task: Task): Promise<void> {
+    logger.info(`🔧 Executing Spec Kit task ${task.id}: ${task.description}`);
+
+    try {
+      const prompt = `Execute this development task:\n\nTask: ${task.description}\nFile: ${task.filePath}\nType: ${task.type}\n\nContext: This is part of a spec-driven development workflow.\n${task.type === 'test' ? 'Generate failing tests following TDD principles.' : ''}\n${task.type === 'implementation' ? 'Implement code to make the tests pass.' : ''}`;
+
+      const result = await this._llmManager.generateResponse('OpenAI', prompt);
+
+      await this._vectorDB.addDocument(`task-${task.id}`, result, {
+        taskId: task.id,
+        taskType: task.type,
+        filePath: task.filePath,
+      });
+
+      logger.info(`✅ Task ${task.id} completed`);
+    } catch (error) {
+      logger.error(`❌ Task ${task.id} failed:`, error);
+      this.metrics.errors++;
+    }
+  }
 
 /**
 * Getters for testing purposes - allow access to private dependencies
@@ -170,16 +322,20 @@ logger.info('🧬 Emergent behavior system integrated with workflow manager');
 * );
 * ```
 */
-async startWorkflow(idea: string, option?: string): Promise<void> {
-this.projectIdea = idea;
-this.currentPhase = 0;
+  async startWorkflow(idea: string, option?: string): Promise<void> {
+    this.projectIdea = idea;
+    this.currentPhase = 0;
 
-try {
-// Get optimal strategy from meta-learning
-const optimalStrategy = this.metaLearning?.getOptimalStrategy(
-this.categorizeProjectType(idea),
-this.estimateComplexity(idea)
-);
+    try {
+      if (!this.testMode) {
+        await this.runSpecDrivenWorkflow(idea, option);
+      }
+
+      // Get optimal strategy from meta-learning
+      const optimalStrategy = this.metaLearning?.getOptimalStrategy(
+        this.categorizeProjectType(idea),
+        this.estimateComplexity(idea)
+      );
 
 if (optimalStrategy) {
 logger.info(`🧠 Using meta-learning optimized strategy: ${optimalStrategy.name}`);
@@ -206,10 +362,13 @@ logger.warn('Failed to get contextual insights:', error);
 // Continue with original idea if contextual enhancement fails
 }
 
-let prompt = enhancedIdea;
-if (option === 'letPanelDecide') {
-prompt = await this._llmManager.conference(`Refine this project idea: ${enhancedIdea}`);
-}
+      let prompt = enhancedIdea;
+      if (this.currentSpecWorkflow?.plan?.content) {
+        prompt = `${enhancedIdea}\n\nExisting implementation plan:\n${this.currentSpecWorkflow.plan.content}`;
+      }
+      if (option === 'letPanelDecide') {
+        prompt = await this._llmManager.conference(`Refine this project idea: ${enhancedIdea}`);
+      }
 
 // Step 2: Conferencing
 const discussion = await this._llmManager.conference(

@@ -42,7 +42,7 @@ async function registerProviders(context: vscode.ExtensionContext) {
 
   // API Tester - load immediately for testing
   const { ApiTesterProvider } = await import('./testing/apiTesterProvider');
-  const apiTester = new ApiTesterProvider(context.extensionUri);
+  const apiTester = new ApiTesterProvider(context.extensionUri, context);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider('astraforge.apiTester', apiTester)
   );

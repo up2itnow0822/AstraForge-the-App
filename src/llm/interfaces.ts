@@ -3,11 +3,20 @@
  * Provides clean abstraction for different LLM providers
  */
 
+export type LLMRole =
+  | 'primary'
+  | 'secondary'
+  | 'concept'
+  | 'development'
+  | 'coding'
+  | 'review'
+  | 'integration';
+
 export interface LLMConfig {
   provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter';
   key: string;
   model: string;
-  role: 'primary' | 'secondary';
+  role: LLMRole | string;
   maxTokens?: number;
   temperature?: number;
 }

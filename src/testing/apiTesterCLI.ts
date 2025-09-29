@@ -1,248 +1,17 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import axios from 'axios';
 import * as fs from 'fs';
-import * as _path from 'path';
-
-interface TestResult {
-  success: boolean;
-  response?: string;
-  error?: string;
-  latency: number;
-  timestamp: number;
-  provider: string;
-  model?: string;
-}
-
-interface BatchTestResult {
-  total: number;
-  successful: number;
-  failed: number;
-  results: TestResult[];
-  averageLatency: number;
-  totalTime: number;
-}
-
-class ApiTesterCLI {
-  async testLLM(
-    provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter',
-    apiKey: string,
-    model: string,
-    prompt: string
-  ): Promise<TestResult> {
-    const startTime = Date.now();
-
-    try {
-      let response: string;
-
-      switch (provider) {
-        case 'OpenAI':
-          response = await this.queryOpenAI(apiKey, model, prompt);
-          break;
-        case 'Anthropic':
-          response = await this.queryAnthropic(apiKey, model, prompt);
-          break;
-        case 'xAI':
-          response = await this.queryXAI(apiKey, model, prompt);
-          break;
-        case 'OpenRouter':
-          response = await this.queryOpenRouter(apiKey, model, prompt);
-          break;
-        default:
-          throw new Error(`Unsupported provider: ${provider}`);
-      }
-
-      const latency = Date.now() - startTime;
-
-      return {
-        success: true,
-        response,
-        latency,
-        timestamp: Date.now(),
-        provider,
-        model,
-      };
-    } catch (error: any) {
-      const latency = Date.now() - startTime;
-      return {
-        success: false,
-        error: error.message,
-        latency,
-        timestamp: Date.now(),
-        provider,
-        model,
-      };
-    }
-  }
-
-  private async queryOpenAI(apiKey: string, model: string, prompt: string): Promise<string> {
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1000,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return response.data.choices[0].message.content;
-  }
-
-  private async queryAnthropic(apiKey: string, model: string, prompt: string): Promise<string> {
-    const response = await axios.post(
-      'https://api.anthropic.com/v1/messages',
-      {
-        model,
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }],
-      },
-      {
-        headers: {
-          'x-api-key': apiKey,
-          'Content-Type': 'application/json',
-          'anthropic-version': '2023-06-01',
-        },
-      }
-    );
-    return response.data.content[0].text;
-  }
-
-  private async queryXAI(apiKey: string, model: string, prompt: string): Promise<string> {
-    const response = await axios.post(
-      'https://api.x.ai/v1/chat/completions',
-      {
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1000,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return response.data.choices[0].message.content;
-  }
-
-  private async queryOpenRouter(apiKey: string, model: string, prompt: string): Promise<string> {
-    const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
-      {
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1000,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return response.data.choices[0].message.content;
-  }
-
-  async testBatchLLM(
-    provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter',
-    apiKey: string,
-    model: string,
-    prompts: string[]
-  ): Promise<BatchTestResult> {
-    const startTime = Date.now();
-
-    // Process prompts in parallel for better performance
-    const testPromises = prompts.map(async (prompt, index) => {
-      const result = await this.testLLM(provider, apiKey, model, prompt);
-      return { ...result, index };
-    });
-
-    const batchResults = await Promise.all(testPromises);
-    const totalTime = Date.now() - startTime;
-
-    const successful = batchResults.filter(r => r.success).length;
-    const failed = batchResults.length - successful;
-    const averageLatency =
-      batchResults.reduce((sum, r) => sum + r.latency, 0) / batchResults.length;
-
-    return {
-      total: batchResults.length,
-      successful,
-      failed,
-      results: batchResults,
-      averageLatency,
-      totalTime,
-    };
-  }
-
-  async testWorkflowSimulation(
-    idea: string,
-    provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter',
-    apiKey: string,
-    model: string
-  ): Promise<TestResult[]> {
-    const results: TestResult[] = [];
-
-    // Simulate the workflow phases
-    const phases = ['Planning', 'Prototyping', 'Testing', 'Deployment'];
-
-    for (const phase of phases) {
-      const prompt = `Execute ${phase} for project: ${idea}. Provide a brief summary.`;
-      const result = await this.testLLM(provider, apiKey, model, prompt);
-      results.push({
-        ...result,
-        response: `Phase: ${phase}\n${result.response || result.error}`,
-      });
-    }
-
-    return results;
-  }
-
-  validateApiKey(provider: string, apiKey: string): boolean {
-    if (!apiKey || apiKey.trim().length === 0) {
-      return false;
-    }
-
-    // Basic validation patterns
-    const patterns = {
-      OpenAI: /^sk-[a-zA-Z0-9]{32,}$/,
-      Anthropic: /^sk-ant-[a-zA-Z0-9]{32,}$/,
-      xAI: /^xai-[a-zA-Z0-9]{32,}$/,
-      OpenRouter: /^sk-or-[a-zA-Z0-9]{32,}$/,
-    };
-
-    const pattern = patterns[provider as keyof typeof patterns];
-    return pattern ? pattern.test(apiKey) : apiKey.length > 10;
-  }
-
-  getSupportedProviders(): string[] {
-    return ['OpenAI', 'Anthropic', 'xAI', 'OpenRouter'];
-  }
-
-  getSupportedModels(provider: string): string[] {
-    const models = {
-      OpenAI: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-      Anthropic: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-      xAI: ['grok-beta', 'grok-pro'],
-      OpenRouter: ['gpt-4', 'gpt-3.5-turbo', 'claude-3-opus', 'claude-3-sonnet'],
-    };
-
-    return models[provider as keyof typeof models] || [];
-  }
-}
+import { ApiTesterCore } from './apiTesterCore.js';
 
 const program = new Command();
-const tester = new ApiTesterCLI();
+const tester = new ApiTesterCore();
 
-program.name('astraforge').description('AstraForge API Testing Interface').version('0.0.1');
+program
+  .name('astraforge')
+  .description('AstraForge API Testing Interface')
+  .version('0.0.1');
 
-// LLM Testing Commands
 program
   .command('test')
   .description('Test LLM API functionality')
@@ -253,25 +22,51 @@ program
   .option('--file <file>', 'File containing prompts (one per line)')
   .option('--output <file>', 'Output file for results')
   .option('--workflow <idea>', 'Test workflow simulation')
+  .option('--rounds <number>', 'Conference rounds', '2')
+  .option('--budget <number>', 'Conference budget limit', '10')
+  .option('--conference', 'Run conference simulation using configured models')
   .action(async options => {
     try {
-      if (options.workflow) {
-        await testWorkflow(options);
+      await tester.initialize();
+
+      if (options.conference) {
+        await runConference(options);
+      } else if (options.workflow) {
+        await runWorkflow(options);
       } else if (options.file) {
-        await testBatchFromFile(options);
+        await runBatch(options);
       } else if (options.prompt) {
-        await testSingle(options);
+        await runSingle(options);
       } else {
-        console.error('Error: Must provide either --prompt, --file, or --workflow');
-        process.exit(1);
+        console.error('Error: Must provide --prompt, --file, --workflow, or --conference');
+        process.exitCode = 1;
       }
     } catch (error) {
       console.error('Error:', error);
-      process.exit(1);
+      process.exitCode = 1;
+    } finally {
+      await tester.cleanup();
     }
   });
 
-// List Commands
+program
+  .command('vector')
+  .description('Test vector database queries')
+  .requiredOption('--query <query>', 'Query text')
+  .option('--topk <number>', 'Number of results to return', '5')
+  .option('--output <file>', 'Output file for results')
+  .action(async options => {
+    try {
+      await tester.initialize();
+      await runVector(options);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exitCode = 1;
+    } finally {
+      await tester.cleanup();
+    }
+  });
+
 program
   .command('list')
   .description('List supported providers and models')
@@ -291,46 +86,30 @@ program
     }
   });
 
-async function testSingle(options: any) {
+async function runSingle(options: any) {
   console.log(`Testing ${options.api} with model ${options.model}...`);
-
   if (!tester.validateApiKey(options.api, options.key)) {
-    console.error('Error: Invalid API key format');
-    process.exit(1);
+    throw new Error('Invalid API key format');
   }
 
-  const result = await tester.testLLM(
-    options.api as any,
-    options.key,
-    options.model,
-    options.prompt
-  );
-
+  const result = await tester.testLLM(options.api, options.key, options.model, options.prompt);
   const output = {
     type: 'single_test',
     timestamp: new Date().toISOString(),
     result,
   };
 
-  if (options.output) {
-    fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
-    console.log(`Results saved to ${options.output}`);
-  } else {
-    console.log(JSON.stringify(output, null, 2));
-  }
+  writeOutput(output, options.output);
 }
 
-async function testBatchFromFile(options: any) {
+async function runBatch(options: any) {
   console.log(`Testing ${options.api} with prompts from ${options.file}...`);
-
   if (!tester.validateApiKey(options.api, options.key)) {
-    console.error('Error: Invalid API key format');
-    process.exit(1);
+    throw new Error('Invalid API key format');
   }
 
   if (!fs.existsSync(options.file)) {
-    console.error(`Error: File ${options.file} not found`);
-    process.exit(1);
+    throw new Error(`File ${options.file} not found`);
   }
 
   const prompts = fs
@@ -340,12 +119,10 @@ async function testBatchFromFile(options: any) {
     .filter(line => line.length > 0);
 
   if (prompts.length === 0) {
-    console.error('Error: No valid prompts found in file');
-    process.exit(1);
+    throw new Error('No valid prompts found in file');
   }
 
-  const result = await tester.testBatchLLM(options.api as any, options.key, options.model, prompts);
-
+  const result = await tester.testBatchLLM(options.api, options.key, options.model, prompts);
   const output = {
     type: 'batch_test',
     timestamp: new Date().toISOString(),
@@ -353,25 +130,18 @@ async function testBatchFromFile(options: any) {
     result,
   };
 
-  if (options.output) {
-    fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
-    console.log(`Results saved to ${options.output}`);
-  } else {
-    console.log(JSON.stringify(output, null, 2));
-  }
+  writeOutput(output, options.output);
 }
 
-async function testWorkflow(options: any) {
+async function runWorkflow(options: any) {
   console.log(`Testing workflow simulation for: ${options.workflow}`);
-
   if (!tester.validateApiKey(options.api, options.key)) {
-    console.error('Error: Invalid API key format');
-    process.exit(1);
+    throw new Error('Invalid API key format');
   }
 
   const results = await tester.testWorkflowSimulation(
     options.workflow,
-    options.api as any,
+    options.api,
     options.key,
     options.model
   );
@@ -383,24 +153,84 @@ async function testWorkflow(options: any) {
     results,
   };
 
-  if (options.output) {
-    fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
-    console.log(`Results saved to ${options.output}`);
+  writeOutput(output, options.output);
+}
+
+async function runConference(options: any) {
+  console.log(`Testing conference simulation for: ${options.workflow || options.prompt || 'project idea'}`);
+
+  if (!tester.validateApiKey(options.api, options.key)) {
+    throw new Error('Invalid API key format');
+  }
+
+  const idea = options.workflow || options.prompt;
+  if (!idea) {
+    throw new Error('Conference simulation requires --workflow or --prompt');
+  }
+
+  const models = tester
+    .getSupportedModels(options.api)
+    .slice(0, 3);
+
+  if (models.length < 3) {
+    models.push('anthropic/claude-3-opus', 'openai/gpt-4-turbo', 'xai/grok-beta');
+  }
+
+  const roles = ['concept', 'development', 'coding'];
+  const providers = models.slice(0, 3).map((model: string, index: number) => ({
+    provider: options.api,
+    apiKey: options.key,
+    model,
+    role: roles[index] ?? 'secondary',
+  }));
+
+  const result = await tester.testConference(
+    idea,
+    providers,
+    Number(options.rounds || 2),
+    Number(options.budget || 10)
+  );
+
+  const output = {
+    type: 'conference_simulation',
+    timestamp: new Date().toISOString(),
+    idea,
+    result,
+  };
+
+  writeOutput(output, options.output);
+}
+
+async function runVector(options: any) {
+  console.log(`Testing vector query: "${options.query}"`);
+  const result = await tester.testVectorQuery(options.query, parseInt(options.topk, 10));
+  const output = {
+    type: 'vector_test',
+    timestamp: new Date().toISOString(),
+    result,
+  };
+
+  writeOutput(output, options.output);
+}
+
+function writeOutput(data: any, outputPath?: string) {
+  if (outputPath) {
+    fs.writeFileSync(outputPath, JSON.stringify(data, null, 2));
+    console.log(`Results saved to ${outputPath}`);
   } else {
-    console.log(JSON.stringify(output, null, 2));
+    console.log(JSON.stringify(data, null, 2));
   }
 }
 
-// Error handling
 program.exitOverride();
 
 try {
   program.parse();
-} catch (err: any) {
-  if (err.code === 'commander.help') {
+} catch (error: any) {
+  if (error.code === 'commander.helpDisplayed') {
     process.exit(0);
-  } else {
-    console.error('Error:', err.message);
-    process.exit(1);
   }
+  console.error('Error:', error.message);
+  process.exit(1);
 }
+
