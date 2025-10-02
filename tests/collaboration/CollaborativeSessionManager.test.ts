@@ -6,6 +6,7 @@ import { CollaborativeSessionManager } from '../../src/collaboration/Collaborati
 import { LLMManager } from '../../src/llm/llmManager';
 import { VectorDB } from '../../src/db/vectorDB';
 import { CollaborationRequest } from '../../src/collaboration/types/collaborationTypes';
+import { LLMConfig } from '../../src/llm/interfaces';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
@@ -79,12 +80,36 @@ describe('CollaborativeSessionManager Integration', () => {
       };
 
       const session = await sessionManager.startSession(request);
-      
+
       expect(session.participants.length).toBeGreaterThanOrEqual(2);
       session.participants.forEach(participant => {
         expect(participant.id).toBeDefined();
         expect(participant.model).toBeDefined();
       });
+    });
+
+    it('should activate all configured panel participants for collaboration', async () => {
+      const panel: LLMConfig[] = [
+        { provider: 'OpenAI', key: 'test-key', model: 'gpt-4o', role: 'architect' },
+        { provider: 'Anthropic', key: 'test-key', model: 'claude-3-5-sonnet', role: 'reasoner' },
+        { provider: 'xAI', key: 'test-key', model: 'grok-2', role: 'innovator' },
+        { provider: 'OpenRouter', key: 'test-key', model: 'meta-llama/llama-3.1-405b-instruct', role: 'integrator' },
+        { provider: 'OpenAI', key: 'test-key', model: 'gpt-4.1-mini', role: 'reviewer' }
+      ];
+
+      llmManager.setPanel(panel);
+
+      const request: CollaborationRequest = {
+        prompt: 'Outline a cross-platform mobile app architecture with real-time sync.',
+        priority: 'high',
+        timeLimit: 120000,
+        preferredParticipants: []
+      };
+
+      const session = await sessionManager.startSession(request);
+
+      expect(session.participants).toHaveLength(5);
+      expect(new Set(session.participants.map(p => `${p.provider}:${p.model}`)).size).toBe(5);
     });
   });
 
