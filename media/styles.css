@@ -61,3 +61,25 @@ label {
   margin: 8px 0 4px 0;
   font-weight: 500;
 }
+
+.progress-entry {
+  background-color: var(--vscode-editorHoverWidget-background);
+  border-left: 3px solid var(--vscode-textLink-foreground);
+  padding: 6px 8px;
+  margin: 6px 0;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.progress-entry.progress-error {
+  border-left-color: var(--vscode-errorForeground, #ff4d4f);
+}
+
+.progress-entry.progress-complete {
+  border-left-color: var(--vscode-testing-iconPassed, var(--vscode-textLink-foreground));
+}
+
+.progress-entry.progress-info,
+.progress-entry.progress-progress {
+  border-left-color: var(--vscode-textLink-foreground);
+}

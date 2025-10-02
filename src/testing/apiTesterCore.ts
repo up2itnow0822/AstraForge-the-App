@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { LLMManager } from '../llm/llmManager.js';
 import { VectorDB } from '../db/vectorDB.js';
+import { secureLogger } from '../utils/secureLogger.js';
 
 export interface TestResult {
   success: boolean;
@@ -83,7 +84,7 @@ export class ApiTesterCore {
       await this.vectorDB.init();
       this.testMode = true;
     } catch (error) {
-      console.warn('Failed to initialize vector DB for testing:', error);
+      secureLogger.warn('Failed to initialize vector DB for testing', error);
     }
   }
 
@@ -256,7 +257,7 @@ export class ApiTesterCore {
 
       for (let round = 0; round < maxRounds; round++) {
         if (totalCost >= budgetLimit) {
-          console.warn(`Budget limit reached: $${totalCost.toFixed(4)}`);
+          secureLogger.warn(`Budget limit reached: $${totalCost.toFixed(4)}`);
           break;
         }
 
@@ -290,7 +291,7 @@ export class ApiTesterCore {
 
         const roundTime = Date.now() - roundStartTime;
         if (roundTime > 300000) {
-          console.warn('Conference round timeout reached');
+          secureLogger.warn('Conference round timeout reached');
           break;
         }
       }
@@ -429,7 +430,7 @@ export class ApiTesterCore {
     try {
       this.vectorDB.close();
     } catch (error) {
-      console.warn('Cleanup error:', error);
+      secureLogger.warn('Cleanup error', error);
     }
   }
 

@@ -1,0 +1,111 @@
+[
+  {
+    "id": 42,
+    "title": "Remove deprecated quantum telemetry patch",
+    "issue": "Issue #312 - Hotfix created for V2 telemetry subsystem",
+    "targetVersion": "2.5.0",
+    "status": "closed",
+    "branch": "hotfix/quantum-telemetry-cleanup",
+    "deprecated": true,
+    "checks": {
+      "tests": false,
+      "lint": false,
+      "security": false,
+      "docs": false
+    },
+    "notes": [
+      "Superseded by the V3 observability pipeline and no longer applicable"
+    ],
+    "resolution": "deprecated",
+    "branchDeleted": true,
+    "history": [
+      {
+        "type": "closed",
+        "summary": "Closed because the issue targets a deprecated version",
+        "timestamp": "2025-10-05T00:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "title": "Repair Project Ignition webview assets",
+    "issue": "Issue #410 - Project Ignition panel missing JS for idea submission",
+    "targetVersion": "3.0.0",
+    "status": "merged",
+    "branch": "fix/project-ignition-assets",
+    "checks": {
+      "tests": true,
+      "lint": true,
+      "security": true,
+      "docs": true
+    },
+    "notes": [
+      "Adds the missing ignition.js controller required by the V3 Project Ignition view"
+    ],
+    "repairTargets": [
+      {
+        "file": "media/ignition.js",
+        "description": "Add interactive logic for workflow submission and progress updates"
+      }
+    ],
+    "fixesApplied": [
+      "media/ignition.js: Add interactive logic for workflow submission and progress updates"
+    ],
+    "resolution": "merged",
+    "mergedAt": "2025-10-05T00:00:00.000Z",
+    "branchDeleted": true,
+    "history": [
+      {
+        "type": "repaired",
+        "summary": "Applied fixes for AstraForge 3.0.0",
+        "timestamp": "2025-10-05T00:00:00.000Z"
+      },
+      {
+        "type": "merged",
+        "summary": "Merged after successful verification and branch cleanup",
+        "timestamp": "2025-10-05T00:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": 61,
+    "title": "Harden API tester telemetry logging",
+    "issue": "Issue #415 - Prevent sensitive data from leaking through console logs",
+    "targetVersion": "3.0.0",
+    "status": "merged",
+    "branch": "fix/api-tester-telemetry",
+    "checks": {
+      "tests": true,
+      "lint": true,
+      "security": true,
+      "docs": true
+    },
+    "notes": [
+      "Replaces console warnings with secure logger redaction in ApiTesterCore"
+    ],
+    "repairTargets": [
+      {
+        "file": "src/testing/apiTesterCore.ts",
+        "description": "Swap console warnings for secureLogger to avoid leaking sensitive data"
+      }
+    ],
+    "fixesApplied": [
+      "src/testing/apiTesterCore.ts: Swap console warnings for secureLogger to avoid leaking sensitive data"
+    ],
+    "resolution": "merged",
+    "mergedAt": "2025-10-05T00:00:00.000Z",
+    "branchDeleted": true,
+    "history": [
+      {
+        "type": "repaired",
+        "summary": "Applied fixes for AstraForge 3.0.0",
+        "timestamp": "2025-10-05T00:00:00.000Z"
+      },
+      {
+        "type": "merged",
+        "summary": "Merged after successful verification and branch cleanup",
+        "timestamp": "2025-10-05T00:00:00.000Z"
+      }
+    ]
+  }
+]
