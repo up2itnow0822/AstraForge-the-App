@@ -1,0 +1,66 @@
+[
+  {
+    "id": 42,
+    "title": "Remove deprecated quantum telemetry patch",
+    "issue": "Issue #312 - Hotfix created for V2 telemetry subsystem",
+    "targetVersion": "2.5.0",
+    "status": "open",
+    "branch": "hotfix/quantum-telemetry-cleanup",
+    "deprecated": true,
+    "checks": {
+      "tests": false,
+      "lint": false,
+      "security": false,
+      "docs": false
+    },
+    "notes": [
+      "Superseded by the V3 observability pipeline and no longer applicable"
+    ]
+  },
+  {
+    "id": 57,
+    "title": "Repair Project Ignition webview assets",
+    "issue": "Issue #410 - Project Ignition panel missing JS for idea submission",
+    "targetVersion": "3.0.0",
+    "status": "open",
+    "branch": "fix/project-ignition-assets",
+    "checks": {
+      "tests": false,
+      "lint": false,
+      "security": true,
+      "docs": false
+    },
+    "notes": [
+      "Adds the missing ignition.js controller required by the V3 Project Ignition view"
+    ],
+    "repairTargets": [
+      {
+        "file": "media/ignition.js",
+        "description": "Add interactive logic for workflow submission and progress updates"
+      }
+    ]
+  },
+  {
+    "id": 61,
+    "title": "Harden API tester telemetry logging",
+    "issue": "Issue #415 - Prevent sensitive data from leaking through console logs",
+    "targetVersion": "3.0.0",
+    "status": "open",
+    "branch": "fix/api-tester-telemetry",
+    "checks": {
+      "tests": false,
+      "lint": false,
+      "security": false,
+      "docs": false
+    },
+    "notes": [
+      "Replaces console warnings with secure logger redaction in ApiTesterCore"
+    ],
+    "repairTargets": [
+      {
+        "file": "src/testing/apiTesterCore.ts",
+        "description": "Swap console warnings for secureLogger to avoid leaking sensitive data"
+      }
+    ]
+  }
+]
