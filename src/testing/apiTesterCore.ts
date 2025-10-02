@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { LLMManager } from '../llm/llmManager.js';
 import { VectorDB } from '../db/vectorDB.js';
-import { secureLogger } from '../utils/secureLogger.js';
+import { secureLogger } from '../utils/secureLogger';
+import type { LLMConfig } from '../llm/interfaces';
 
 export interface TestResult {
   success: boolean;
@@ -231,7 +232,7 @@ export class ApiTesterCore {
   async testConference(
     idea: string,
     providers: Array<{
-      provider: string;
+      provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter';
       apiKey: string;
       model: string;
       role: string;
@@ -245,89 +246,51 @@ export class ApiTesterCore {
     const participantResponses: ConferenceParticipantSummary[] = [];
 
     try {
-      this.llmManager.setPanel(
-        providers.map(p => ({
-          provider: p.provider as any,
-          key: p.apiKey,
-          model: p.model,
-          role: p.role as any,
-        }))
-      );
+      this.llmManager.setPanel(this.mapPanelProviders(providers));
 
       let discussion = idea;
       let roundCount = 0;
 
       for (let round = 0; round < maxRounds; round++) {
-        if (totalCost >= budgetLimit) {
+        if (this.reachedBudget(totalCost, budgetLimit)) {
           secureLogger.warn(`Budget limit reached: $${totalCost.toFixed(4)}`);
           break;
         }
 
-        const roundStartTime = Date.now();
-        const conferenceResult = await this.llmManager.conference(discussion);
-        const responses = conferenceResult.split('\n\nLLM').slice(1);
+        const roundOutcome = await this.runConferenceIteration(
+          discussion,
+          providers,
+          totalCost,
+          totalTokens
+        );
 
-        for (let i = 0; i < responses.length; i++) {
-          const response = responses[i].split(': ').slice(1).join(': ') || responses[i];
-          const tokens = await this.estimateTokens(
-            response,
-            providers[i]?.model || 'gpt-4'
-          );
-          const cost = this.estimateCost(0, tokens, providers[i]?.model || 'gpt-4');
-
-          participantResponses.push({
-            llm: i + 1,
-            role: providers[i]?.role || 'unknown',
-            response:
-              response.substring(0, 200) + (response.length > 200 ? '...' : ''),
-            tokens,
-            cost,
-          });
-
-          totalTokens += tokens;
-          totalCost += cost;
-        }
-
-        discussion = conferenceResult;
+        discussion = roundOutcome.discussion;
+        totalCost = roundOutcome.totalCost;
+        totalTokens = roundOutcome.totalTokens;
+        participantResponses.push(...roundOutcome.newResponses);
         roundCount++;
 
-        const roundTime = Date.now() - roundStartTime;
-        if (roundTime > 300000) {
+        if (roundOutcome.timeout) {
           secureLogger.warn('Conference round timeout reached');
           break;
         }
       }
 
-      const options = participantResponses
-        .slice(-providers.length)
-        .map(p => p.response.split('.')[0] + '.');
-
-      let finalDecision = '';
-      let voteResults: ConferenceVoteSummary[] | undefined;
-
-      if (options.length > 1) {
-        try {
-          finalDecision = await this.llmManager.voteOnDecision(discussion, options);
-          voteResults = options.map(option => ({
-            option: option.substring(0, 50) + '...',
-            votes: Math.floor(Math.random() * providers.length) + 1,
-          }));
-        } catch (error: unknown) {
-          secureLogger.warn('Vote aggregation failed, falling back to first option', error);
-          finalDecision = options[0];
-        }
-      } else {
-        finalDecision = discussion;
-      }
+      const options = this.extractLatestOptions(participantResponses, providers.length);
+      const { finalDecision, voteResults } = await this.determineFinalDecision(
+        discussion,
+        options,
+        providers.length
+      );
 
       const conferenceTime = Date.now() - startTime;
+      const truncatedDecision = finalDecision.substring(0, 500) +
+        (finalDecision.length > 500 ? '...' : '');
 
       return {
         success: true,
         discussionRounds: roundCount,
-        finalDecision:
-          finalDecision.substring(0, 500) +
-          (finalDecision.length > 500 ? '...' : ''),
+        finalDecision: truncatedDecision,
         participantResponses,
         totalTokens,
         totalCost,
@@ -346,6 +309,123 @@ export class ApiTesterCore {
         conferenceTime: Date.now() - startTime,
         error: message,
       };
+    }
+  }
+
+  private mapPanelProviders(
+    providers: Array<{ provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter'; apiKey: string; model: string; role: string }>
+  ): LLMConfig[] {
+    return providers.map(p => ({
+      provider: p.provider,
+      key: p.apiKey,
+      model: p.model,
+      role: p.role,
+    }));
+  }
+
+  private reachedBudget(totalCost: number, budgetLimit: number): boolean {
+    return totalCost >= budgetLimit;
+  }
+
+  private async runConferenceIteration(
+    discussion: string,
+    providers: Array<{ provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter'; apiKey: string; model: string; role: string }>,
+    totalCost: number,
+    totalTokens: number
+  ): Promise<{
+    discussion: string;
+    totalCost: number;
+    totalTokens: number;
+    newResponses: ConferenceParticipantSummary[];
+    timeout: boolean;
+  }> {
+    const roundStartTime = Date.now();
+    const conferenceResult = await this.llmManager.conference(discussion);
+    const responses = conferenceResult.split('\n\nLLM').slice(1);
+
+    const newResponses: ConferenceParticipantSummary[] = [];
+    let updatedCost = totalCost;
+    let updatedTokens = totalTokens;
+
+    for (let i = 0; i < responses.length; i++) {
+      const rawResponse = responses[i];
+      const response = rawResponse.split(': ').slice(1).join(': ') || rawResponse;
+      const model = providers[i]?.model || 'gpt-4';
+      const tokens = await this.estimateTokens(response, model);
+      const cost = this.estimateCost(0, tokens, model);
+
+      newResponses.push({
+        llm: i + 1,
+        role: providers[i]?.role || 'unknown',
+        response: response.substring(0, 200) + (response.length > 200 ? '...' : ''),
+        tokens,
+        cost,
+      });
+
+      updatedTokens += tokens;
+      updatedCost += cost;
+    }
+
+    const timeout = Date.now() - roundStartTime > 300000;
+
+    return {
+      discussion: conferenceResult,
+      totalCost: updatedCost,
+      totalTokens: updatedTokens,
+      newResponses,
+      timeout,
+    };
+  }
+
+  private extractLatestOptions(
+    responses: ConferenceParticipantSummary[],
+    providerCount: number
+  ): string[] {
+    if (providerCount === 0) {
+      return [];
+    }
+
+    return responses
+      .slice(-providerCount)
+      .map(summary => summary.response.split('.')[0]?.trim())
+      .filter((option): option is string => Boolean(option))
+      .map(option => option.endsWith('.') ? option : `${option}.`);
+  }
+
+  private buildVoteResults(
+    options: string[],
+    providerCount: number
+  ): ConferenceVoteSummary[] {
+    const participantCount = Math.max(1, providerCount);
+
+    return options.map(option => ({
+      option: option.substring(0, 50) + (option.length > 50 ? '...' : ''),
+      votes: Math.floor(Math.random() * participantCount) + 1,
+    }));
+  }
+
+  private async determineFinalDecision(
+    discussion: string,
+    options: string[],
+    providerCount: number
+  ): Promise<{ finalDecision: string; voteResults?: ConferenceVoteSummary[] }> {
+    if (options.length === 0) {
+      return { finalDecision: discussion };
+    }
+
+    if (options.length === 1) {
+      return { finalDecision: options[0] };
+    }
+
+    try {
+      const decision = await this.llmManager.voteOnDecision(discussion, options);
+      return {
+        finalDecision: decision,
+        voteResults: this.buildVoteResults(options, providerCount),
+      };
+    } catch (error: unknown) {
+      secureLogger.warn('Vote aggregation failed, falling back to first option', error);
+      return { finalDecision: options[0] };
     }
   }
 

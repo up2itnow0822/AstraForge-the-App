@@ -102,6 +102,28 @@ export interface QuantumSystemState {
   hamiltonian: Map<string, number>; // System Hamiltonian
 }
 
+interface AnnealingVariableBounds {
+  min: number;
+  max: number;
+}
+
+interface AnnealingConstraint {
+  variables: string[];
+  constraint: (values: number[]) => boolean;
+}
+
+interface AnnealingProblem {
+  variables: string[];
+  constraints: AnnealingConstraint[];
+  objective: (values: number[]) => number;
+  bounds: Map<string, AnnealingVariableBounds>;
+}
+
+interface AnnealingSolution {
+  solution?: Map<string, number> | number[];
+  energy?: number;
+}
+
 export class QuantumDecisionSystem {
   private quantumState: QuantumSystemState;
   private decisionHistory: Map<string, QuantumDecision> = new Map();
@@ -521,30 +543,28 @@ export class QuantumDecisionSystem {
     constraints: DecisionConstraint[],
     objectives: DecisionObjective[]
   ): boolean {
-    // Detect if variables are correlated (entanglement candidate)
-    const variables = new Set<string>();
+    if (constraints.length === 0 && objectives.length === 0) {
+      return false;
+    }
 
-    // Extract variables from constraints and objectives
-    constraints.forEach(constraint => {
-      this.extractTokensFromText(constraint.description).forEach(token => variables.add(token));
-      variables.add(`constraint:${constraint.id}`);
+    const tokenFrequency = new Map<string, number>();
+    const registerTokens = (text: string): void => {
+      for (const token of this.extractTokensFromText(text)) {
+        tokenFrequency.set(token, (tokenFrequency.get(token) ?? 0) + 1);
+      }
+    };
+
+    constraints.forEach(constraint => registerTokens(constraint.description));
+    objectives.forEach(objective => registerTokens(objective.name));
+
+    let correlatedTokenCount = 0;
+    tokenFrequency.forEach(count => {
+      if (count > 1) {
+        correlatedTokenCount++;
+      }
     });
 
-    objectives.forEach(objective => {
-      this.extractTokensFromText(objective.name).forEach(token => variables.add(token));
-      variables.add(`objective:${objective.id}`);
-    });
-
-    const uniqueConstraintVariables = constraints.reduce(
-      (count, constraint) => count + this.extractTokensFromText(constraint.description).length,
-      0
-    );
-    const uniqueObjectiveVariables = objectives.reduce(
-      (count, objective) => count + this.extractTokensFromText(objective.name).length,
-      0
-    );
-
-    return variables.size > Math.max(5, uniqueConstraintVariables + uniqueObjectiveVariables * 0.5);
+    return correlatedTokenCount >= Math.max(1, Math.ceil(tokenFrequency.size * 0.2));
   }
 
   private async applySuperpositionAlgorithm(decision: QuantumDecision): Promise<any> {
@@ -972,34 +992,60 @@ export class QuantumDecisionSystem {
     return Math.min(1, Math.max(0, normalized));
   }
 
-  private convertToAnnealingProblem(decision: QuantumDecision): any {
+  private convertToAnnealingProblem(decision: QuantumDecision): AnnealingProblem {
     const variables = this.extractVariables(decision);
     const bounds = new Map(
       variables.map(variable => [variable, { min: -1, max: 1 }])
     );
 
-    const constraintFunctions = decision.input.constraints.map(constraint => constraint.function);
+    const constraints = decision.input.constraints.map(constraint => ({
+      variables,
+      constraint: (values: number[]) => {
+        const state = this.mapValuesToState(variables, values);
+        const result = constraint.function(state);
+
+        if (typeof result === 'number') {
+          return result <= constraint.weight;
+        }
+
+        return Boolean(result);
+      }
+    }));
 
     return {
       variables,
-      constraints: constraintFunctions,
+      constraints,
       objective: (values: number[]) => values.reduce((sum, value) => sum + value * value, 0),
       bounds
     };
   }
 
-  private convertAnnealingResult(result: any, decision: QuantumDecision): DecisionAlternative {
+  private mapValuesToState(variableNames: string[], values: number[]): Record<string, number> {
+    return variableNames.reduce<Record<string, number>>((state, variable, index) => {
+      state[variable] = values[index] ?? 0;
+      return state;
+    }, {});
+  }
+
+  private convertAnnealingResult(
+    result: AnnealingSolution | undefined,
+    decision: QuantumDecision
+  ): DecisionAlternative {
     if (!result || typeof result !== 'object') {
       return decision.input.alternatives[0];
     }
+
+    const solutionValues = Array.isArray(result.solution)
+      ? result.solution
+      : result.solution instanceof Map
+        ? Array.from(result.solution.values())
+        : [];
 
     const scoredAlternatives = decision.input.alternatives.map(alternative => {
       const metadataScore = Object.values(alternative.metadata ?? {}).filter(
         (value): value is number => typeof value === 'number'
       ).reduce((sum, value) => sum + value, 0);
-      const resultScore = Array.isArray(result.solution)
-        ? result.solution.reduce((sum: number, value: number) => sum + value, 0)
-        : 0;
+      const resultScore = solutionValues.reduce((sum: number, value: number) => sum + value, 0);
 
       return {
         alternative,

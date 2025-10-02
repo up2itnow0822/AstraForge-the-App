@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 /**
  * Lightweight logger wrapper to centralize logging and avoid console.* lint warnings.
  * Allows level-based filtering via LOG_LEVEL env (error|warn|info|debug).
@@ -19,50 +21,31 @@ function shouldLog(level: LogLevel): boolean {
   return levelOrder[level] <= currentLevel;
 }
 
-export const logger = {
-    error(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('error')) {
-        console.error(message as any, ...optionalParams as any[]);
-      }
-    },
-    warn(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('warn')) {
-        console.warn(message as any, ...optionalParams as any[]);
-      }
-    },
-    info(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('info')) {
-        console.log(message as any, ...optionalParams as any[]);
-      }
-    },
-    debug(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('debug')) {
-        console.debug(message as any, ...optionalParams as any[]);
-      }
-    },
-  };
+function emit(level: LogLevel, method: 'error' | 'warn' | 'info' | 'debug', args: unknown[]): void {
+  if (!shouldLog(level)) {
+    return;
+  }
 
-  export const _logger = {
-    error(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('error')) {
-        console.error(message as any, ...optionalParams as any[]);
-      }
-    },
-    warn(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('warn')) {
-        console.warn(message as any, ...optionalParams as any[]);
-      }
-    },
-    info(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('info')) {
-        console.info(message as any, ...optionalParams as any[]);
-      }
-    },
-    debug(message?: unknown, ...optionalParams: unknown[]): void {
-      if (shouldLog('debug')) {
-        console.debug(message as any, ...optionalParams as any[]);
-      }
-    },
-  };
+  (console[method] as (...logArgs: unknown[]) => void)(...args);
+}
+
+export const logger = {
+  error(...args: unknown[]): void {
+    emit('error', 'error', args);
+  },
+  warn(...args: unknown[]): void {
+    emit('warn', 'warn', args);
+  },
+  info(...args: unknown[]): void {
+    emit('info', 'info', args);
+  },
+  debug(...args: unknown[]): void {
+    emit('debug', 'debug', args);
+  },
+};
+
+export const _logger = logger;
+
+/* eslint-enable no-console */
 
 
