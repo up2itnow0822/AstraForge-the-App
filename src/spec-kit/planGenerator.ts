@@ -219,19 +219,41 @@ export class PlanGenerator {
   }
 
   private parseTechnicalContextResponse(response: string, requirements?: Partial<TechnicalContext>): TechnicalContext {
-    const context = JSON.parse(response);
+    let parsedContext: Partial<TechnicalContext> = {};
+    try {
+      parsedContext = JSON.parse(response);
+    } catch (error) {
+      logger.warn('Failed to parse technical context response, using defaults', error);
+    }
+
+    const defaults = this.getDefaultTechnicalContext();
 
     return {
-      language: requirements?.language || context.language || 'TypeScript 5.1',
-      primaryDependencies: requirements?.primaryDependencies || context.primaryDependencies || ['Node.js'],
-      storage: requirements?.storage || context.storage || 'File System',
-      testing: requirements?.testing || context.testing || 'Jest',
-      targetPlatform: requirements?.targetPlatform || context.targetPlatform || 'VS Code Extension',
-      projectType: requirements?.projectType || context.projectType || 'single',
-      performanceGoals: requirements?.performanceGoals || context.performanceGoals || ['Responsive UI'],
-      constraints: requirements?.constraints || context.constraints || ['VS Code API limitations'],
-      scale: requirements?.scale || context.scale || 'Single user workspace'
+      language: this.resolveTechnicalContextValue('language', parsedContext, requirements, defaults.language),
+      primaryDependencies: this.resolveTechnicalContextValue('primaryDependencies', parsedContext, requirements, defaults.primaryDependencies),
+      storage: this.resolveTechnicalContextValue('storage', parsedContext, requirements, defaults.storage),
+      testing: this.resolveTechnicalContextValue('testing', parsedContext, requirements, defaults.testing),
+      targetPlatform: this.resolveTechnicalContextValue('targetPlatform', parsedContext, requirements, defaults.targetPlatform),
+      projectType: this.resolveTechnicalContextValue('projectType', parsedContext, requirements, defaults.projectType),
+      performanceGoals: this.resolveTechnicalContextValue('performanceGoals', parsedContext, requirements, defaults.performanceGoals),
+      constraints: this.resolveTechnicalContextValue('constraints', parsedContext, requirements, defaults.constraints),
+      scale: this.resolveTechnicalContextValue('scale', parsedContext, requirements, defaults.scale)
     };
+  }
+
+  private resolveTechnicalContextValue<K extends keyof TechnicalContext>(
+    key: K,
+    context: Partial<TechnicalContext>,
+    requirements: Partial<TechnicalContext> | undefined,
+    fallback: TechnicalContext[K]
+  ): TechnicalContext[K] {
+    const requirementValue = requirements?.[key];
+    if (requirementValue !== undefined) {
+      return requirementValue as TechnicalContext[K];
+    }
+
+    const contextValue = context[key];
+    return (contextValue ?? fallback) as TechnicalContext[K];
   }
 
   private getDefaultTechnicalContext(): TechnicalContext {
@@ -546,20 +568,43 @@ Estimated Output: 15-25 numbered, ordered tasks following constitutional princip
   }
 
   private replacePlanContentSections(plan: string, data: Record<string, unknown>): string {
-    let result = plan;
+    const context = data.technicalContext as Partial<TechnicalContext> | undefined;
 
-    result = result.replace('{{SUMMARY}}', String(data.summary || ''));
-    result = result.replace('{{LANGUAGE}}', String((data.technicalContext as any)?.language || ''));
-    result = result.replace('{{DEPENDENCIES}}', String((data.technicalContext as any)?.primaryDependencies?.join(', ') || ''));
-    result = result.replace('{{STORAGE}}', String((data.technicalContext as any)?.storage || ''));
-    result = result.replace('{{TESTING}}', String((data.technicalContext as any)?.testing || ''));
-    result = result.replace('{{TARGET_PLATFORM}}', String((data.technicalContext as any)?.targetPlatform || ''));
-    result = result.replace('{{PROJECT_TYPE}}', String((data.technicalContext as any)?.projectType || ''));
-    result = result.replace('{{PERFORMANCE_GOALS}}', String((data.technicalContext as any)?.performanceGoals?.join(', ') || ''));
-    result = result.replace('{{CONSTRAINTS}}', String((data.technicalContext as any)?.constraints?.join(', ') || ''));
-    result = result.replace('{{SCALE}}', String((data.technicalContext as any)?.scale || ''));
+    const replacements = [
+      { placeholder: '{{SUMMARY}}', value: data.summary },
+      { placeholder: '{{LANGUAGE}}', value: context?.language },
+      { placeholder: '{{DEPENDENCIES}}', value: context?.primaryDependencies },
+      { placeholder: '{{STORAGE}}', value: context?.storage },
+      { placeholder: '{{TESTING}}', value: context?.testing },
+      { placeholder: '{{TARGET_PLATFORM}}', value: context?.targetPlatform },
+      { placeholder: '{{PROJECT_TYPE}}', value: context?.projectType },
+      { placeholder: '{{PERFORMANCE_GOALS}}', value: context?.performanceGoals },
+      { placeholder: '{{CONSTRAINTS}}', value: context?.constraints },
+      { placeholder: '{{SCALE}}', value: context?.scale }
+    ];
 
-    return result;
+    return this.applyPlaceholderReplacements(plan, replacements);
+  }
+
+  private applyPlaceholderReplacements(
+    plan: string,
+    replacements: Array<{ placeholder: string; value: unknown }>
+  ): string {
+    return replacements.reduce((updatedPlan, replacement) => {
+      return updatedPlan.replace(replacement.placeholder, this.formatPlaceholderValue(replacement.value));
+    }, plan);
+  }
+
+  private formatPlaceholderValue(value: unknown): string {
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+
+    if (value === undefined || value === null) {
+      return '';
+    }
+
+    return String(value);
   }
 
   private replacePlanSections(plan: string, data: Record<string, unknown>): string {

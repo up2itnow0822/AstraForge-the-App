@@ -123,11 +123,12 @@ export class ApiTesterCore {
         tokenCount: inputTokens + outputTokens,
         estimatedCost,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const latency = Date.now() - startTime;
+      const message = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        error: error.message,
+        error: message,
         latency,
         timestamp: Date.now(),
         provider,
@@ -193,7 +194,8 @@ export class ApiTesterCore {
         query,
         latency,
       };
-    } catch (_error: any) {
+    } catch (error: unknown) {
+      secureLogger.warn('Vector query failed', error);
       const latency = Date.now() - startTime;
       return {
         success: false,
@@ -310,7 +312,8 @@ export class ApiTesterCore {
             option: option.substring(0, 50) + '...',
             votes: Math.floor(Math.random() * providers.length) + 1,
           }));
-        } catch (error) {
+        } catch (error: unknown) {
+          secureLogger.warn('Vote aggregation failed, falling back to first option', error);
           finalDecision = options[0];
         }
       } else {
@@ -331,16 +334,17 @@ export class ApiTesterCore {
         conferenceTime,
         voteResults,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
         discussionRounds: 0,
-        finalDecision: `Conference failed: ${error.message}`,
+        finalDecision: `Conference failed: ${message}`,
         participantResponses,
         totalTokens,
         totalCost,
         conferenceTime: Date.now() - startTime,
-        error: error.message,
+        error: message,
       };
     }
   }
@@ -402,11 +406,17 @@ export class ApiTesterCore {
       }
 
       return { valid: true };
-    } catch (error: any) {
-      const status = error.response?.status;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number }; message?: string };
+      const status = axiosError.response?.status;
+      const message = typeof axiosError.message === 'string'
+        ? axiosError.message
+        : error instanceof Error
+          ? error.message
+          : 'Unknown error';
       return {
         valid: false,
-        error: status === 401 ? 'Invalid API key' : error.message,
+        error: status === 401 ? 'Invalid API key' : message,
       };
     }
   }
@@ -440,7 +450,7 @@ export class ApiTesterCore {
       let encoder;
       try {
         encoder = encoding_for_model(model);
-      } catch (err) {
+      } catch (_err) {
         // Model not supported by tiktoken, fall back to character-based estimation
         return Math.ceil(text.length / 4);
       }
@@ -450,7 +460,7 @@ export class ApiTesterCore {
       } finally {
         encoder.free();
       }
-    } catch (err) {
+    } catch (_err) {
       // Import failed or other unexpected error
       return Math.ceil(text.length / 4);
     }
