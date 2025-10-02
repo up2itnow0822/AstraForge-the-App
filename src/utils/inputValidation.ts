@@ -317,10 +317,19 @@ export function validateFileContent(content: string, filename?: string): Validat
  * Remove control characters from a string
  */
 function removeControlCharacters(input: string): string {
-  return input.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code < 32 || code === 127; // Control characters
-  }).join('');
+  const allowedControlCodes = new Set([9, 10, 13]); // tab, newline, carriage return
+
+  return input
+    .split('')
+    .filter(char => {
+      const code = char.charCodeAt(0);
+      if (allowedControlCodes.has(code)) {
+        return true;
+      }
+
+      return code >= 32 && code !== 127;
+    })
+    .join('');
 }
 
 /**

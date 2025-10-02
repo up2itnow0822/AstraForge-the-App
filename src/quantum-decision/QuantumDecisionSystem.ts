@@ -102,6 +102,28 @@ export interface QuantumSystemState {
   hamiltonian: Map<string, number>; // System Hamiltonian
 }
 
+interface AnnealingVariableBounds {
+  min: number;
+  max: number;
+}
+
+interface AnnealingConstraint {
+  variables: string[];
+  constraint: (values: number[]) => boolean;
+}
+
+interface AnnealingProblem {
+  variables: string[];
+  constraints: AnnealingConstraint[];
+  objective: (values: number[]) => number;
+  bounds: Map<string, AnnealingVariableBounds>;
+}
+
+interface AnnealingSolution {
+  solution?: Map<string, number> | number[];
+  energy?: number;
+}
+
 export class QuantumDecisionSystem {
   private quantumState: QuantumSystemState;
   private decisionHistory: Map<string, QuantumDecision> = new Map();
@@ -521,19 +543,28 @@ export class QuantumDecisionSystem {
     constraints: DecisionConstraint[],
     objectives: DecisionObjective[]
   ): boolean {
-    // Detect if variables are correlated (entanglement candidate)
-    const variables = new Set<string>();
+    if (constraints.length === 0 && objectives.length === 0) {
+      return false;
+    }
 
-    // Extract variables from constraints and objectives
-    constraints.forEach(c => {
-      // This would analyze constraint functions for variable dependencies
+    const tokenFrequency = new Map<string, number>();
+    const registerTokens = (text: string): void => {
+      for (const token of this.extractTokensFromText(text)) {
+        tokenFrequency.set(token, (tokenFrequency.get(token) ?? 0) + 1);
+      }
+    };
+
+    constraints.forEach(constraint => registerTokens(constraint.description));
+    objectives.forEach(objective => registerTokens(objective.name));
+
+    let correlatedTokenCount = 0;
+    tokenFrequency.forEach(count => {
+      if (count > 1) {
+        correlatedTokenCount++;
+      }
     });
 
-    objectives.forEach(o => {
-      // This would analyze objective functions for variable dependencies
-    });
-
-    return variables.size > 5; // Simplified heuristic
+    return correlatedTokenCount >= Math.max(1, Math.ceil(tokenFrequency.size * 0.2));
   }
 
   private async applySuperpositionAlgorithm(decision: QuantumDecision): Promise<any> {
@@ -543,8 +574,9 @@ export class QuantumDecisionSystem {
 
     // Create superposition of alternatives
     alternatives.forEach((alt, index) => {
-      const amplitude = alt.quantumAmplitude || (1 / Math.sqrt(alternatives.length));
-      superposition.set(alt.id, amplitude);
+      const amplitude = alt.quantumAmplitude || 1 / Math.sqrt(alternatives.length);
+      const phaseAdjustment = Math.cos((index / Math.max(1, alternatives.length - 1)) * Math.PI);
+      superposition.set(alt.id, amplitude * phaseAdjustment);
     });
 
     decision.quantumState.superposition = superposition;
@@ -873,11 +905,47 @@ export class QuantumDecisionSystem {
   }
 
   private extractVariables(decision: QuantumDecision): string[] {
-    return ['var1', 'var2', 'var3']; // Simplified
+    const tokens = new Set<string>();
+
+    decision.input.constraints.forEach(constraint => {
+      this.extractTokensFromText(constraint.description).forEach(token => tokens.add(token));
+    });
+
+    decision.input.objectives.forEach(objective => {
+      this.extractTokensFromText(objective.name).forEach(token => tokens.add(token));
+    });
+
+    decision.input.alternatives.forEach(alternative => {
+      Object.keys(alternative.metadata ?? {}).forEach(key => tokens.add(key.toLowerCase()));
+    });
+
+    return Array.from(tokens);
   }
 
   private calculateVariableCorrelation(var1: string, var2: string, decision: QuantumDecision): number {
-    return Math.random() * 0.8; // Simplified
+    const constraintMatches = decision.input.constraints.filter(constraint => {
+      const text = `${constraint.description}`.toLowerCase();
+      return text.includes(var1.toLowerCase()) && text.includes(var2.toLowerCase());
+    }).length;
+
+    const objectiveMatches = decision.input.objectives.filter(objective => {
+      const text = `${objective.name}`.toLowerCase();
+      return text.includes(var1.toLowerCase()) && text.includes(var2.toLowerCase());
+    }).length;
+
+    const normalized = (constraintMatches + objectiveMatches) /
+      Math.max(1, decision.input.constraints.length + decision.input.objectives.length);
+
+    return Math.min(0.95, normalized + 0.05);
+  }
+
+  private extractTokensFromText(text: string): string[] {
+    if (typeof text !== 'string' || text.length === 0) {
+      return [];
+    }
+
+    const matches = text.match(/[a-zA-Z_][a-zA-Z0-9_-]*/g);
+    return matches ? matches.map(token => token.toLowerCase()) : [];
   }
 
   private solveEntangledProblem(decision: QuantumDecision): DecisionAlternative {
@@ -892,38 +960,149 @@ export class QuantumDecisionSystem {
     decision: QuantumDecision,
     interferencePatterns: Map<string, number>
   ): DecisionAlternative {
-    return decision.input.alternatives[0]; // Simplified
+    if (interferencePatterns.size === 0) {
+      return decision.input.alternatives[0];
+    }
+
+    const rankedPatterns = Array.from(interferencePatterns.entries()).sort((a, b) => b[1] - a[1]);
+    const bestPattern = rankedPatterns[0];
+    const matchingAlternative = decision.input.alternatives.find(alt => alt.id === bestPattern[0]);
+
+    if (matchingAlternative) {
+      return matchingAlternative;
+    }
+
+    return decision.input.alternatives.reduce((best, alternative) => {
+      const score = interferencePatterns.get(alternative.id) ?? 0;
+      const bestScore = interferencePatterns.get(best.id) ?? 0;
+      return score > bestScore ? alternative : best;
+    }, decision.input.alternatives[0]);
   }
 
   private calculateInterferenceConfidence(interferencePatterns: Map<string, number>): number {
-    return Array.from(interferencePatterns.values()).reduce((a, b) => a + b, 0) / interferencePatterns.size;
+    if (interferencePatterns.size === 0) {
+      return 0.5;
+    }
+
+    const amplitudes = Array.from(interferencePatterns.values());
+    const constructive = amplitudes.filter(value => value >= 0).reduce((sum, value) => sum + value, 0);
+    const destructive = amplitudes.filter(value => value < 0).reduce((sum, value) => sum + Math.abs(value), 0);
+
+    const normalized = constructive / Math.max(1, constructive + destructive);
+    return Math.min(1, Math.max(0, normalized));
   }
 
-  private convertToAnnealingProblem(decision: QuantumDecision): any {
+  private convertToAnnealingProblem(decision: QuantumDecision): AnnealingProblem {
+    const variables = this.extractVariables(decision);
+    const bounds = new Map(
+      variables.map(variable => [variable, { min: -1, max: 1 }])
+    );
+
+    const constraints = decision.input.constraints.map(constraint => ({
+      variables,
+      constraint: (values: number[]) => {
+        const state = this.mapValuesToState(variables, values);
+        const result = constraint.function(state);
+
+        if (typeof result === 'number') {
+          return result <= constraint.weight;
+        }
+
+        return Boolean(result);
+      }
+    }));
+
     return {
-      variables: ['x', 'y'],
-      constraints: [],
-      objective: (values: number[]) => values[0] * values[0] + values[1] * values[1],
-      bounds: new Map([['x', { min: -10, max: 10 }], ['y', { min: -10, max: 10 }]])
+      variables,
+      constraints,
+      objective: (values: number[]) => values.reduce((sum, value) => sum + value * value, 0),
+      bounds
     };
   }
 
-  private convertAnnealingResult(result: any, decision: QuantumDecision): DecisionAlternative {
-    return decision.input.alternatives[0]; // Simplified
+  private mapValuesToState(variableNames: string[], values: number[]): Record<string, number> {
+    return variableNames.reduce<Record<string, number>>((state, variable, index) => {
+      state[variable] = values[index] ?? 0;
+      return state;
+    }, {});
+  }
+
+  private convertAnnealingResult(
+    result: AnnealingSolution | undefined,
+    decision: QuantumDecision
+  ): DecisionAlternative {
+    if (!result || typeof result !== 'object') {
+      return decision.input.alternatives[0];
+    }
+
+    const solutionValues = Array.isArray(result.solution)
+      ? result.solution
+      : result.solution instanceof Map
+        ? Array.from(result.solution.values())
+        : [];
+
+    const scoredAlternatives = decision.input.alternatives.map(alternative => {
+      const metadataScore = Object.values(alternative.metadata ?? {}).filter(
+        (value): value is number => typeof value === 'number'
+      ).reduce((sum, value) => sum + value, 0);
+      const resultScore = solutionValues.reduce((sum: number, value: number) => sum + value, 0);
+
+      return {
+        alternative,
+        score: metadataScore + resultScore
+      };
+    });
+
+    return scoredAlternatives.sort((a, b) => b.score - a.score)[0]?.alternative || decision.input.alternatives[0];
   }
 
   private buildDecisionGraph(decision: QuantumDecision): any {
-    return { nodes: [], edges: [] }; // Simplified
+    const nodes = decision.input.alternatives.map(alternative => ({
+      id: alternative.id,
+      label: alternative.name,
+      weight: alternative.probability,
+      metadata: alternative.metadata
+    }));
+
+    const edges: Array<{ from: string; to: string; weight: number }> = [];
+
+    decision.input.alternatives.forEach((source, sourceIndex) => {
+      decision.input.alternatives.slice(sourceIndex + 1).forEach(target => {
+        const sharedMetadata = Object.keys(source.metadata ?? {}).filter(key => key in (target.metadata ?? {}));
+        const weight = sharedMetadata.length / Math.max(1, Object.keys(source.metadata ?? {}).length);
+        edges.push({ from: source.id, to: target.id, weight });
+        edges.push({ from: target.id, to: source.id, weight });
+      });
+    });
+
+    return { nodes, edges };
   }
 
   private async executeQuantumWalk(graph: any, decision: QuantumDecision): Promise<any> {
-    return { optimal: decision.input.alternatives[0], confidence: 0.8 }; // Simplified
+    if (!Array.isArray(graph?.nodes) || graph.nodes.length === 0) {
+      return { optimal: decision.input.alternatives[0], confidence: 0.5 };
+    }
+
+    const nodeScores = new Map<string, number>();
+    (Array.isArray(graph.edges) ? graph.edges : []).forEach((edge: { from: string; weight: number }) => {
+      nodeScores.set(edge.from, (nodeScores.get(edge.from) ?? 0) + edge.weight);
+    });
+
+    const bestNode = Array.from(nodeScores.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const optimal = decision.input.alternatives.find(alt => alt.id === bestNode) || decision.input.alternatives[0];
+    const edgeCount = (Array.isArray(graph.edges) ? graph.edges.length : 0) || 1;
+    const confidence = Math.min(1, (nodeScores.get(bestNode ?? '') ?? 0) / edgeCount);
+
+    return { optimal, confidence: confidence || 0.6 };
   }
 
   private applyQuantumEnhancement(classicalResult: any, decision: QuantumDecision): any {
+    const improvementFactor = decision.input.alternatives.length > 1 ? 0.05 : 0.02;
+    const quantumBoost = Math.min(0.2, improvementFactor * decision.input.objectives.length);
+
     return {
       ...classicalResult,
-      confidence: classicalResult.confidence + 0.1,
+      confidence: Math.min(1, (classicalResult.confidence ?? 0.5) + quantumBoost),
       improved: true
     };
   }
@@ -934,8 +1113,12 @@ export class QuantumDecisionSystem {
 
   private updateQuantumState(decision: QuantumDecision, result: any): void {
     // Update quantum system state based on decision outcome
-    this.quantumState.coherence = Math.max(0.1, this.quantumState.coherence - 0.01);
-    this.quantumState.entanglement = Math.min(0.9, this.quantumState.entanglement + 0.01);
+    const resultConfidence = typeof result?.confidence === 'number' ? result.confidence : 0.5;
+    const adjustment = (resultConfidence - 0.5) * 0.1;
+
+    this.quantumState.coherence = Math.max(0.1, Math.min(0.95, this.quantumState.coherence + adjustment));
+    this.quantumState.entanglement = Math.max(0.1, Math.min(0.95, this.quantumState.entanglement + adjustment / 2));
+    this.quantumState.superposition = Math.max(1, decision.input.alternatives.length);
   }
 
   private generateReasoning(decision: QuantumDecision, result: any): string[] {
@@ -948,19 +1131,25 @@ export class QuantumDecisionSystem {
   }
 
   private generateRecommendations(decision: QuantumDecision, result: any): string[] {
-    return [
-      'Consider applying quantum approach to similar decisions',
-      'Monitor quantum advantage over time',
+    const recommendations = [
+      `Leverage ${decision.quantumAlgorithm} algorithm for follow-up analyses`,
+      `Monitor quantum advantage of ${(result.confidence ?? 0.5).toFixed(2)} against classical baselines`,
       'Explore hybrid quantum-classical approaches'
     ];
+
+    if (decision.input.constraints.length > 0) {
+      recommendations.push('Review constraint sensitivities to maintain coherence');
+    }
+
+    return recommendations;
   }
 
   private calculateImprovement(classicalResult: any, quantumResult: any): any {
     return {
-      accuracy: quantumResult.confidence - classicalResult.confidence,
-      confidence: quantumResult.confidence,
-      efficiency: 0.1,
-      innovation: 0.2
+      accuracy: (quantumResult.confidence ?? 0.5) - (classicalResult.confidence ?? 0.5),
+      confidence: quantumResult.confidence ?? 0.5,
+      efficiency: Math.max(0, (quantumResult.efficiency ?? 0.1) - (classicalResult.efficiency ?? 0)),
+      innovation: Math.max(0.05, (quantumResult.innovation ?? 0.2))
     };
   }
 
@@ -971,13 +1160,38 @@ export class QuantumDecisionSystem {
   }
 
   private calculateClassicalBaseline(problem: any): number {
-    return 100; // Simplified baseline
+    const objectives = Array.isArray(problem?.objectives) ? problem.objectives : [];
+    const constraints = Array.isArray(problem?.constraints) ? problem.constraints : [];
+
+    const averageWeight = constraints.length
+      ? constraints.reduce((sum: number, constraint: DecisionConstraint) => sum + (constraint.weight ?? 1), 0) / constraints.length
+      : 1;
+
+    const baseline = 50 + objectives.length * 10 + averageWeight * 10;
+    return Math.min(100, Math.max(20, baseline));
   }
 
   private checkConstraints(problem: any, solution: Map<string, number>): number {
+    const constraints: DecisionConstraint[] = Array.isArray(problem?.constraints)
+      ? problem.constraints
+      : [];
     let satisfied = 0;
-    // Check constraint satisfaction
-    return satisfied / problem.constraints.length;
+    const total = constraints.length;
+
+    constraints.forEach((constraint: DecisionConstraint) => {
+      try {
+        const state = Object.fromEntries(solution.entries());
+        const evaluation = constraint.function(state);
+        const isSatisfied = typeof evaluation === 'boolean' ? evaluation : evaluation >= 0;
+        if (isSatisfied) {
+          satisfied += 1;
+        }
+      } catch (error) {
+        logger.warn(`Constraint evaluation failed for ${constraint.id}`, error);
+      }
+    });
+
+    return total === 0 ? 1 : satisfied / total;
   }
 
   private calculateQuantumComponents(quantumStates: QuantumSystemState[]): any {
@@ -1007,10 +1221,13 @@ export class QuantumDecisionSystem {
     quantumStates: QuantumSystemState[]
   ): any {
     // Combine predictions using quantum interference principles
+    const averageConfidence = predictions.reduce((sum, p) => sum + (p.confidence ?? 0), 0) / predictions.length;
+    const coherenceAdjustment = quantumStates.reduce((sum, state) => sum + state.coherence, 0) / quantumStates.length;
+
     const combined = {
       result: predictions[0].result,
-      confidence: predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length,
-      uncertainty: 1 - predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
+      confidence: Math.min(1, averageConfidence + coherenceAdjustment * 0.1),
+      uncertainty: Math.max(0, 1 - averageConfidence - coherenceAdjustment * 0.1)
     };
 
     return combined;

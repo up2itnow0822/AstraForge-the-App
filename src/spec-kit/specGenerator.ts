@@ -165,20 +165,31 @@ export class SpecGenerator {
     const llmProviders = ['openai', 'anthropic', 'openrouter'];
     const sections: any = {};
 
+    const enrichedIdea = {
+      ...parsedIdea,
+      projectContext: request.projectContext ?? '',
+      constraints: request.constraints ?? [],
+      existingRequirements: request.existingRequirements ?? []
+    };
+
     // Generate feature name
-    sections.featureName = await this.generateFeatureName(parsedIdea);
+    sections.featureName = await this.generateFeatureName(enrichedIdea);
     sections.branchName = this.generateBranchName(sections.featureName);
 
     // Generate user scenarios using different LLMs for diversity
-    sections.userScenarios = await this.generateUserScenarios(parsedIdea, llmProviders[0]);
-    sections.acceptanceScenarios = await this.generateAcceptanceScenarios(parsedIdea, llmProviders[1]);
-    sections.edgeCases = await this.generateEdgeCases(parsedIdea, llmProviders[2]);
+    sections.userScenarios = await this.generateUserScenarios(enrichedIdea, llmProviders[0]);
+    sections.acceptanceScenarios = await this.generateAcceptanceScenarios(enrichedIdea, llmProviders[1]);
+    sections.edgeCases = await this.generateEdgeCases(enrichedIdea, llmProviders[2]);
 
-    // Generate functional requirements
-    sections.functionalRequirements = await this.generateFunctionalRequirements(parsedIdea, sections.userScenarios);
+    // Generate functional requirements, merging any provided requirements from the request
+    const generatedRequirements = await this.generateFunctionalRequirements(enrichedIdea, sections.userScenarios);
+    const additionalRequirements = (request.existingRequirements ?? []).filter(
+      requirement => !generatedRequirements.includes(requirement)
+    );
+    sections.functionalRequirements = [...generatedRequirements, ...additionalRequirements];
 
     // Identify key entities
-    sections.keyEntities = await this.identifyKeyEntities(parsedIdea, sections.functionalRequirements);
+    sections.keyEntities = await this.identifyKeyEntities(enrichedIdea, sections.functionalRequirements);
 
     return sections;
   }

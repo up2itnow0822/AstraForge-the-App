@@ -412,6 +412,24 @@ export class InterAgentEvolutionIntegration {
 
   private determineOptimalDomain(agent: any): string {
     // Determine optimal domain based on agent characteristics
+    const candidateDomains: string[] = [];
+
+    if (agent?.specialization?.primaryDomain) {
+      candidateDomains.push(agent.specialization.primaryDomain);
+    }
+
+    if (Array.isArray(agent?.preferences?.domains)) {
+      candidateDomains.push(...agent.preferences.domains);
+    }
+
+    if (typeof agent?.metadata?.domain === 'string') {
+      candidateDomains.push(agent.metadata.domain);
+    }
+
+    if (candidateDomains.length > 0) {
+      return candidateDomains[0];
+    }
+
     const domains = ['software_engineering', 'machine_learning', 'system_architecture', 'user_experience', 'data_science'];
     return domains[Math.floor(Math.random() * domains.length)];
   }
@@ -427,30 +445,40 @@ export class InterAgentEvolutionIntegration {
       collaborationRate: 0.4
     };
 
+    const numericStats = Object.values(statistics ?? {}).filter(
+      (value): value is number => typeof value === 'number'
+    );
+    const averageStat =
+      numericStats.length > 0
+        ? numericStats.reduce((sum, value) => sum + value, 0) / numericStats.length
+        : 0.5;
+
+    const diversityBias = Math.max(0, Math.min(1, averageStat));
+
     switch (target) {
       case 'diversity':
         return {
           ...baseParameters,
-          mutationRate: 0.2,
-          innovationRate: 0.3
+          mutationRate: 0.15 + diversityBias * 0.1,
+          innovationRate: 0.25 + diversityBias * 0.1
         };
       case 'performance':
         return {
           ...baseParameters,
-          selectionPressure: 0.4,
-          innovationRate: 0.1
+          selectionPressure: 0.35 + diversityBias * 0.1,
+          innovationRate: 0.15 - diversityBias * 0.05
         };
       case 'innovation':
         return {
           ...baseParameters,
-          mutationRate: 0.3,
-          innovationRate: 0.4
+          mutationRate: 0.25 + diversityBias * 0.1,
+          innovationRate: 0.35 + diversityBias * 0.1
         };
       case 'collaboration':
         return {
           ...baseParameters,
-          collaborationRate: 0.6,
-          selectionPressure: 0.2
+          collaborationRate: 0.5 + diversityBias * 0.2,
+          selectionPressure: 0.25 - diversityBias * 0.05
         };
       default:
         return baseParameters;
@@ -462,8 +490,21 @@ export class InterAgentEvolutionIntegration {
     optimizedParams: any,
     target: string
   ): number {
-    // Simplified improvement estimation
-    return 0.1 + Math.random() * 0.2; // 10-30% improvement
+    const baseline = this.extractAverageMetric(currentStats);
+    const parameterInfluence = this.extractAverageMetric(optimizedParams);
+    const targetBias = target === 'performance' ? 0.15 : target === 'innovation' ? 0.1 : 0.05;
+
+    const improvement = baseline * 0.2 + parameterInfluence * 0.3 + targetBias;
+
+    return Math.min(0.4, Math.max(0.05, improvement));
+  }
+
+  private extractAverageMetric(source: any): number {
+    const values = Object.values(source ?? {}).filter((value): value is number => typeof value === 'number');
+    if (values.length === 0) {
+      return 0.2;
+    }
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
   }
 
   private selectEvolutionStrategy(target: string): string {

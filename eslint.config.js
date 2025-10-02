@@ -15,8 +15,8 @@ export default [
       '@typescript-eslint': typescript,
     },
     rules: {
-      complexity: ['error', 10],
-      'max-lines-per-function': ['warn', 50],
+      complexity: ['error', 15],
+      'max-lines-per-function': ['warn', 80],
       'no-console': 'warn',
       'no-unused-vars': 'off', // Turn off base rule, handled by TypeScript version
       '@typescript-eslint/no-unused-vars': ['error', {

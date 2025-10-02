@@ -172,6 +172,10 @@ export class MetaLearningIntegration {
 
     // Analyze performance
     const performances = this.components.strategyOptimizer.analyzeStrategyPerformance(strategies, patterns);
+    const averagePerformance = performances.length
+      ? performances.reduce((sum, perf) => sum + perf.successRate * perf.confidence, 0) / performances.length
+      : 0;
+    logger.info(`📊 Average strategy performance score: ${Math.round(averagePerformance * 100)}%`);
 
     // Get optimization suggestions
     const recommendations = this.components.strategyOptimizer.getOptimizationRecommendations(strategies, Array.from(patterns.values()));
@@ -179,7 +183,7 @@ export class MetaLearningIntegration {
     // Apply optimizations
     for (const [strategyId, suggestions] of Object.entries(recommendations)) {
       suggestions.forEach(suggestion => {
-        logger.info(`🔧 Strategy optimization: ${suggestion.suggestion} (${Math.round(suggestion.expectedImprovement * 100)}% improvement)`);
+        logger.info(`🔧 Strategy ${strategyId} optimization: ${suggestion.suggestion} (${Math.round(suggestion.expectedImprovement * 100)}% improvement)`);
       });
     }
 
