@@ -258,6 +258,10 @@ AstraForge/
 │   ├── llm/                              # LLM management and APIs
 │   ├── db/                               # Vector database implementation
 │   ├── workflow/                         # Workflow and phase management
+│   │   ├── telemetryPipeline.ts         # Workflow telemetry pipeline
+│   │   ├── tieredMemoryOrchestrator.ts  # Tiered memory hierarchy
+│   │   ├── workflowArbitrator.ts        # RL arbitration controls
+│   │   └── workflowManager.ts           # Main workflow orchestrator
 │   ├── git/                              # Git integration utilities
 │   ├── meta-learning/                    # 🧠 Meta-Learning System
 │   │   ├── MetaLearningSystem.ts         # Core meta-learning engine
@@ -290,7 +294,6 @@ AstraForge/
 │       └── safety/                       # Safety and rollback systems
 ├── tests/                                # Test suites
 ├── media/                                # Extension assets
-├── archive/                              # Archived/deprecated files
 └── docs/                                 # Documentation
 ```
 
