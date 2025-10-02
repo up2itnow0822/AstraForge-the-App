@@ -94,6 +94,13 @@ export class LLMManager {
   }
 
   /**
+   * Get a copy of the configured LLM panel
+   */
+  public getPanelConfigs(): LLMConfig[] {
+    return this.panel.map(config => ({ ...config }));
+  }
+
+  /**
    * Query a specific LLM by index with caching and error handling
    */
   async queryLLM(index: number, prompt: string): Promise<string> {
@@ -351,13 +358,33 @@ Respond with ONLY the option you choose, exactly as written.`;
   /**
    * Generate response from a specific provider (alias for queryLLM for compatibility)
    */
-  async generateResponse(provider: string, prompt: string): Promise<string> {
-    // Find the index of the provider in the panel
-    const providerIndex = this.panel.findIndex(p => p.provider.toLowerCase() === provider.toLowerCase());
-    if (providerIndex === -1) {
-      // Default to first available provider
+  async generateResponse(provider: string, prompt: string, model?: string): Promise<string> {
+    if (this.panel.length === 0) {
       return this.queryLLM(0, prompt);
     }
+
+    const normalizedProvider = provider.toLowerCase();
+    const normalizedModel = model?.toLowerCase();
+
+    let providerIndex = this.panel.findIndex(p => {
+      const providerMatches = p.provider.toLowerCase() === normalizedProvider;
+      if (!providerMatches) {
+        return false;
+      }
+      if (!normalizedModel) {
+        return true;
+      }
+      return p.model?.toLowerCase() === normalizedModel;
+    });
+
+    if (providerIndex === -1) {
+      providerIndex = this.panel.findIndex(p => p.provider.toLowerCase() === normalizedProvider);
+    }
+
+    if (providerIndex === -1) {
+      providerIndex = 0;
+    }
+
     return this.queryLLM(providerIndex, prompt);
   }
 }

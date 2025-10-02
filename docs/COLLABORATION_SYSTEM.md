@@ -391,6 +391,11 @@ collaborationManager.on('debug', (event) => {
 - **Integration Tests**: Test with real LLM providers
 - **Performance Tests**: Verify time and token efficiency
 
+### Quality Assurance Commands (V2 Repair)
+
+- `npm run lint` — Run the ESLint suite to guard against regressions. The command currently surfaces pre-existing violations across legacy modules; ensure any new collaboration fixes remain lint-clean even though the broader codebase still reports issues.
+- `node scripts/security-scan.js --staged-only` — Execute the security scanner to confirm no new sensitive data is introduced. The scan presently flags legacy high-priority findings that predate the V2 CollaborativeSessionManager repair, so verify that no additional vulnerabilities appear in the diff.
+
 ### Code Quality Standards
 
 - **TypeScript**: Strict type checking enabled

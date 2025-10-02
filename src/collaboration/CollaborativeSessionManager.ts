@@ -21,13 +21,76 @@ import {
   EmergenceMetric,
   ConsensusLevel,
   SynthesisStep,
-  ImprovementMetric
+  ImprovementMetric,
+  LLMProvider
 } from './types/collaborationTypes';
 import { TimeManager } from './timing/TimeManager';
 import { CollaborationRound } from './rounds/CollaborationRound';
 import { LLMManager } from '../llm/llmManager';
 import { VectorDB } from '../db/vectorDB';
 import { logger } from '../utils/logger';
+import { LLMConfig } from '../llm/interfaces';
+
+type ParticipantProfile = {
+  role: string;
+  strengths: string[];
+  specializations: string[];
+};
+
+const PROVIDER_PROFILES: Record<LLMProvider, ParticipantProfile> = {
+  OpenAI: {
+    role: 'architect',
+    strengths: ['system_design', 'code_quality', 'testing'],
+    specializations: ['architecture', 'implementation']
+  },
+  Anthropic: {
+    role: 'reasoner',
+    strengths: ['analysis', 'ethical_guardrails', 'validation'],
+    specializations: ['requirements', 'verification']
+  },
+  xAI: {
+    role: 'innovator',
+    strengths: ['creativity', 'exploration', 'ux_strategy'],
+    specializations: ['innovation', 'user_experience']
+  },
+  OpenRouter: {
+    role: 'integrator',
+    strengths: ['consensus_building', 'meta_reasoning', 'orchestration'],
+    specializations: ['synthesis', 'coordination']
+  }
+};
+
+const ROLE_TRAITS: Record<string, { strengths: string[]; specializations: string[] }> = {
+  architect: {
+    strengths: ['systems_thinking', 'scalability_planning'],
+    specializations: ['solution_architecture', 'technical_strategy']
+  },
+  reasoner: {
+    strengths: ['logical_reasoning', 'risk_analysis'],
+    specializations: ['validation', 'governance']
+  },
+  innovator: {
+    strengths: ['ideation', 'pattern_discovery'],
+    specializations: ['innovation', 'emergent_behaviors']
+  },
+  integrator: {
+    strengths: ['consensus_building', 'knowledge_blending'],
+    specializations: ['synthesis', 'coordination']
+  },
+  implementer: {
+    strengths: ['execution', 'refinement'],
+    specializations: ['coding', 'optimization']
+  },
+  reviewer: {
+    strengths: ['quality_assurance', 'gap_detection'],
+    specializations: ['code_review', 'compliance']
+  }
+};
+
+const MAX_PARTICIPANTS = 5;
+
+const mergeUnique = (base: string[], extras: string[]): string[] =>
+  Array.from(new Set([...base, ...extras]));
 
 export class CollaborativeSessionManager extends EventEmitter {
   private sessions: Map<string, CollaborativeSession> = new Map();
@@ -227,8 +290,9 @@ export class CollaborativeSessionManager extends EventEmitter {
       .map(async (participant) => {
         try {
           const response = await this._llmManager.generateResponse(
-            participant.provider.toLowerCase(),
-            proposalPrompt
+            participant.provider,
+            proposalPrompt,
+            participant.model
           );
 
           const contribution = {
@@ -283,8 +347,9 @@ export class CollaborativeSessionManager extends EventEmitter {
       .map(async (participant) => {
         try {
           const response = await this._llmManager.generateResponse(
-            participant.provider.toLowerCase(),
-            critiquePrompt
+            participant.provider,
+            critiquePrompt,
+            participant.model
           );
 
           const contribution = {
@@ -341,8 +406,9 @@ export class CollaborativeSessionManager extends EventEmitter {
     
     try {
       const response = await this._llmManager.generateResponse(
-        synthesizer.provider.toLowerCase(),
-        synthesisPrompt
+        synthesizer.provider,
+        synthesisPrompt,
+        synthesizer.model
       );
 
       const contribution = {
@@ -393,8 +459,9 @@ export class CollaborativeSessionManager extends EventEmitter {
       .map(async (participant) => {
         try {
           const response = await this._llmManager.generateResponse(
-            participant.provider.toLowerCase(),
-            validationPrompt
+            participant.provider,
+            validationPrompt,
+            participant.model
           );
 
           const contribution = {
@@ -471,49 +538,89 @@ export class CollaborativeSessionManager extends EventEmitter {
   }
 
   private async selectParticipants(request: CollaborationRequest): Promise<LLMParticipant[]> {
-    // Create default participants based on available LLM providers
-    const participants: LLMParticipant[] = [
-      {
-        id: 'openai_participant',
-        provider: 'OpenAI',
-        model: 'gpt-4',
-        role: 'implementer',
-        strengths: ['implementation', 'code_quality', 'bug_detection'],
-        specializations: ['coding', 'technical_analysis'],
-        performanceHistory: [],
-        isActive: true,
-        currentLoad: 0
-      },
-      {
-        id: 'anthropic_participant', 
-        provider: 'Anthropic',
-        model: 'claude-3-sonnet',
-        role: 'reasoner',
-        strengths: ['reasoning', 'logic', 'security'],
-        specializations: ['architecture', 'analysis'],
-        performanceHistory: [],
-        isActive: true,
-        currentLoad: 0
-      },
-      {
-        id: 'grok_participant',
-        provider: 'xAI', 
-        model: 'grok-beta',
-        role: 'innovator',
-        strengths: ['creativity', 'innovation', 'ux_design'],
-        specializations: ['creative_solutions', 'user_experience'],
-        performanceHistory: [],
-        isActive: true,
-        currentLoad: 0
-      }
-    ];
+    let participants = this.buildParticipantsFromPanel();
 
-    // Filter by preferred participants if specified
-    if (request.preferredParticipants && request.preferredParticipants.length > 0) {
-      return participants.filter(p => request.preferredParticipants!.includes(p.provider));
+    if (participants.length === 0) {
+      participants = this.getDefaultParticipants();
     }
 
-    return participants;
+    if (request.preferredParticipants && request.preferredParticipants.length > 0) {
+      const preferred = new Set(request.preferredParticipants);
+      const filtered = participants.filter(p => preferred.has(p.provider));
+      if (filtered.length > 0) {
+        participants = filtered;
+      }
+    }
+
+    return participants.slice(0, MAX_PARTICIPANTS);
+  }
+
+  private buildParticipantsFromPanel(): LLMParticipant[] {
+    const panel = this._llmManager.getPanelConfigs();
+    return panel.map((config, index) => this.createParticipantFromConfig(config, index));
+  }
+
+  private getDefaultParticipants(): LLMParticipant[] {
+    const defaults: Array<{ provider: LLMProvider; model: string }> = [
+      { provider: 'OpenAI', model: 'gpt-4' },
+      { provider: 'Anthropic', model: 'claude-3-sonnet' },
+      { provider: 'xAI', model: 'grok-beta' },
+      { provider: 'OpenRouter', model: 'meta-llama/llama-3-70b-instruct' }
+    ];
+
+    return defaults.map(({ provider, model }, index) =>
+      this.createParticipantFromConfig({
+        provider,
+        model,
+        key: '',
+        role: PROVIDER_PROFILES[provider].role
+      }, index)
+    );
+  }
+
+  private createParticipantFromConfig(config: LLMConfig, index: number): LLMParticipant {
+    const provider = config.provider as LLMProvider;
+    const profile = PROVIDER_PROFILES[provider] ?? {
+      role: 'specialist',
+      strengths: ['analysis', 'implementation'],
+      specializations: ['generalist']
+    };
+
+    const resolvedRole = typeof config.role === 'string' && config.role.trim().length > 0
+      ? config.role
+      : profile.role;
+
+    const traits = this.resolveRoleTraits(resolvedRole, profile);
+
+    return {
+      id: this.buildParticipantId(provider, config.model, index),
+      provider,
+      model: config.model || 'unspecified-model',
+      role: resolvedRole,
+      strengths: traits.strengths,
+      specializations: traits.specializations,
+      performanceHistory: [],
+      isActive: true,
+      currentLoad: 0
+    };
+  }
+
+  private resolveRoleTraits(
+    role: string,
+    profile: ParticipantProfile
+  ): { strengths: string[]; specializations: string[] } {
+    const normalizedRole = role.toLowerCase();
+    const roleTraits = ROLE_TRAITS[normalizedRole] ?? { strengths: [], specializations: [] };
+
+    return {
+      strengths: mergeUnique(profile.strengths, roleTraits.strengths),
+      specializations: mergeUnique(profile.specializations, roleTraits.specializations)
+    };
+  }
+
+  private buildParticipantId(provider: LLMProvider, model: string | undefined, index: number): string {
+    const sanitizedModel = (model || 'model').replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+    return `${provider.toLowerCase()}_${sanitizedModel}_${index}`;
   }
 
   private initializeMetrics(): SessionMetrics {
