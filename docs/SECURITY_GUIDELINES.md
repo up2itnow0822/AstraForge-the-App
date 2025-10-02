@@ -10,10 +10,9 @@ During our security audit, we identified several critical API key leaks in the c
 
 1. **Hardcoded API Keys in Documentation**
    - **Issue**: Real OpenRouter API key `sk-or-v1-[REDACTED_64_CHARS]` exposed in multiple documentation files
-   - **Files Affected**: 
-     - `archive/docs/STARTUP_GUIDE_2025-09-13.md`
-     - `archive/docs/fix_enetunreach_2025-09-13.md`
+   - **Files Affected**:
      - `docs/ENV_MAPPING_COMPLETE.md`
+     - Legacy onboarding guides removed from the repository during the V3 cleanup
    - **Fix Applied**: Replaced hardcoded keys with environment variable references (`$OPENROUTER_API_KEY`)
 
 2. **Environment File in Git Tracking**
@@ -22,8 +21,8 @@ During our security audit, we identified several critical API key leaks in the c
 
 3. **API Key Logging in Debug Scripts**
    - **Issue**: Debug script logged partial API keys
-   - **File**: `archive/scripts/debug-api_2025-09-13.cjs`
-   - **Fix Applied**: Replaced partial key logging with redacted format
+   - **File**: Legacy debug tooling removed from the repository during the V3 cleanup
+   - **Fix Applied**: Replaced partial key logging with redacted format in supported tooling
 
 ### ⚠️ HIGH Priority Issues
 

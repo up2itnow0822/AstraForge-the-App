@@ -85,6 +85,7 @@ export class CodeModificationSystem {
   private activeModifications: Set<string> = new Set();
   private optimizationRules: OptimizationRule[] = [];
   private conflictDetection: Map<string, Set<string>> = new Map(); // File -> Set of modification IDs
+  private readonly regexCache: Map<string, RegExp> = new Map();
 
   constructor(workspacePath: string) {
     this.backupDir = path.join(workspacePath, '.astraforge', 'backups');
@@ -419,6 +420,37 @@ export class CodeModificationSystem {
     this.conflictDetection.get(modification.file)!.add(modification.id);
   }
 
+  private getCachedRegex(pattern: string): RegExp {
+    if (!this.regexCache.has(pattern)) {
+      this.regexCache.set(pattern, new RegExp(pattern, 'g'));
+    }
+
+    const regex = this.regexCache.get(pattern)!;
+    regex.lastIndex = 0;
+    return regex;
+  }
+
+  private countPatternMatches(pattern: string, content: string): number {
+    const regex = this.getCachedRegex(pattern);
+    const matches = content.match(regex);
+    regex.lastIndex = 0;
+    return matches ? matches.length : 0;
+  }
+
+  private replacePattern(pattern: string, content: string, replacement: string): string {
+    const regex = this.getCachedRegex(pattern);
+    const updated = content.replace(regex, replacement);
+    regex.lastIndex = 0;
+    return updated;
+  }
+
+  private patternExists(pattern: string, content: string): boolean {
+    const regex = this.getCachedRegex(pattern);
+    const result = regex.test(content);
+    regex.lastIndex = 0;
+    return result;
+  }
+
   private async applyChanges(modification: CodeModification): Promise<{ success: boolean; error?: string; details: ModificationResult['details'] }> {
     const details: ModificationResult['details'] = {
       filesChanged: 0,
@@ -559,12 +591,12 @@ export class CodeModificationSystem {
       );
 
       for (const rule of rules) {
-        const matches = content.match(new RegExp(rule.pattern, 'g'));
-        if (matches) {
+        const matchCount = this.countPatternMatches(rule.pattern, content);
+        if (matchCount > 0) {
           const modification = await this.createOptimizationModification(
             file,
             rule,
-            matches.length
+            matchCount
           );
 
           if (modification) {
@@ -601,7 +633,7 @@ export class CodeModificationSystem {
       ];
 
       for (const security of securityPatterns) {
-        if (content.includes(security.pattern)) {
+        if (this.patternExists(security.pattern, content)) {
           const modification = await this.createSecurityModification(
             file,
             security
@@ -693,6 +725,8 @@ export class CodeModificationSystem {
     try {
       const content = fs.readFileSync(file, 'utf8');
 
+      const updatedContent = this.replacePattern(rule.pattern, content, rule.replacement);
+
       return {
         id: `optimization_${rule.id}_${Date.now()}`,
         file,
@@ -700,7 +734,7 @@ export class CodeModificationSystem {
         description: `${rule.name} (${matchCount} occurrences)`,
         changes: [{
           oldContent: content,
-          newContent: content.replace(new RegExp(rule.pattern, 'g'), rule.replacement),
+          newContent: updatedContent,
           operation: 'replace'
         }],
         validation: {
@@ -732,6 +766,8 @@ export class CodeModificationSystem {
     try {
       const content = fs.readFileSync(file, 'utf8');
 
+      const updatedContent = this.replacePattern(security.pattern, content, security.replacement);
+
       return {
         id: `security_${Date.now()}`,
         file,
@@ -739,7 +775,7 @@ export class CodeModificationSystem {
         description: security.description,
         changes: [{
           oldContent: content,
-          newContent: content.replace(new RegExp(security.pattern, 'g'), security.replacement),
+          newContent: updatedContent,
           operation: 'replace'
         }],
         validation: {

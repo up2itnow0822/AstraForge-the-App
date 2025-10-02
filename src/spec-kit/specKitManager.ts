@@ -8,6 +8,7 @@ import { SpecGenerator, GeneratedSpec, SpecificationRequest } from './specGenera
 import { PlanGenerator, TechnicalPlan } from './planGenerator';
 import { TaskGenerator, TaskList } from './taskGenerator';
 import { logger } from '../utils/logger';
+import { assertPathInside, resolvePathInside, sanitizeFileName } from '../utils/pathUtils';
 
 export interface SpecKitWorkflow {
   id: string;
@@ -42,6 +43,7 @@ export class SpecKitManager {
   private taskGenerator: TaskGenerator;
   private workflows: Map<string, SpecKitWorkflow> = new Map();
   private config: SpecKitConfig;
+  private workspaceRoot: string | null = null;
 
   constructor(
     llmManager: LLMManager,
@@ -75,27 +77,30 @@ export class SpecKitManager {
 
   public async initializeSpecKit(workspaceDir: string): Promise<void> {
     logger.info('Initializing Spec Kit...');
-    
-    const specsDir = path.join(workspaceDir, 'specs');
-    const templatesDir = path.join(workspaceDir, 'templates');
-    const scriptsDir = path.join(workspaceDir, 'scripts');
-    const memoryDir = path.join(workspaceDir, 'memory');
+
+    const resolvedWorkspace = path.resolve(workspaceDir);
+    this.workspaceRoot = resolvedWorkspace;
+
+    const specsDir = resolvePathInside(resolvedWorkspace, 'specs');
+    const templatesDir = resolvePathInside(resolvedWorkspace, 'templates');
+    const scriptsDir = resolvePathInside(resolvedWorkspace, 'scripts');
+    const memoryDir = resolvePathInside(resolvedWorkspace, 'memory');
 
     // Create directory structure
-    await this.createDirectoryStructure([specsDir, templatesDir, scriptsDir, memoryDir]);
-    
+    await this.createDirectoryStructure([specsDir, templatesDir, scriptsDir, memoryDir], resolvedWorkspace);
+
     // Copy templates from spec-kit
-    await this.copySpecKitTemplates(templatesDir);
-    
+    await this.copySpecKitTemplates(templatesDir, resolvedWorkspace);
+
     // Copy scripts
-    await this.copySpecKitScripts(scriptsDir);
-    
+    await this.copySpecKitScripts(scriptsDir, resolvedWorkspace);
+
     // Create AstraForge constitution
-    await this.createAstraForgeConstitution(memoryDir);
-    
+    await this.createAstraForgeConstitution(memoryDir, resolvedWorkspace);
+
     // Initialize git if not already initialized
     if (this.config.autoCommit) {
-      await this.gitManager.initRepo(workspaceDir);
+      await this.gitManager.initRepo(resolvedWorkspace);
       await this.gitManager.addAndCommit(['specs/', 'templates/', 'scripts/', 'memory/'], 'Initialize Spec Kit structure');
     }
 
@@ -104,15 +109,16 @@ export class SpecKitManager {
 
   public async createSpecification(request: SpecificationRequest): Promise<string> {
     logger.info('SpecKit: createSpecification');
-    
+
     // Generate specification
     const spec = await this.specGenerator.generateSpecification(request);
-    
+
     // Create workflow
     const workflowId = this.generateWorkflowId();
-    const workspaceDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
-    const specsDir = path.join(workspaceDir, 'specs', `${workflowId}-${spec.title.toLowerCase().replace(/\s+/g, '-')}`);
-    
+    const workspaceDir = this.getWorkspaceRoot();
+    const featureSlug = sanitizeFileName(spec.title);
+    const specsDir = resolvePathInside(workspaceDir, 'specs', `${workflowId}-${featureSlug}`);
+
     const workflow: SpecKitWorkflow = {
       id: workflowId,
       featureName: spec.title,
@@ -123,14 +129,14 @@ export class SpecKitManager {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     this.workflows.set(workflowId, workflow);
-    
+
     // Create spec directory and save specification
-    await this.createDirectoryStructure([specsDir]);
-    const specPath = path.join(specsDir, 'spec.md');
+    await this.createDirectoryStructure([specsDir], workspaceDir);
+    const specPath = resolvePathInside(specsDir, 'spec.md');
     await fs.promises.writeFile(specPath, spec.content, 'utf8');
-    
+
     // Save to vector DB for context
     await this.vectorDB.addDocument(`spec-${workflowId}`, spec.content, {
       type: 'specification',
@@ -140,7 +146,8 @@ export class SpecKitManager {
     
     // Auto-commit if enabled
     if (this.config.autoCommit) {
-      await this.gitManager.addAndCommit([specPath], `Add specification: ${spec.title}`);
+      const relativeSpecPath = path.relative(workspaceDir, specPath);
+      await this.gitManager.addAndCommit([relativeSpecPath], `Add specification: ${spec.title}`);
     }
     
     // Show results to user
@@ -156,9 +163,12 @@ export class SpecKitManager {
       throw new Error('Workflow or specification not found');
     }
 
+    const workspaceDir = this.getWorkspaceRoot();
+    const specsDir = assertPathInside(workspaceDir, workflow.specsDir);
+
     // Generate technical plan
     const plan = await this.planGenerator.generatePlan(workflow.spec, technicalRequirements);
-    
+
     // Execute research tasks
     const completedResearch = await this.planGenerator.executeResearch(plan.researchTasks);
     plan.researchTasks = completedResearch;
@@ -169,19 +179,20 @@ export class SpecKitManager {
     workflow.updatedAt = new Date();
     
     // Save plan documents
-    const planPath = path.join(workflow.specsDir, 'plan.md');
-    const researchPath = path.join(workflow.specsDir, 'research.md');
-    const dataModelPath = path.join(workflow.specsDir, 'data-model.md');
-    const contractsDir = path.join(workflow.specsDir, 'contracts');
-    
+    const planPath = resolvePathInside(specsDir, 'plan.md');
+    const researchPath = resolvePathInside(specsDir, 'research.md');
+    const dataModelPath = resolvePathInside(specsDir, 'data-model.md');
+    const contractsDir = resolvePathInside(specsDir, 'contracts');
+
     await fs.promises.writeFile(planPath, plan.content, 'utf8');
     await fs.promises.writeFile(researchPath, this.formatResearchResults(plan.researchTasks), 'utf8');
     await fs.promises.writeFile(dataModelPath, plan.designPhase.dataModel, 'utf8');
-    
+
     // Create contracts directory and files
-    await this.createDirectoryStructure([contractsDir]);
+    await this.createDirectoryStructure([contractsDir], workspaceDir);
     for (const contract of plan.designPhase.apiContracts) {
-      const contractPath = path.join(contractsDir, `${contract.toLowerCase().replace(/\s+/g, '-')}.json`);
+      const contractSlug = sanitizeFileName(contract);
+      const contractPath = resolvePathInside(contractsDir, `${contractSlug}.json`);
       await fs.promises.writeFile(contractPath, JSON.stringify({ contract }, null, 2), 'utf8');
     }
     
@@ -194,9 +205,13 @@ export class SpecKitManager {
     
     // Auto-commit if enabled
     if (this.config.autoCommit) {
-      await this.gitManager.addAndCommit([
-        planPath, researchPath, dataModelPath, contractsDir
-      ], `Add implementation plan: ${workflow.featureName}`);
+      const relativePaths = [planPath, researchPath, dataModelPath, contractsDir].map(p =>
+        path.relative(workspaceDir, p)
+      );
+      await this.gitManager.addAndCommit(
+        relativePaths,
+        `Add implementation plan: ${workflow.featureName}`
+      );
     }
     
     // Show results
@@ -209,6 +224,9 @@ export class SpecKitManager {
     if (!workflow || !workflow.plan) {
       throw new Error('Workflow or plan not found');
     }
+
+    const workspaceDir = this.getWorkspaceRoot();
+    const specsDir = assertPathInside(workspaceDir, workflow.specsDir);
 
     // Generate task list
     const taskList = await this.taskGenerator.generateTasks(workflow.plan);
@@ -232,7 +250,7 @@ export class SpecKitManager {
     workflow.updatedAt = new Date();
     
     // Save tasks
-    const tasksPath = path.join(workflow.specsDir, 'tasks.md');
+    const tasksPath = resolvePathInside(specsDir, 'tasks.md');
     await fs.promises.writeFile(tasksPath, taskList.content, 'utf8');
     
     // Save to vector DB
@@ -244,7 +262,8 @@ export class SpecKitManager {
     
     // Auto-commit if enabled
     if (this.config.autoCommit) {
-      await this.gitManager.addAndCommit([tasksPath], `Add task list: ${workflow.featureName}`);
+      const relativeTasksPath = path.relative(workspaceDir, tasksPath);
+      await this.gitManager.addAndCommit([relativeTasksPath], `Add task list: ${workflow.featureName}`);
     }
     
     // Show results
@@ -264,8 +283,11 @@ export class SpecKitManager {
     workflow.spec = refinedSpec;
     workflow.updatedAt = new Date();
     
+    const workspaceDir = this.getWorkspaceRoot();
+    const specsDir = assertPathInside(workspaceDir, workflow.specsDir);
+
     // Save refined specification
-    const specPath = path.join(workflow.specsDir, 'spec.md');
+    const specPath = resolvePathInside(specsDir, 'spec.md');
     await fs.promises.writeFile(specPath, refinedSpec.content, 'utf8');
     
     // Update vector DB
@@ -277,7 +299,8 @@ export class SpecKitManager {
     
     // Auto-commit if enabled
     if (this.config.autoCommit) {
-      await this.gitManager.addAndCommit([specPath], `Refine specification: ${workflow.featureName}`);
+      const relativeSpecPath = path.relative(workspaceDir, specPath);
+      await this.gitManager.addAndCommit([relativeSpecPath], `Refine specification: ${workflow.featureName}`);
     }
     
     vscode.window.showInformationMessage('✅ Specification refined successfully!');
@@ -297,38 +320,60 @@ export class SpecKitManager {
     return `${counter}`;
   }
 
-  private async createDirectoryStructure(dirs: string[]): Promise<void> {
+  private getWorkspaceRoot(): string {
+    if (this.workspaceRoot) {
+      return this.workspaceRoot;
+    }
+
+    const fallback = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
+    const resolved = path.resolve(fallback);
+    this.workspaceRoot = resolved;
+    return resolved;
+  }
+
+  private async createDirectoryStructure(dirs: string[], workspaceRoot?: string): Promise<void> {
+    const baseDir = workspaceRoot ? path.resolve(workspaceRoot) : this.getWorkspaceRoot();
     for (const dir of dirs) {
-      await fs.promises.mkdir(dir, { recursive: true });
+      const safeDir = assertPathInside(baseDir, dir);
+      await fs.promises.mkdir(safeDir, { recursive: true });
     }
   }
 
-  private async copySpecKitTemplates(templatesDir: string): Promise<void> {
+  private async copySpecKitTemplates(templatesDir: string, workspaceRoot: string): Promise<void> {
     const sourceTemplatesDir = path.join(__dirname, '../../temp_spec_kit/templates');
-    
-    try {
-      const templates = await fs.promises.readdir(sourceTemplatesDir, { recursive: true });
-      
-      for (const template of templates) {
-        if (typeof template === 'string' && template.endsWith('.md')) {
-          const sourcePath = path.join(sourceTemplatesDir, template);
-          const destPath = path.join(templatesDir, template);
-          
-          // Ensure destination directory exists
-          await fs.promises.mkdir(path.dirname(destPath), { recursive: true });
-          
-          const content = await fs.promises.readFile(sourcePath, 'utf8');
-          await fs.promises.writeFile(destPath, content, 'utf8');
+    const safeTemplatesDir = assertPathInside(workspaceRoot, templatesDir);
+
+    const copyRecursive = async (source: string, relative = ''): Promise<void> => {
+      const entries = await fs.promises.readdir(source, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          await copyRecursive(path.join(source, entry.name), path.join(relative, entry.name));
+          continue;
         }
+
+        if (!entry.isFile() || !entry.name.endsWith('.md')) {
+          continue;
+        }
+
+        const relativePath = path.join(relative, entry.name);
+        const destinationPath = resolvePathInside(safeTemplatesDir, relativePath);
+        await fs.promises.mkdir(path.dirname(destinationPath), { recursive: true });
+        const content = await fs.promises.readFile(path.join(source, entry.name), 'utf8');
+        await fs.promises.writeFile(destinationPath, content, 'utf8');
       }
+    };
+
+    try {
+      await copyRecursive(sourceTemplatesDir);
     } catch (error) {
       console.error('Error copying templates:', error);
       // Create basic templates if copy fails
-      await this.createBasicTemplates(templatesDir);
+      await this.createBasicTemplates(safeTemplatesDir, workspaceRoot);
     }
   }
 
-  private async createBasicTemplates(templatesDir: string): Promise<void> {
+  private async createBasicTemplates(templatesDir: string, workspaceRoot: string): Promise<void> {
+    const safeTemplatesDir = assertPathInside(workspaceRoot, templatesDir);
     const specTemplate = `# Feature Specification: {{FEATURE_NAME}}
 
 **Created**: {{DATE}}
@@ -346,20 +391,22 @@ export class SpecKitManager {
 - [ ] Scope is clearly bounded
 `;
 
-    await fs.promises.writeFile(path.join(templatesDir, 'spec-template.md'), specTemplate, 'utf8');
+    const templatePath = resolvePathInside(safeTemplatesDir, 'spec-template.md');
+    await fs.promises.writeFile(templatePath, specTemplate, 'utf8');
   }
 
-  private async copySpecKitScripts(scriptsDir: string): Promise<void> {
+  private async copySpecKitScripts(scriptsDir: string, workspaceRoot: string): Promise<void> {
     const sourceScriptsDir = path.join(__dirname, '../../temp_spec_kit/scripts/powershell');
-    
+    const safeScriptsDir = assertPathInside(workspaceRoot, scriptsDir);
+
     try {
-      const scripts = await fs.promises.readdir(sourceScriptsDir);
-      
+      const scripts = await fs.promises.readdir(sourceScriptsDir, { withFileTypes: true });
+
       for (const script of scripts) {
-        if (script.endsWith('.ps1')) {
-          const sourcePath = path.join(sourceScriptsDir, script);
-          const destPath = path.join(scriptsDir, script);
-          
+        if (script.isFile() && script.name.endsWith('.ps1')) {
+          const sourcePath = path.join(sourceScriptsDir, script.name);
+          const destPath = resolvePathInside(safeScriptsDir, script.name);
+
           const content = await fs.promises.readFile(sourcePath, 'utf8');
           await fs.promises.writeFile(destPath, content, 'utf8');
         }
@@ -369,7 +416,8 @@ export class SpecKitManager {
     }
   }
 
-  private async createAstraForgeConstitution(memoryDir: string): Promise<void> {
+  private async createAstraForgeConstitution(memoryDir: string, workspaceRoot: string): Promise<void> {
+    const safeMemoryDir = assertPathInside(workspaceRoot, memoryDir);
     const constitution = `# AstraForge Development Constitution
 
 ## Core Principles
@@ -462,7 +510,8 @@ All code reviews verify constitutional compliance.
 **Version**: 1.0.0 | **Ratified**: ${new Date().toISOString().split('T')[0]} | **Last Amended**: ${new Date().toISOString().split('T')[0]}
 `;
 
-    await fs.promises.writeFile(path.join(memoryDir, 'constitution.md'), constitution, 'utf8');
+    const constitutionPath = resolvePathInside(safeMemoryDir, 'constitution.md');
+    await fs.promises.writeFile(constitutionPath, constitution, 'utf8');
   }
 
   private formatResearchResults(researchTasks: any[]): string {

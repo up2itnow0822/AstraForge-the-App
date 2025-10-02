@@ -60,6 +60,18 @@ export class SelfAnalysisEngine {
   private analysisCache: Map<string, { result: AnalysisResult[]; timestamp: Date }> = new Map();
   private fileMetrics: Map<string, FileMetrics> = new Map();
   private systemBaseline: SystemAnalysis | null = null;
+  private static readonly BRANCH_REGEXES: Map<string, RegExp> = new Map(
+    ['if', 'else', 'for', 'while', 'case', 'catch'].map(keyword => [
+      keyword,
+      new RegExp(`\\b${keyword}\\b`, 'g')
+    ])
+  );
+  private static readonly SEVERITY_RANK: Record<AnalysisResult['severity'], number> = {
+    critical: 4,
+    high: 3,
+    medium: 2,
+    low: 1
+  } as const;
 
   constructor(private workspacePath: string) {}
 
@@ -654,8 +666,9 @@ export class SelfAnalysisEngine {
     // Sort results by severity and impact
     const topIssues = results
       .sort((a, b) => {
-        const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-        const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
+        const severityDiff =
+          SelfAnalysisEngine.SEVERITY_RANK[b.severity] -
+          SelfAnalysisEngine.SEVERITY_RANK[a.severity];
         if (severityDiff !== 0) return severityDiff;
         return b.impact - a.impact;
       })
@@ -682,15 +695,15 @@ export class SelfAnalysisEngine {
 
   private calculateCyclomaticComplexity(content: string): number {
     // Simplified cyclomatic complexity calculation
-    const branchKeywords = ['if', 'else', 'for', 'while', 'case', 'catch'];
     let complexity = 1;
 
-    branchKeywords.forEach(keyword => {
-      const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+    SelfAnalysisEngine.BRANCH_REGEXES.forEach(regex => {
+      regex.lastIndex = 0;
       const matches = content.match(regex);
       if (matches) {
         complexity += matches.length;
       }
+      regex.lastIndex = 0;
     });
 
     return complexity;

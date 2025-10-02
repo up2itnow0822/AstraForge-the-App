@@ -21,36 +21,11 @@ import { SpecKitManager, SpecKitWorkflow } from '../spec-kit/specKitManager';
 import { TaskList, Task } from '../spec-kit/taskGenerator';
 import { logger } from '../utils/logger';
 import * as path from 'path';
-
-/**
-* Metrics tracking for workflow performance and user engagement
-*/
-interface WorkflowState {
-currentPhase: string;
-projectComplexity: number;
-userSatisfaction: number;
-errorRate: number;
-timeSpent: number;
-}
-
-interface WorkflowAction {
-type: 'continue' | 'skip' | 'repeat' | 'branch' | 'optimize';
-target?: string;
-confidence: number;
-}
-
-interface WorkflowMetrics {
-/** Timestamp when workflow started */
-startTime: number;
-/** Timestamp when current phase started */
-phaseStartTime: number;
-/** Number of errors encountered */
-errors: number;
-/** Array of user feedback scores (0-1) */
-userFeedback: number[];
-/** Number of iterations performed */
-iterations: number;
-}
+import { TelemetryPipeline } from './telemetryPipeline';
+import { WorkflowArbitrator } from './workflowArbitrator';
+import { TieredMemoryOrchestrator } from './tieredMemoryOrchestrator';
+import { WorkflowAction, WorkflowMetrics, WorkflowState } from './types';
+import { resolvePathInside, sanitizeFileName } from '../utils/pathUtils';
 
 /**
 * Main workflow orchestrator that manages the complete development lifecycle
@@ -97,11 +72,15 @@ private specKitInitialized = false;
 
 private readonly testMode: boolean;
 
-private _workflowRL!: AdaptiveWorkflowRL;
+  private _workflowRL!: AdaptiveWorkflowRL;
 
-private _collaborationServer?: CollaborationServer;
+  private _collaborationServer?: CollaborationServer;
 
-private _workspaceId!: string;
+  private _workspaceId!: string;
+
+  private readonly telemetryPipeline: TelemetryPipeline;
+  private readonly workflowArbitrator: WorkflowArbitrator;
+  private readonly memoryOrchestrator: TieredMemoryOrchestrator;
 
 /**
 * Initialize the WorkflowManager with required dependencies
@@ -118,22 +97,48 @@ private _workspaceId!: string;
     emergentBehaviorSystem?: EmergentBehaviorSystem,
     testMode: boolean = false
   ) {
-this._workflowRL = new AdaptiveWorkflowRL();
-this._workspaceId = `workspace_${Date.now()}`;
-this.emergentBehaviorSystem = emergentBehaviorSystem;
-this.testMode = testMode;
-this.metrics = {
-startTime: Date.now(),
-phaseStartTime: Date.now(),
-errors: 0,
-userFeedback: [],
-iterations: 0,
-};
+    this._workflowRL = new AdaptiveWorkflowRL();
+    this._workspaceId = `workspace_${Date.now()}`;
+    this.emergentBehaviorSystem = emergentBehaviorSystem;
+    this.testMode = testMode;
+    this.metrics = {
+      startTime: Date.now(),
+      phaseStartTime: Date.now(),
+      errors: 0,
+      userFeedback: [],
+      iterations: 0,
+    };
 
-this.specKitManager = new SpecKitManager(_llmManager, _vectorDB, _gitManager);
+    this.specKitManager = new SpecKitManager(_llmManager, _vectorDB, _gitManager);
 
-this.initializeCollaboration();
-this.initializeMetaLearning();
+    this.telemetryPipeline = new TelemetryPipeline({ maxBufferSize: 200, flushIntervalMs: 15_000 });
+    this.workflowArbitrator = new WorkflowArbitrator(this.telemetryPipeline, {
+      minConfidence: 0.35,
+      maxErrorRate: 0.3,
+    });
+    this.memoryOrchestrator = new TieredMemoryOrchestrator(this._vectorDB, this.telemetryPipeline, {
+      workspaceId: this._workspaceId,
+    });
+
+    this.telemetryPipeline.onEvent(event => {
+      const context = event.data ?? {};
+      const message = `[telemetry:${event.category}:${event.type}] ${event.message}`;
+
+      if (event.severity === 'critical' || event.severity === 'error') {
+        logger.error(message, context);
+        return;
+      }
+
+      if (event.severity === 'warning') {
+        logger.warn(message, context);
+        return;
+      }
+
+      logger.info(message, context);
+    });
+
+    this.initializeCollaboration();
+    this.initializeMetaLearning();
     this.initializeEmergentBehavior();
   }
 
@@ -181,14 +186,20 @@ this.initializeMetaLearning();
         throw new Error('Failed to create specification workflow');
       }
 
+      await this.captureSpecificationMemory(workflowId);
+
       await this.announceSpecProgress('Planning', 'Creating technical implementation plan...');
       await this.specKitManager.createImplementationPlan(workflowId);
       this.currentSpecWorkflow = this.specKitManager.getWorkflow(workflowId);
       this.buildPlan = this.currentSpecWorkflow?.plan?.content ?? this.buildPlan;
 
+      await this.capturePlanMemory(workflowId);
+
       await this.announceSpecProgress('Tasks', 'Generating detailed task list...');
       await this.specKitManager.generateTasks(workflowId);
       this.currentSpecWorkflow = this.specKitManager.getWorkflow(workflowId);
+
+      await this.captureTaskMemory(workflowId);
 
       if (this.currentSpecWorkflow?.tasks) {
         await this.announceSpecProgress('Implementation', 'Executing spec-driven tasks following TDD principles...');
@@ -202,6 +213,51 @@ this.initializeMetaLearning();
     }
   }
 
+  private async captureSpecificationMemory(workflowId: string): Promise<void> {
+    const workflow = this.currentSpecWorkflow;
+    if (!workflow?.spec?.content) {
+      return;
+    }
+
+    await this.memoryOrchestrator.capture({
+      category: 'specification',
+      content: workflow.spec.content,
+      importance: 0.75,
+      tags: ['spec-kit', workflowId],
+      metadata: { featureName: workflow.featureName },
+    });
+  }
+
+  private async capturePlanMemory(workflowId: string): Promise<void> {
+    const workflow = this.currentSpecWorkflow;
+    if (!workflow?.plan?.content) {
+      return;
+    }
+
+    await this.memoryOrchestrator.capture({
+      category: 'plan',
+      content: workflow.plan.content,
+      importance: 0.7,
+      tags: ['spec-kit', 'plan', workflowId],
+      metadata: { featureName: workflow.featureName },
+    });
+  }
+
+  private async captureTaskMemory(workflowId: string): Promise<void> {
+    const workflow = this.currentSpecWorkflow;
+    if (!workflow?.tasks?.content) {
+      return;
+    }
+
+    await this.memoryOrchestrator.capture({
+      category: 'task-list',
+      content: workflow.tasks.content,
+      importance: 0.6,
+      tags: ['spec-kit', 'tasks', workflowId],
+      metadata: { featureName: workflow.featureName },
+    });
+  }
+
   private async announceSpecProgress(phaseName: string, description: string): Promise<void> {
     this.metrics.phaseStartTime = Date.now();
     this.metrics.iterations++;
@@ -210,6 +266,17 @@ this.initializeMetaLearning();
       phase: phaseName,
       description,
       progress: this.metrics.iterations,
+    });
+
+    this.telemetryPipeline.record({
+      category: 'spec-kit',
+      type: 'progress',
+      severity: 'info',
+      message: description,
+      data: {
+        phase: phaseName,
+        iteration: this.metrics.iterations,
+      },
     });
 
     vscode.window.showInformationMessage(`🚀 ${phaseName}: ${description}`);
@@ -407,26 +474,48 @@ vscode.window.showErrorMessage(`Workflow failed: ${errorMessage}`);
 }
 }
 
-private async handleRLRecommendation(phase: string): Promise<{ shouldReturn: boolean; currentState: WorkflowState; recommendedAction: WorkflowAction }> {
-const currentState = this.getCurrentWorkflowState();
-const recommendedAction = this._workflowRL.getBestAction(currentState);
+  private async handleRLRecommendation(
+    phase: string
+  ): Promise<{ shouldReturn: boolean; currentState: WorkflowState; recommendedAction: WorkflowAction }> {
+    const currentState = this.getCurrentWorkflowState();
+    const rlRecommendation = this._workflowRL.getBestAction(currentState);
+    const decision = this.workflowArbitrator.decide({
+      phase,
+      state: currentState,
+      metrics: this.metrics,
+      recommended: rlRecommendation,
+      iteration: this.metrics.iterations + 1,
+    });
 
-if (recommendedAction.type !== 'continue') {
-const actionResult = await this.applyRLAction(recommendedAction, phase);
-if (actionResult.shouldReturn) {
-return { shouldReturn: true, currentState, recommendedAction };
-}
-}
+    const actionToApply = decision.action;
 
-return { shouldReturn: false, currentState, recommendedAction };
-}
+    if (actionToApply.type !== 'continue') {
+      const actionResult = await this.applyRLAction(actionToApply, phase);
+      if (actionResult.shouldReturn) {
+        return { shouldReturn: true, currentState, recommendedAction: actionToApply };
+      }
+    }
 
-private async setupPhaseExecution(phase: string): Promise<string> {
+    return { shouldReturn: false, currentState, recommendedAction: actionToApply };
+  }
+
+  private async setupPhaseExecution(phase: string): Promise<string> {
 // Notify collaboration server about phase start
 this._collaborationServer?.broadcastToWorkspace(this._workspaceId, 'phase_started', {
 phase,
 timestamp: Date.now(),
 projectIdea: this.projectIdea,
+});
+
+this.telemetryPipeline.record({
+  category: 'workflow',
+  type: 'phase-started',
+  severity: 'info',
+  message: `Phase ${phase} started`,
+  data: {
+    phase,
+    workspaceId: this._workspaceId,
+  },
 });
 
 // Enhanced context retrieval using vector DB
@@ -456,6 +545,16 @@ return await this.processPhaseOutput(output, phase);
 private async completePhaseOperations(phase: string, processedOutput: string): Promise<void> {
 await this.writePhaseOutput(processedOutput, phase);
 await this._gitManager.commit(`Phase ${phase} complete - ${this.getPhaseMetrics()}`);
+this.telemetryPipeline.record({
+  category: 'workflow',
+  type: 'phase-operations',
+  severity: 'info',
+  message: `Phase ${phase} output persisted`,
+  data: {
+    phase,
+    workspaceId: this._workspaceId,
+  },
+});
 }
 
 private async handlePhaseReviewAndSuggestions(phase: string, processedOutput: string, contextText: string): Promise<number> {
@@ -465,34 +564,76 @@ const suggestions = await this.generateIntelligentSuggestions(phase, processedOu
 const userDecision = await this.getUserDecision(suggestions, review);
 const userFeedback = await this.processUserDecision(userDecision, suggestions, processedOutput, phase);
 
+this.telemetryPipeline.record({
+  category: 'workflow',
+  type: 'phase-feedback',
+  severity: 'info',
+  message: `User feedback recorded for ${phase}`,
+  data: {
+    phase,
+    userFeedback,
+    decision: userDecision,
+  },
+});
+
 return userFeedback;
 }
 
-private async updateRLAndProgress(phase: string, currentState: WorkflowState, recommendedAction: WorkflowAction, userFeedback: number): Promise<void> {
-const newState = this.getCurrentWorkflowState();
-const reward = this._workflowRL.calculateReward(
-currentState,
-recommendedAction,
-newState,
-true, // Phase succeeded
-userFeedback
-);
+private async updateRLAndProgress(
+  phase: string,
+  currentState: WorkflowState,
+  recommendedAction: WorkflowAction,
+  userFeedback: number,
+  processedOutput: string
+): Promise<void> {
+  const newState = this.getCurrentWorkflowState();
+  const reward = this._workflowRL.calculateReward(
+    currentState,
+    recommendedAction,
+    newState,
+    true,
+    userFeedback
+  );
 
-this._workflowRL.updateQValue(currentState, recommendedAction, reward, newState);
+  this._workflowRL.updateQValue(currentState, recommendedAction, reward, newState);
 
-// Store phase results in vector DB for future context
-await this.storePhaseContext(phase, await this.processPhaseOutput('', phase), {} as any);
+  const reviewSummary = `Feedback score: ${userFeedback.toFixed(2)}`;
+  await this.storePhaseContext(phase, processedOutput, reviewSummary);
+  await this.memoryOrchestrator.capture({
+    category: 'phase-output',
+    content: processedOutput,
+    importance: 0.65,
+    tags: ['phase', phase],
+    metadata: {
+      userFeedback,
+      iteration: this.metrics.iterations + 1,
+    },
+  });
 
-this.metrics.iterations++;
-this.currentPhase++;
+  this.metrics.iterations++;
+  this.currentPhase++;
 
-if (this.currentPhase < this.phases.length) {
-vscode.window.showInformationMessage(
-`Phase ${phase} complete! Next: ${this.phases[this.currentPhase]}. Click "Acknowledge & Proceed".`
-);
-} else {
-await this.completeProject();
-}
+  const nextPhase = this.currentPhase < this.phases.length ? this.phases[this.currentPhase] : undefined;
+
+  this.telemetryPipeline.record({
+    category: 'workflow',
+    type: 'phase-complete',
+    severity: 'info',
+    message: `${phase} phase complete`,
+    data: {
+      phase,
+      userFeedback,
+      nextPhase: nextPhase ?? 'complete',
+    },
+  });
+
+  if (nextPhase) {
+    vscode.window.showInformationMessage(
+      `Phase ${phase} complete! Next: ${nextPhase}. Click "Acknowledge & Proceed".`
+    );
+  } else {
+    await this.completeProject();
+  }
 }
 
 async executePhase() {
@@ -521,7 +662,7 @@ await this.completePhaseOperations(phase, processedOutput);
 const userFeedback = await this.handlePhaseReviewAndSuggestions(phase, processedOutput, contextText);
 
 // Update RL and progress
-await this.updateRLAndProgress(phase, currentState, recommendedAction, userFeedback);
+await this.updateRLAndProgress(phase, currentState, recommendedAction, userFeedback, processedOutput);
 
 } catch (error: unknown) {
 await this.handlePhaseError(error, phase);
@@ -648,26 +789,19 @@ return processed;
 private async writePhaseOutput(output: string, phase: string): Promise<void> {
 if (!vscode.workspace.workspaceFolders) return;
 
-const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+const workspaceRoot = path.resolve(vscode.workspace.workspaceFolders[0].uri.fsPath);
+const outputDir = resolvePathInside(workspaceRoot, 'astraforge_output');
 const timestamp = new Date().toISOString().split('T')[0];
-const fileName = `${phase.toLowerCase()}_${timestamp}.md`;
-const filePath = vscode.Uri.file(path.join(workspaceRoot, 'astraforge_output', fileName));
+const safePhase = sanitizeFileName(phase.toLowerCase());
+const fileName = `${safePhase}_${timestamp}.md`;
+const filePath = resolvePathInside(outputDir, fileName);
 
-// Ensure directory exists
-const dirPath = path.join(workspaceRoot, 'astraforge_output');
-try {
-await vscode.workspace.fs.createDirectory(vscode.Uri.file(dirPath));
-} catch {
-// Directory might already exist
-}
+await vscode.workspace.fs.createDirectory(vscode.Uri.file(outputDir));
+await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(output));
 
-await vscode.workspace.fs.writeFile(filePath, Buffer.from(output));
-
-// Also update the latest version
-const latestPath = vscode.Uri.file(
-path.join(workspaceRoot, 'astraforge_output', `${phase.toLowerCase()}_latest.md`)
-);
-await vscode.workspace.fs.writeFile(latestPath, Buffer.from(output));
+const latestName = `${safePhase}_latest.md`;
+const latestPath = resolvePathInside(outputDir, latestName);
+await vscode.workspace.fs.writeFile(vscode.Uri.file(latestPath), Buffer.from(output));
 }
 
 private getPhaseMetrics(): string {
@@ -778,6 +912,17 @@ this.metrics.errors++;
 logger.error(`Phase ${phase} error:`, error);
 
 const errorMessage = `Phase ${phase} encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+this.telemetryPipeline.record({
+  category: 'workflow',
+  type: 'phase-error',
+  severity: 'error',
+  message: errorMessage,
+  data: {
+    phase,
+    workspaceId: this._workspaceId,
+  },
+});
 const options = ['Retry phase', 'Skip phase', 'Abort workflow'];
 
 const choice = await vscode.window.showErrorMessage(errorMessage, ...options);
@@ -848,18 +993,41 @@ vscode.window.showInformationMessage(
 '🎉 Project Complete! Check the final report for details and enhancements.'
 );
 
-// Save comprehensive final report
-if (vscode.workspace.workspaceFolders) {
-const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
-const reportPath = vscode.Uri.file(
-path.join(workspaceRoot, 'astraforge_output', 'FINAL_REPORT.md')
-);
-await vscode.workspace.fs.writeFile(reportPath, Buffer.from(finalReport));
+    // Save comprehensive final report
+    if (vscode.workspace.workspaceFolders) {
+      const workspaceRoot = path.resolve(vscode.workspace.workspaceFolders[0].uri.fsPath);
+      const outputDir = resolvePathInside(workspaceRoot, 'astraforge_output');
+      await vscode.workspace.fs.createDirectory(vscode.Uri.file(outputDir));
+      const reportPath = resolvePathInside(outputDir, 'FINAL_REPORT.md');
+      await vscode.workspace.fs.writeFile(vscode.Uri.file(reportPath), Buffer.from(finalReport));
 
-// Open the report
-const doc = await vscode.workspace.openTextDocument(reportPath);
-await vscode.window.showTextDocument(doc);
-}
+      const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(reportPath));
+      await vscode.window.showTextDocument(doc);
+    }
+
+    await this.memoryOrchestrator.capture({
+      category: 'final-report',
+      content: finalReport,
+      importance: 0.85,
+      tags: ['project', 'summary'],
+      metadata: {
+        projectIdea: this.projectIdea,
+        totalTime,
+        errors: this.metrics.errors,
+      },
+    });
+
+    this.telemetryPipeline.record({
+      category: 'workflow',
+      type: 'project-complete',
+      severity: 'info',
+      message: `Project ${this.projectIdea} completed`,
+      data: {
+        iterations: this.metrics.iterations,
+        errors: this.metrics.errors,
+        durationMs: totalTime,
+      },
+    });
 
 // Record project completion in meta-learning system
 const projectType = this.categorizeProjectType(this.projectIdea);
@@ -890,10 +1058,17 @@ projectIdea: this.projectIdea,
 metrics: this.metrics,
 timestamp: Date.now(),
 });
-} catch (error: unknown) {
-const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-vscode.window.showErrorMessage(`Project completion failed: ${errorMessage}`);
-}
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    this.telemetryPipeline.record({
+      category: 'workflow',
+      type: 'project-complete',
+      severity: 'error',
+      message: `Project completion failed: ${errorMessage}`,
+      data: { projectIdea: this.projectIdea },
+    });
+    vscode.window.showErrorMessage(`Project completion failed: ${errorMessage}`);
+  }
 }
 
 // Meta-learning helper methods
