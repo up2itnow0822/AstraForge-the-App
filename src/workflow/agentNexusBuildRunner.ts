@@ -112,6 +112,12 @@ function compileValidationFailures(
 ): string[] {
   const failures: string[] = [];
 
+  const MIN_BUILD_PLAN_PHASES = 3;
+  const MIN_BUILD_PLAN_TASKS = 10;
+  const MIN_TECH_SPEC_COMPONENTS = 4;
+  const MIN_TECH_SPEC_INTEGRATIONS = 3;
+  const MIN_TECH_SPEC_CONTRACTS = 3;
+
   if (technical.missingHeadings.length > 0) {
     failures.push(`technical specification missing sections: ${technical.missingHeadings.join(', ')}`);
   }
@@ -120,24 +126,24 @@ function compileValidationFailures(
     failures.push(`build plan missing sections: ${buildPlan.missingHeadings.join(', ')}`);
   }
 
-  if (buildPlan.phases < 3) {
-    failures.push('build plan must define at least three execution phases');
+  if (buildPlan.phases < MIN_BUILD_PLAN_PHASES) {
+    failures.push(`build plan must define at least ${MIN_BUILD_PLAN_PHASES} execution phases`);
   }
 
-  if (buildPlan.tasks < 10) {
-    failures.push('build plan must outline a minimum of ten actionable tasks');
+  if (buildPlan.tasks < MIN_BUILD_PLAN_TASKS) {
+    failures.push(`build plan must outline a minimum of ${MIN_BUILD_PLAN_TASKS} actionable tasks`);
   }
 
-  if (technical.components < 4) {
-    failures.push('technical specification must describe at least four core components');
+  if (technical.components < MIN_TECH_SPEC_COMPONENTS) {
+    failures.push(`technical specification must describe at least ${MIN_TECH_SPEC_COMPONENTS} core components`);
   }
 
-  if (technical.integrations < 3) {
-    failures.push('technical specification must document at least three integrations');
+  if (technical.integrations < MIN_TECH_SPEC_INTEGRATIONS) {
+    failures.push(`technical specification must document at least ${MIN_TECH_SPEC_INTEGRATIONS} integrations`);
   }
 
-  if (technical.contracts < 3) {
-    failures.push('technical specification must define at least three data contracts');
+  if (technical.contracts < MIN_TECH_SPEC_CONTRACTS) {
+    failures.push(`technical specification must define at least ${MIN_TECH_SPEC_CONTRACTS} data contracts`);
   }
 
   return failures;
