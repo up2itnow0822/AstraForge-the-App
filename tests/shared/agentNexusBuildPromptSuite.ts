@@ -36,11 +36,11 @@ export function defineAgentNexusBuildPromptRegressionSuite({
 
       await fs.writeFile(
         path.join(specsDir, 'AgentNexus_Technical_Spec_Final.txt'),
-        '# Incomplete Technical Spec\n\n## System Overview\nOnly overview present.'
+        '# Incomplete Technical Spec\n\n## System Overview\nOnly overview present. TBD.'
       );
       await fs.writeFile(
         path.join(specsDir, 'Comprehensive_Build_Plan_for_AgentNexus.txt'),
-        '# Incomplete Plan\n\n## Execution Strategy\nMinimal tasks.'
+        '# Incomplete Plan\n\n## Execution Strategy\nMinimal tasks. TODO item.'
       );
 
       const result = await runAgentNexusBuildPrompt(tempWorkspace);
@@ -55,6 +55,8 @@ export function defineAgentNexusBuildPromptRegressionSuite({
           'technical specification must describe at least four core components',
           'technical specification must document at least three integrations',
           'technical specification must define at least three data contracts',
+          expect.stringContaining('technical specification contains placeholder text'),
+          expect.stringContaining('build plan contains placeholder text'),
         ])
       );
     });
@@ -145,6 +147,95 @@ export function defineAgentNexusBuildPromptRegressionSuite({
       expect(result.details?.buildPlan.tasks).toBe(10);
       expect(result.message).toMatch(/data contracts/);
       expect(result.message).not.toContain('\n');
+    });
+
+    it('rejects specifications containing placeholder tokens even when structural checks pass', async () => {
+      const tempWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), 'agentnexus-placeholder-'));
+      const specsDir = path.join(tempWorkspace, 'docs/specs');
+      await fs.mkdir(specsDir, { recursive: true });
+
+      const technicalSpecWithPlaceholder = [
+        '# Valid-Looking Technical Spec',
+        '## System Overview',
+        'This mission overview includes a TODO for refinement.',
+        '## Core Subsystems',
+        '- Component: Mission Control Orchestrator',
+        '- Component: Cognitive Workspace Runtime',
+        '- Component: Spec Kit Interpreter',
+        '- Component: Evidence Vault',
+        '## Data Contracts',
+        '- Contract: MissionPrompt',
+        '- Contract: ArtifactEvidence',
+        '- Contract: ValidationReport',
+        '## External Integrations',
+        '- Integration: OpenAI Assistants API',
+        '- Integration: Hugging Face Inference',
+        '- Integration: GitHub Enterprise',
+        '## Security & Compliance',
+        'Controls are pending review with governance.',
+        '## Telemetry & Observability',
+        'Instrumentation strategy established.',
+        '## Deployment Topology',
+        'Multi-region deployment defined.',
+      ].join('\n');
+
+      const buildPlanWithPlaceholder = [
+        '# Valid-Looking Build Plan',
+        '## Execution Strategy',
+        'Execution strategy TODO includes automation upgrades.',
+        '### Phase 1: Foundations',
+        '- [ ] Task: Prepare repository structure',
+        '- [ ] Task: Configure CI pipeline',
+        '- [ ] Task: Establish documentation baseline',
+        '- [ ] Task: Harden dependency policies',
+        '### Phase 2: Runtime Enablement',
+        '- [ ] Task: Implement agent runtime core',
+        '- [ ] Task: Integrate reasoning providers',
+        '- [ ] Task: Wire telemetry pipelines',
+        '### Phase 3: Launch Readiness',
+        '- [ ] Task: Run end-to-end mission rehearsal',
+        '- [ ] Task: Finalize security validations',
+        '- [ ] Task: Complete operations handoff',
+        '## Risk Management',
+        'Risk mitigations are pending review by governance.',
+        '## Validation Strategy',
+        'Validation protocol retains TODO checkpoints for expanded coverage.',
+      ].join('\n');
+
+      await Promise.all([
+        fs.writeFile(path.join(specsDir, 'AgentNexus_Technical_Spec_Final.txt'), technicalSpecWithPlaceholder),
+        fs.writeFile(path.join(specsDir, 'Comprehensive_Build_Plan_for_AgentNexus.txt'), buildPlanWithPlaceholder),
+      ]);
+
+      const result = await runAgentNexusBuildPrompt(tempWorkspace);
+
+      expect(result.success).toBe(false);
+      expect(result.validationFailures).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('technical specification contains placeholder text'),
+          expect.stringContaining('build plan contains placeholder text'),
+        ])
+      );
+      expect(result.validationFailures).not.toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('missing sections'),
+          expect.stringContaining('must define at least'),
+        ])
+      );
+
+      const technicalPlaceholderMessage = result.validationFailures.find(failure =>
+        failure.startsWith('technical specification contains placeholder text')
+      );
+      const buildPlanPlaceholderMessage = result.validationFailures.find(failure =>
+        failure.startsWith('build plan contains placeholder text')
+      );
+
+      expect(technicalPlaceholderMessage).toBeDefined();
+      expect(technicalPlaceholderMessage).toContain('TODO');
+      expect(technicalPlaceholderMessage).toContain('pending review');
+      expect(buildPlanPlaceholderMessage).toBeDefined();
+      expect(buildPlanPlaceholderMessage).toContain('TODO');
+      expect(buildPlanPlaceholderMessage).toContain('pending review');
     });
   });
 }

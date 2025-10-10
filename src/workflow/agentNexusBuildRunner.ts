@@ -27,6 +27,15 @@ const TASK_LINE_PATTERN = /^\s*[-*]\s*\[(?: |x)\]\s+/gim;
 const TECH_COMPONENT_PATTERN = /^\s*[-*]\s+Component:/gim;
 const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s+Integration:/gim;
 const TECH_CONTRACT_PATTERN = /^\s*[-*]\s+Contract:/gim;
+const PLACEHOLDER_CHECKS = [
+  { label: 'TBD', pattern: /\bTBD\b/i },
+  { label: 'TODO', pattern: /\bTODO\b/i },
+  { label: 'TBA', pattern: /\bTBA\b/i },
+  { label: 'placeholder', pattern: /\bplaceholder\b/i },
+  { label: 'lorem ipsum', pattern: /\blorem\s+ipsum\b/i },
+  { label: 'fill in', pattern: /\bfill\s+in\b/i },
+  { label: 'pending review', pattern: /\bpending\s+review\b/i },
+];
 
 interface TechnicalSpecEvaluation {
   missingHeadings: string[];
@@ -108,9 +117,23 @@ function evaluateBuildPlan(content: string): BuildPlanEvaluation {
   return { missingHeadings, phases, tasks } satisfies BuildPlanEvaluation;
 }
 
+function detectPlaceholderTokens(content: string): string[] {
+  const matches = new Set<string>();
+
+  for (const { label, pattern } of PLACEHOLDER_CHECKS) {
+    if (pattern.test(content)) {
+      matches.add(label);
+    }
+  }
+
+  return Array.from(matches).sort((a, b) => a.localeCompare(b));
+}
+
 function compileValidationFailures(
   technical: TechnicalSpecEvaluation,
-  buildPlan: BuildPlanEvaluation
+  buildPlan: BuildPlanEvaluation,
+  technicalContent: string,
+  buildPlanContent: string
 ): string[] {
   const failures: string[] = [];
 
@@ -140,6 +163,16 @@ function compileValidationFailures(
 
   if (technical.contracts < 3) {
     failures.push('technical specification must define at least three data contracts');
+  }
+
+  const technicalPlaceholders = detectPlaceholderTokens(technicalContent);
+  if (technicalPlaceholders.length > 0) {
+    failures.push(`technical specification contains placeholder text: ${technicalPlaceholders.join(', ')}`);
+  }
+
+  const buildPlanPlaceholders = detectPlaceholderTokens(buildPlanContent);
+  if (buildPlanPlaceholders.length > 0) {
+    failures.push(`build plan contains placeholder text: ${buildPlanPlaceholders.join(', ')}`);
   }
 
   return failures;
@@ -200,7 +233,12 @@ export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.c
 
   const technicalEvaluation = evaluateTechnicalSpecification(technicalSpecContent);
   const buildPlanEvaluation = evaluateBuildPlan(buildPlanContent);
-  const validationFailures = compileValidationFailures(technicalEvaluation, buildPlanEvaluation);
+  const validationFailures = compileValidationFailures(
+    technicalEvaluation,
+    buildPlanEvaluation,
+    technicalSpecContent,
+    buildPlanContent
+  );
 
   if (validationFailures.length > 0) {
     return {
