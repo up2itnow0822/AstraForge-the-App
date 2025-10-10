@@ -112,7 +112,7 @@ export function defineAgentNexusBuildPromptRegressionSuite({
         '   -   [x] Task: Implement agent runtime',
         '*   [ ] Task: Integrate reasoning providers',
         '      -   [ ] Task: Expand evidence ingestion',
-        '\t###\tPhase 3: Launch Readiness',
+        '      ###   Phase 3: Launch Readiness',
         '   -   [x] Task: Harden security posture',
         '*   [ ] Task: Execute mission rehearsal',
         '      -   [ ] Task: Finalize launch review',
