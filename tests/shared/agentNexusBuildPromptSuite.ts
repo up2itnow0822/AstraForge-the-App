@@ -149,6 +149,82 @@ export function defineAgentNexusBuildPromptRegressionSuite({
       expect(result.message).not.toContain('\n');
     });
 
+    it('accepts heading variations in casing and delimiters while enforcing structural counts', async () => {
+      const tempWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), 'agentnexus-headings-'));
+      const specsDir = path.join(tempWorkspace, 'docs/specs');
+      await fs.mkdir(specsDir, { recursive: true });
+
+      const technicalSpecWithHeadingVariations = [
+        '# Heading Variation Technical Spec',
+        '##   system overview',
+        'Mission context fully described.',
+        '## CORE SUBSYSTEMS',
+        '- Component: Mission Control Orchestrator',
+        '- Component: Cognitive Workspace Runtime',
+        '- Component: Spec Kit Interpreter',
+        '- Component: Evidence Vault',
+        '## data contracts',
+        '- Contract: MissionPrompt',
+        '- Contract: ArtifactEvidence',
+        '- Contract: ValidationReport',
+        '## external integrations',
+        '- Integration: OpenAI Assistants API',
+        '- Integration: Hugging Face Inference',
+        '- Integration: GitHub Enterprise',
+        '## security & compliance',
+        'Security posture documented.',
+        '## telemetry & observability',
+        'Observability plan established.',
+        '## DEPLOYMENT TOPOLOGY',
+        'Deployment model finalized.',
+      ].join('\n');
+
+      const buildPlanWithDelimiterVariations = [
+        '# Heading Variation Build Plan',
+        '## execution strategy',
+        'Execution steps enumerated.',
+        '### Phase 1 - Foundations',
+        '+ [X] Task: Prepare repository structure',
+        '- [ ] Task: Configure CI pipelines',
+        '* [ ] Task: Establish documentation baseline',
+        '- [ ] Task: Validate development workstations',
+        '### Phase 2: Launch Enablement',
+        '+ [ ] Task: Implement agent runtime core',
+        '- [ ] Task: Integrate reasoning providers',
+        '* [ ] Task: Harden telemetry ingestion',
+        '### Phase 3: Sustainment',
+        '+ [ ] Task: Conduct mission rehearsal',
+        '- [ ] Task: Finalize security validations',
+        '* [ ] Task: Complete operational handoff',
+        '## risk management',
+        'Risks catalogued and mitigated.',
+        '## VALIDATION STRATEGY',
+        'Validation protocol in effect.',
+      ].join('\n');
+
+      await Promise.all([
+        fs.writeFile(
+          path.join(specsDir, 'AgentNexus_Technical_Spec_Final.txt'),
+          technicalSpecWithHeadingVariations
+        ),
+        fs.writeFile(
+          path.join(specsDir, 'Comprehensive_Build_Plan_for_AgentNexus.txt'),
+          buildPlanWithDelimiterVariations
+        ),
+      ]);
+
+      const result = await runAgentNexusBuildPrompt(tempWorkspace);
+
+      expect(result.success).toBe(true);
+      expect(result.validationFailures).toHaveLength(0);
+      expect(result.details?.technicalSpec.components).toBe(4);
+      expect(result.details?.technicalSpec.integrations).toBe(3);
+      expect(result.details?.technicalSpec.contracts).toBe(3);
+      expect(result.details?.buildPlan.phases).toBe(3);
+      expect(result.details?.buildPlan.tasks).toBeGreaterThanOrEqual(10);
+      expect(result.message).toMatch(/Ready for automated execution/);
+    });
+
     it('rejects specifications containing placeholder tokens even when structural checks pass', async () => {
       const tempWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), 'agentnexus-placeholder-'));
       const specsDir = path.join(tempWorkspace, 'docs/specs');
