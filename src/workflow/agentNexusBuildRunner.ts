@@ -22,11 +22,11 @@ const BUILD_PLAN_REQUIRED_HEADINGS = [
   '## Validation Strategy',
 ];
 
-const PHASE_HEADING_PATTERN = /^### Phase \d+:/gim;
-const TASK_LINE_PATTERN = /^- \[(?: |x)\] /gim;
-const TECH_COMPONENT_PATTERN = /^- Component:/gim;
-const TECH_INTEGRATION_PATTERN = /^- Integration:/gim;
-const TECH_CONTRACT_PATTERN = /^- Contract:/gim;
+const PHASE_HEADING_PATTERN = /^### Phase \d+:/im;
+const TASK_LINE_PATTERN = /^- \[(?: |x)\] /im;
+const TECH_COMPONENT_PATTERN = /^- Component:/im;
+const TECH_INTEGRATION_PATTERN = /^- Integration:/im;
+const TECH_CONTRACT_PATTERN = /^- Contract:/im;
 
 interface TechnicalSpecEvaluation {
   missingHeadings: string[];
