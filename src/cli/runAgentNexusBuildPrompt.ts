@@ -19,11 +19,28 @@ async function main(): Promise<void> {
         }
       }
 
+      if (result.validationFailures.length > 0) {
+        console.error('\nSpecification validation failures:');
+        for (const failure of result.validationFailures) {
+          console.error(` - ${failure}`);
+        }
+      }
+
       process.exitCode = 1;
       return;
     }
 
     console.log('\nAgentNexus build prompt completed successfully.');
+
+    if (result.details) {
+      console.log('Summary:');
+      console.log(
+        ` - Technical spec covers ${result.details.technicalSpec.components} components, ${result.details.technicalSpec.integrations} integrations, and ${result.details.technicalSpec.contracts} data contracts.`
+      );
+      console.log(
+        ` - Build plan documents ${result.details.buildPlan.tasks} tasks across ${result.details.buildPlan.phases} phases.`
+      );
+    }
   } catch (error) {
     console.error('Unexpected error while running the AgentNexus build prompt.');
 
