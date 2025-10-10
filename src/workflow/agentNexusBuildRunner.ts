@@ -33,7 +33,7 @@ const BUILD_PLAN_REQUIRED_HEADINGS: HeadingRequirement[] = [
   { label: '## Validation Strategy', pattern: /^##\s*Validation\s+Strategy\b/im },
 ];
 
-const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+\b.*$/gim;
+const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+\b.*$/gm;
 const TASK_LINE_PATTERN = /^\s*[-*+]\s*\[(?:\s|[xX])\]\s+/gim;
 const TECH_COMPONENT_PATTERN = /^\s*[-*]\s+Component:/gim;
 const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s+Integration:/gim;
