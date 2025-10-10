@@ -67,6 +67,8 @@ export function defineAgentNexusBuildPromptRegressionSuite({
       expect(result.details?.technicalSpec.components).toBeGreaterThanOrEqual(4);
       expect(result.details?.buildPlan.phases).toBeGreaterThanOrEqual(3);
       expect(result.message).toMatch(/prerequisites satisfied/i);
+      expect(result.message).not.toMatch(/\s{2,}/);
+      expect(result.message).not.toContain('\n');
     });
 
     it('interprets specification bullet formatting variations gracefully', async () => {
@@ -112,7 +114,7 @@ export function defineAgentNexusBuildPromptRegressionSuite({
         '   -   [x] Task: Implement agent runtime',
         '*   [ ] Task: Integrate reasoning providers',
         '      -   [ ] Task: Expand evidence ingestion',
-        '      ###   Phase 3: Launch Readiness',
+        '\t###\tPhase 3: Launch Readiness',
         '   -   [x] Task: Harden security posture',
         '*   [ ] Task: Execute mission rehearsal',
         '      -   [ ] Task: Finalize launch review',
@@ -142,6 +144,7 @@ export function defineAgentNexusBuildPromptRegressionSuite({
       expect(result.details?.buildPlan.phases).toBe(3);
       expect(result.details?.buildPlan.tasks).toBe(10);
       expect(result.message).toMatch(/data contracts/);
+      expect(result.message).not.toContain('\n');
     });
   });
 }
