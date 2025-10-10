@@ -188,7 +188,7 @@ export function defineAgentNexusBuildPromptRegressionSuite({
         '- [ ] Task: Configure CI pipelines',
         '* [ ] Task: Establish documentation baseline',
         '- [ ] Task: Validate development workstations',
-        '### Phase 2 Launch Enablement',
+        '### Phase 2: Launch Enablement',
         '+ [ ] Task: Implement agent runtime core',
         '- [ ] Task: Integrate reasoning providers',
         '* [ ] Task: Harden telemetry ingestion',
