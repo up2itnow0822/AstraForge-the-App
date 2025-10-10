@@ -22,10 +22,10 @@ const BUILD_PLAN_REQUIRED_HEADINGS = [
   '## Validation Strategy',
 ];
 
-const PHASE_HEADING_PATTERN = /^### Phase \d+:/im;
-const TASK_LINE_PATTERN = /^- \[(?: |x)\] /im;
-const TECH_COMPONENT_PATTERN = /^- Component:/im;
-const TECH_INTEGRATION_PATTERN = /^- Integration:/im;
+const PHASE_HEADING_PATTERN = /^### Phase \d+:/gim;
+const TASK_LINE_PATTERN = /^- \[(?: |x)\] /gim;
+const TECH_COMPONENT_PATTERN = /^- Component:/gim;
+const TECH_INTEGRATION_PATTERN = /^- Integration:/gim;
 const TECH_CONTRACT_PATTERN = /^- Contract:/im;
 
 interface TechnicalSpecEvaluation {
@@ -111,6 +111,12 @@ function compileValidationFailures(
   buildPlan: BuildPlanEvaluation
 ): string[] {
   const failures: string[] = [];
+
+  const MIN_BUILD_PLAN_PHASES = 3;
+  const MIN_BUILD_PLAN_TASKS = 10;
+  const MIN_TECH_SPEC_COMPONENTS = 4;
+  const MIN_TECH_SPEC_INTEGRATIONS = 3;
+  const MIN_TECH_SPEC_CONTRACTS = 3;
 
   if (technical.missingHeadings.length > 0) {
     failures.push(`technical specification missing sections: ${technical.missingHeadings.join(', ')}`);
@@ -216,7 +222,7 @@ export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.c
     stepsAttempted,
     message: `AgentNexus build prompt prerequisites satisfied: ${details.technicalSpec.components} components, ${details.technicalSpec.integrations} integrations, and ${details.buildPlan.tasks} actionable tasks across ${details.buildPlan.phases} phases are documented. Ready for automated execution.`,
     workspaceRoot: resolvedRoot,
-    validationFailures: [],
+    validationFailures,
     details,
   } satisfies AgentNexusBuildResult;
 }

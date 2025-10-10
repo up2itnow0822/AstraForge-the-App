@@ -1,23 +1,30 @@
 import * as os from 'os';
 import * as path from 'path';
-import { promises as fs } from 'fs';
-import { runAgentNexusBuildPrompt } from '../../src/workflow/agentNexusBuildRunner';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import { defineAgentNexusBuildPromptRegressionSuite } from '../shared/agentNexusBuildPromptSuite';
 
-describe('AgentNexus build prompt runner', () => {
-  it('reports missing technical specifications as a blocking issue', async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agentnexus-missing-'));
+const runFullSuite = process.env.RUN_FULL_TEST_SUITE === 'true';
+const describeForFullSuite = runFullSuite ? describe : describe.skip;
 
-    const result = await runAgentNexusBuildPrompt(workspaceRoot);
+const repoRoot = path.resolve(__dirname, '../..');
 
-    expect(result.success).toBe(false);
-    expect(result.missingSpecs).toEqual(
-      expect.arrayContaining([
-        'docs/specs/AgentNexus_Technical_Spec_Final.txt',
-        'docs/specs/Comprehensive_Build_Plan_for_AgentNexus.txt',
-      ])
-    );
-    expect(result.validationFailures).toEqual(expect.arrayContaining(['specification files missing']));
-    expect(result.message).toMatch(/missing/i);
+defineAgentNexusBuildPromptRegressionSuite({
+  suiteName: 'AgentNexus build prompt runner (system-wide)',
+  workspaceRoot: repoRoot,
+});
+
+describeForFullSuite('AgentNexus build prompt CLI integration', () => {
+  const execFileAsync = promisify(execFile);
+
+  it('executes successfully against the repository workspace', async () => {
+    const cliPath = path.join(repoRoot, 'extension/out/cli/runAgentNexusBuildPrompt.js');
+    const { stdout } = await execFileAsync(process.execPath, [cliPath], {
+      cwd: repoRoot,
+    });
+
+    expect(stdout).toContain('AgentNexus build prompt completed successfully.');
+    expect(stdout).toContain('prerequisites satisfied');
   });
 
   it('fails validation when specifications do not meet quality gates', async () => {
