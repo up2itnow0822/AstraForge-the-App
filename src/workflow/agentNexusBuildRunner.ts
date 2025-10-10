@@ -24,9 +24,9 @@ const BUILD_PLAN_REQUIRED_HEADINGS = [
 
 const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+:/gim;
 const TASK_LINE_PATTERN = /^\s*[-*]\s*\[(?: |x)\]\s+/gim;
-const TECH_COMPONENT_PATTERN = /^\s*[-*]\s+Component:/gim;
-const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s+Integration:/gim;
-const TECH_CONTRACT_PATTERN = /^\s*[-*]\s+Contract:/gim;
+const TECH_COMPONENT_PATTERN = /^\s*[-*]\s*Component\s*:\s*/gim;
+const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s*Integration\s*:\s*/gim;
+const TECH_CONTRACT_PATTERN = /^\s*[-*]\s*Contract\s*:\s*/gim;
 
 interface TechnicalSpecEvaluation {
   missingHeadings: string[];
