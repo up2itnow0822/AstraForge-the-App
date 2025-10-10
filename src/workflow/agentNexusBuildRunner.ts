@@ -26,7 +26,7 @@ const PHASE_HEADING_PATTERN = /^### Phase \d+:/gim;
 const TASK_LINE_PATTERN = /^- \[(?: |x)\] /gim;
 const TECH_COMPONENT_PATTERN = /^- Component:/gim;
 const TECH_INTEGRATION_PATTERN = /^- Integration:/gim;
-const TECH_CONTRACT_PATTERN = /^- Contract:/gim;
+const TECH_CONTRACT_PATTERN = /^- Contract:/im;
 
 interface TechnicalSpecEvaluation {
   missingHeadings: string[];
