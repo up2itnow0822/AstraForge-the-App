@@ -216,7 +216,7 @@ export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.c
     stepsAttempted,
     message: `AgentNexus build prompt prerequisites satisfied: ${details.technicalSpec.components} components, ${details.technicalSpec.integrations} integrations, and ${details.buildPlan.tasks} actionable tasks across ${details.buildPlan.phases} phases are documented. Ready for automated execution.`,
     workspaceRoot: resolvedRoot,
-    validationFailures,
+    validationFailures: [],
     details,
   } satisfies AgentNexusBuildResult;
 }
