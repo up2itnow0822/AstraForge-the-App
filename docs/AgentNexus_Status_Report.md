@@ -17,6 +17,7 @@
 
 ## Automated Build Prompt Check
 - The `runAgentNexusBuildPrompt` workflow validates the presence of the two authoritative specification files before delegating to the AstraForge automation pipeline.
+- Run `npm run agentnexus:build` to execute the workflow from the command line. The script compiles the codebase, surfaces any missing prerequisites, and exits with a non-zero status when the build prompt cannot proceed.
 - The automated test confirms that the build prompt cannot proceed because both required specifications are absent, reinforcing the need to restore them before implementation can start.
 
 Until these prerequisites are in place, the AgentNexus project remains at 0% completion.
