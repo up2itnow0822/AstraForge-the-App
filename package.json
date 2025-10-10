@@ -124,7 +124,8 @@
     "test:api": "node out/testing/apiTesterCLI.js",
     "test:codacy": "node scripts/run-codacy-tests.cjs",
     "package": "vsce package",
-    "clean": "rimraf out dist coverage .nyc_output"
+    "clean": "rimraf out dist coverage .nyc_output",
+    "agentnexus:build": "npm run compile && node ./extension/out/cli/runAgentNexusBuildPrompt.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
