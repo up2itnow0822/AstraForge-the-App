@@ -18,6 +18,7 @@
 
 ## Automated Build Prompt Check
 - The `runAgentNexusBuildPrompt` workflow now validates specification completeness, ensuring minimum coverage of components, integrations, data contracts, and actionable tasks.
+- Validation tolerates indentation and alternate bullet markers inside the specification documents so formatting adjustments do not produce false negatives.
 - Run `npm run agentnexus:build` to execute the workflow from the command line. The script compiles the codebase, surfaces validation failures, and exits with a non-zero status when gaps remain.
 - Automated tests cover missing-file, invalid-content, and success scenarios so regressions in the build prompt workflow are immediately visible in CI.
 

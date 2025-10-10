@@ -22,11 +22,11 @@ const BUILD_PLAN_REQUIRED_HEADINGS = [
   '## Validation Strategy',
 ];
 
-const PHASE_HEADING_PATTERN = /^### Phase \d+:/gim;
-const TASK_LINE_PATTERN = /^- \[(?: |x)\] /gim;
-const TECH_COMPONENT_PATTERN = /^- Component:/gim;
-const TECH_INTEGRATION_PATTERN = /^- Integration:/gim;
-const TECH_CONTRACT_PATTERN = /^- Contract:/im;
+const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+:/gim;
+const TASK_LINE_PATTERN = /^\s*[-*]\s*\[(?: |x)\]\s+/gim;
+const TECH_COMPONENT_PATTERN = /^\s*[-*]\s*Component\s*:\s*/gim;
+const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s*Integration\s*:\s*/gim;
+const TECH_CONTRACT_PATTERN = /^\s*[-*]\s*Contract\s*:\s*/gim;
 
 interface TechnicalSpecEvaluation {
   missingHeadings: string[];
@@ -65,6 +65,8 @@ export interface AgentNexusBuildResult {
     };
   };
 }
+
+type AgentNexusBuildSuccessDetails = NonNullable<AgentNexusBuildResult['details']>;
 
 async function fileExists(absolutePath: string): Promise<boolean> {
   try {
@@ -112,12 +114,6 @@ function compileValidationFailures(
 ): string[] {
   const failures: string[] = [];
 
-  const MIN_BUILD_PLAN_PHASES = 3;
-  const MIN_BUILD_PLAN_TASKS = 10;
-  const MIN_TECH_SPEC_COMPONENTS = 4;
-  const MIN_TECH_SPEC_INTEGRATIONS = 3;
-  const MIN_TECH_SPEC_CONTRACTS = 3;
-
   if (technical.missingHeadings.length > 0) {
     failures.push(`technical specification missing sections: ${technical.missingHeadings.join(', ')}`);
   }
@@ -126,27 +122,34 @@ function compileValidationFailures(
     failures.push(`build plan missing sections: ${buildPlan.missingHeadings.join(', ')}`);
   }
 
-  if (buildPlan.phases < MIN_BUILD_PLAN_PHASES) {
-    failures.push(`build plan must define at least ${MIN_BUILD_PLAN_PHASES} execution phases`);
+  if (buildPlan.phases < 3) {
+    failures.push('build plan must define at least three execution phases');
   }
 
-  if (buildPlan.tasks < MIN_BUILD_PLAN_TASKS) {
-    failures.push(`build plan must outline a minimum of ${MIN_BUILD_PLAN_TASKS} actionable tasks`);
+  if (buildPlan.tasks < 10) {
+    failures.push('build plan must outline a minimum of ten actionable tasks');
   }
 
-  if (technical.components < MIN_TECH_SPEC_COMPONENTS) {
-    failures.push(`technical specification must describe at least ${MIN_TECH_SPEC_COMPONENTS} core components`);
+  if (technical.components < 4) {
+    failures.push('technical specification must describe at least four core components');
   }
 
-  if (technical.integrations < MIN_TECH_SPEC_INTEGRATIONS) {
-    failures.push(`technical specification must document at least ${MIN_TECH_SPEC_INTEGRATIONS} integrations`);
+  if (technical.integrations < 3) {
+    failures.push('technical specification must document at least three integrations');
   }
 
-  if (technical.contracts < MIN_TECH_SPEC_CONTRACTS) {
-    failures.push(`technical specification must define at least ${MIN_TECH_SPEC_CONTRACTS} data contracts`);
+  if (technical.contracts < 3) {
+    failures.push('technical specification must define at least three data contracts');
   }
 
   return failures;
+}
+
+function formatSuccessMessage(details: AgentNexusBuildSuccessDetails): string {
+  const { components, integrations, contracts } = details.technicalSpec;
+  const { tasks, phases } = details.buildPlan;
+
+  return `AgentNexus build prompt prerequisites satisfied: ${components} components, ${integrations} integrations, ${contracts} data contracts, and ${tasks} actionable tasks across ${phases} phases are documented. Ready for automated execution.`;
 }
 
 /**
@@ -220,7 +223,7 @@ export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.c
     success: true,
     missingSpecs,
     stepsAttempted,
-    message: `AgentNexus build prompt prerequisites satisfied: ${details.technicalSpec.components} components, ${details.technicalSpec.integrations} integrations, and ${details.buildPlan.tasks} actionable tasks across ${details.buildPlan.phases} phases are documented. Ready for automated execution.`,
+    message: formatSuccessMessage(details),
     workspaceRoot: resolvedRoot,
     validationFailures,
     details,
