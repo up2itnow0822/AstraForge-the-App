@@ -6,27 +6,51 @@ const REQUIRED_SPEC_FILES = [
   'docs/specs/Comprehensive_Build_Plan_for_AgentNexus.txt',
 ];
 
-const TECH_SPEC_REQUIRED_HEADINGS = [
-  '## System Overview',
-  '## Core Subsystems',
-  '## Data Contracts',
-  '## External Integrations',
-  '## Security & Compliance',
-  '## Telemetry & Observability',
-  '## Deployment Topology',
+interface HeadingRequirement {
+  label: string;
+  pattern: RegExp;
+}
+
+const TECH_SPEC_REQUIRED_HEADINGS: HeadingRequirement[] = [
+  { label: '## System Overview', pattern: /^##\s*System\s+Overview\b/im },
+  { label: '## Core Subsystems', pattern: /^##\s*Core\s+Subsystems\b/im },
+  { label: '## Data Contracts', pattern: /^##\s*Data\s+Contracts\b/im },
+  { label: '## External Integrations', pattern: /^##\s*External\s+Integrations\b/im },
+  {
+    label: '## Security & Compliance',
+    pattern: /^##\s*Security\s*&\s*Compliance\b/im,
+  },
+  {
+    label: '## Telemetry & Observability',
+    pattern: /^##\s*Telemetry\s*&\s*Observability\b/im,
+  },
+  { label: '## Deployment Topology', pattern: /^##\s*Deployment\s+Topology\b/im },
 ];
 
-const BUILD_PLAN_REQUIRED_HEADINGS = [
-  '## Execution Strategy',
-  '## Risk Management',
-  '## Validation Strategy',
+const BUILD_PLAN_REQUIRED_HEADINGS: HeadingRequirement[] = [
+  { label: '## Execution Strategy', pattern: /^##\s*Execution\s+Strategy\b/im },
+  { label: '## Risk Management', pattern: /^##\s*Risk\s+Management\b/im },
+  { label: '## Validation Strategy', pattern: /^##\s*Validation\s+Strategy\b/im },
 ];
 
-const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+:/gim;
-const TASK_LINE_PATTERN = /^\s*[-*]\s*\[(?: |x)\]\s+/gim;
+const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+\b.*$/gim;
+const PHASE_LINE_PATTERN = /^###\s*Phase\s+\d+\b/i;
+const TASK_LINE_PATTERN = /^\s*[-*+]\s*\[(?:\s|[xX])\]\s+/gim;
+const TASK_LINE_STRICT_PATTERN = /^[-*+]\s*\[(?:\s|[xX])\]\s+/i;
 const TECH_COMPONENT_PATTERN = /^\s*[-*]\s+Component:/gim;
 const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s+Integration:/gim;
 const TECH_CONTRACT_PATTERN = /^\s*[-*]\s+Contract:/gim;
+const PLACEHOLDER_CHECKS = [
+  { label: 'TBD', pattern: /\bTBD\b/i },
+  { label: 'TODO', pattern: /\bTODO\b/i },
+  { label: 'TBA', pattern: /\bTBA\b/i },
+  { label: 'placeholder', pattern: /\bplaceholder\b/i },
+  { label: 'lorem ipsum', pattern: /\blorem\s+ipsum\b/i },
+  { label: 'fill in', pattern: /\bfill\s+in\b/i },
+  { label: 'pending review', pattern: /\bpending\s+review\b/i },
+  { label: 'FIXME', pattern: /\bFIXME\b/i },
+  { label: '???', pattern: /\?{3,}/ },
+];
 
 interface TechnicalSpecEvaluation {
   missingHeadings: string[];
@@ -35,10 +59,16 @@ interface TechnicalSpecEvaluation {
   contracts: number;
 }
 
+interface PhaseTaskSummary {
+  title: string;
+  tasks: number;
+}
+
 interface BuildPlanEvaluation {
   missingHeadings: string[];
   phases: number;
   tasks: number;
+  phaseSummaries: PhaseTaskSummary[];
 }
 
 interface SpecificationCheck {
@@ -62,6 +92,7 @@ export interface AgentNexusBuildResult {
     buildPlan: {
       phases: number;
       tasks: number;
+      phaseSummaries: PhaseTaskSummary[];
     };
   };
 }
@@ -91,8 +122,69 @@ async function verifySpecificationFiles(workspaceRoot: string): Promise<Specific
   return checks;
 }
 
+function findMissingHeadings(content: string, requirements: HeadingRequirement[]): string[] {
+  return requirements
+    .filter(requirement => !requirement.pattern.test(content))
+    .map(requirement => requirement.label);
+}
+
+function findEmptySections(
+  content: string,
+  requirements: HeadingRequirement[],
+  documentLabel: 'technical specification' | 'build plan',
+  ignoredLinePatterns: RegExp[] = []
+): string[] {
+  const normalizedContent = content.replace(/\r\n/g, '\n');
+  const matches: string[] = [];
+
+  for (const requirement of requirements) {
+    const matcher = new RegExp(requirement.pattern.source, requirement.pattern.flags);
+    const match = matcher.exec(normalizedContent);
+    if (!match) {
+      continue;
+    }
+
+    const afterHeadingIndex = match.index + match[0].length;
+    const sectionRemainder = normalizedContent.slice(afterHeadingIndex);
+    const nextHeadingIndex = sectionRemainder.search(/^\s*##\s+/m);
+    const sectionBody =
+      nextHeadingIndex >= 0 ? sectionRemainder.slice(0, nextHeadingIndex) : sectionRemainder;
+
+    const hasDescriptiveContent = sectionBody.split('\n').some(line => {
+      const trimmed = line.trim();
+      if (trimmed.length === 0) {
+        return false;
+      }
+
+      return !ignoredLinePatterns.some(pattern => pattern.test(trimmed));
+    });
+
+    if (!hasDescriptiveContent) {
+      matches.push(`${documentLabel} section "${requirement.label}" must include descriptive content`);
+    }
+  }
+
+  return matches;
+}
+
+function summarizePhaseTasks(content: string): PhaseTaskSummary[] {
+  const normalizedContent = content.replace(/\r\n/g, '\n');
+  const headingPattern = new RegExp(PHASE_HEADING_PATTERN.source, PHASE_HEADING_PATTERN.flags);
+  const taskPattern = new RegExp(TASK_LINE_PATTERN.source, TASK_LINE_PATTERN.flags);
+  const matches = Array.from(normalizedContent.matchAll(headingPattern));
+
+  return matches.map((match, index) => {
+    const startIndex = match.index! + match[0].length;
+    const endIndex = index + 1 < matches.length ? matches[index + 1].index! : normalizedContent.length;
+    const sectionBody = normalizedContent.slice(startIndex, endIndex);
+    const taskCount = (sectionBody.match(taskPattern) ?? []).length;
+
+    return { title: match[0].trim(), tasks: taskCount } satisfies PhaseTaskSummary;
+  });
+}
+
 function evaluateTechnicalSpecification(content: string): TechnicalSpecEvaluation {
-  const missingHeadings = TECH_SPEC_REQUIRED_HEADINGS.filter(heading => !content.includes(heading));
+  const missingHeadings = findMissingHeadings(content, TECH_SPEC_REQUIRED_HEADINGS);
   const components = (content.match(TECH_COMPONENT_PATTERN) ?? []).length;
   const integrations = (content.match(TECH_INTEGRATION_PATTERN) ?? []).length;
   const contracts = (content.match(TECH_CONTRACT_PATTERN) ?? []).length;
@@ -101,16 +193,31 @@ function evaluateTechnicalSpecification(content: string): TechnicalSpecEvaluatio
 }
 
 function evaluateBuildPlan(content: string): BuildPlanEvaluation {
-  const missingHeadings = BUILD_PLAN_REQUIRED_HEADINGS.filter(heading => !content.includes(heading));
-  const phases = (content.match(PHASE_HEADING_PATTERN) ?? []).length;
+  const missingHeadings = findMissingHeadings(content, BUILD_PLAN_REQUIRED_HEADINGS);
+  const phaseSummaries = summarizePhaseTasks(content);
+  const phases = phaseSummaries.length;
   const tasks = (content.match(TASK_LINE_PATTERN) ?? []).length;
 
-  return { missingHeadings, phases, tasks } satisfies BuildPlanEvaluation;
+  return { missingHeadings, phases, tasks, phaseSummaries } satisfies BuildPlanEvaluation;
+}
+
+function detectPlaceholderTokens(content: string): string[] {
+  const matches = new Set<string>();
+
+  for (const { label, pattern } of PLACEHOLDER_CHECKS) {
+    if (pattern.test(content)) {
+      matches.add(label);
+    }
+  }
+
+  return Array.from(matches).sort((a, b) => a.localeCompare(b));
 }
 
 function compileValidationFailures(
   technical: TechnicalSpecEvaluation,
-  buildPlan: BuildPlanEvaluation
+  buildPlan: BuildPlanEvaluation,
+  technicalContent: string,
+  buildPlanContent: string
 ): string[] {
   const failures: string[] = [];
 
@@ -118,9 +225,22 @@ function compileValidationFailures(
     failures.push(`technical specification missing sections: ${technical.missingHeadings.join(', ')}`);
   }
 
+  const emptyTechnicalSections = findEmptySections(
+    technicalContent,
+    TECH_SPEC_REQUIRED_HEADINGS,
+    'technical specification'
+  );
+  failures.push(...emptyTechnicalSections);
+
   if (buildPlan.missingHeadings.length > 0) {
     failures.push(`build plan missing sections: ${buildPlan.missingHeadings.join(', ')}`);
   }
+
+  const emptyBuildPlanSections = findEmptySections(buildPlanContent, BUILD_PLAN_REQUIRED_HEADINGS, 'build plan', [
+    PHASE_LINE_PATTERN,
+    TASK_LINE_STRICT_PATTERN,
+  ]);
+  failures.push(...emptyBuildPlanSections);
 
   if (buildPlan.phases < 3) {
     failures.push('build plan must define at least three execution phases');
@@ -128,6 +248,11 @@ function compileValidationFailures(
 
   if (buildPlan.tasks < 10) {
     failures.push('build plan must outline a minimum of ten actionable tasks');
+  }
+
+  const underResourcedPhases = buildPlan.phaseSummaries.filter(summary => summary.tasks < 3);
+  for (const phase of underResourcedPhases) {
+    failures.push(`build plan phase "${phase.title}" must enumerate at least three tasks`);
   }
 
   if (technical.components < 4) {
@@ -140,6 +265,16 @@ function compileValidationFailures(
 
   if (technical.contracts < 3) {
     failures.push('technical specification must define at least three data contracts');
+  }
+
+  const technicalPlaceholders = detectPlaceholderTokens(technicalContent);
+  if (technicalPlaceholders.length > 0) {
+    failures.push(`technical specification contains placeholder text: ${technicalPlaceholders.join(', ')}`);
+  }
+
+  const buildPlanPlaceholders = detectPlaceholderTokens(buildPlanContent);
+  if (buildPlanPlaceholders.length > 0) {
+    failures.push(`build plan contains placeholder text: ${buildPlanPlaceholders.join(', ')}`);
   }
 
   return failures;
@@ -200,7 +335,12 @@ export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.c
 
   const technicalEvaluation = evaluateTechnicalSpecification(technicalSpecContent);
   const buildPlanEvaluation = evaluateBuildPlan(buildPlanContent);
-  const validationFailures = compileValidationFailures(technicalEvaluation, buildPlanEvaluation);
+  const validationFailures = compileValidationFailures(
+    technicalEvaluation,
+    buildPlanEvaluation,
+    technicalSpecContent,
+    buildPlanContent
+  );
 
   if (validationFailures.length > 0) {
     return {
@@ -225,6 +365,7 @@ export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.c
     buildPlan: {
       phases: buildPlanEvaluation.phases,
       tasks: buildPlanEvaluation.tasks,
+      phaseSummaries: buildPlanEvaluation.phaseSummaries,
     },
   } as const;
 
