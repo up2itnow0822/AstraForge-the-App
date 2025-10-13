@@ -34,9 +34,9 @@ const BUILD_PLAN_REQUIRED_HEADINGS: HeadingRequirement[] = [
 ];
 
 const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+\b.*$/gim;
-const PHASE_LINE_PATTERN = /^###\s*Phase\s+\d+\b/i;
+const PHASE_LINE_PATTERN = /^\s*###\s*Phase\s+\d+\b/i;
 const TASK_LINE_PATTERN = /^\s*[-*+]\s*\[(?:\s|[xX])\]\s+/gim;
-const TASK_LINE_STRICT_PATTERN = /^[-*+]\s*\[(?:\s|[xX])\]\s+/i;
+const TASK_LINE_STRICT_PATTERN = /^\s*[-*+]\s*\[(?:\s|[xX])\]\s+/i;
 const TECH_COMPONENT_PATTERN = /^\s*[-*]\s+Component:/gim;
 const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s+Integration:/gim;
 const TECH_CONTRACT_PATTERN = /^\s*[-*]\s+Contract:/gim;
