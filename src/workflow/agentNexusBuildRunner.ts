@@ -213,6 +213,18 @@ function detectPlaceholderTokens(content: string): string[] {
   return Array.from(matches).sort((a, b) => a.localeCompare(b));
 }
 
+function detectPlaceholderTokens(content: string): string[] {
+  const matches = new Set<string>();
+
+  for (const { label, pattern } of PLACEHOLDER_CHECKS) {
+    if (pattern.test(content)) {
+      matches.add(label);
+    }
+  }
+
+  return Array.from(matches).sort((a, b) => a.localeCompare(b));
+}
+
 function compileValidationFailures(
   technical: TechnicalSpecEvaluation,
   buildPlan: BuildPlanEvaluation,
