@@ -138,8 +138,7 @@ function findEmptySections(
   const matches: string[] = [];
 
   for (const requirement of requirements) {
-    const matcher = new RegExp(requirement.pattern.source, requirement.pattern.flags);
-    const match = matcher.exec(normalizedContent);
+    const match = requirement.pattern.exec(normalizedContent);
     if (!match) {
       continue;
     }
