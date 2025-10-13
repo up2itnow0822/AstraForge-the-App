@@ -68,6 +68,7 @@ export function defineAgentNexusBuildPromptRegressionSuite({
       expect(result.validationFailures).toHaveLength(0);
       expect(result.details?.technicalSpec.components).toBeGreaterThanOrEqual(4);
       expect(result.details?.buildPlan.phases).toBeGreaterThanOrEqual(3);
+      expect(result.details?.buildPlan.phaseSummaries.every(summary => summary.tasks >= 3)).toBe(true);
       expect(result.message).toMatch(/prerequisites satisfied/i);
       expect(result.message).not.toMatch(/\s{2,}/);
       expect(result.message).not.toContain('\n');
@@ -188,7 +189,7 @@ export function defineAgentNexusBuildPromptRegressionSuite({
         '- [ ] Task: Configure CI pipelines',
         '* [ ] Task: Establish documentation baseline',
         '- [ ] Task: Validate development workstations',
-        '### Phase 2: Launch Enablement',
+        '### Phase 2 Launch Enablement',
         '+ [ ] Task: Implement agent runtime core',
         '- [ ] Task: Integrate reasoning providers',
         '* [ ] Task: Harden telemetry ingestion',
@@ -312,6 +313,146 @@ export function defineAgentNexusBuildPromptRegressionSuite({
       expect(buildPlanPlaceholderMessage).toBeDefined();
       expect(buildPlanPlaceholderMessage).toContain('TODO');
       expect(buildPlanPlaceholderMessage).toContain('pending review');
+    });
+
+    it('flags sections that only include headings without descriptive content', async () => {
+      const tempWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), 'agentnexus-empty-section-'));
+      const specsDir = path.join(tempWorkspace, 'docs/specs');
+      await fs.mkdir(specsDir, { recursive: true });
+
+      const technicalSpecWithEmptySection = [
+        '# Technical Spec with Missing Narrative',
+        '## System Overview',
+        'Mission overview fully detailed.',
+        '## Core Subsystems',
+        '- Component: Mission Control Orchestrator',
+        '- Component: Cognitive Workspace Runtime',
+        '- Component: Spec Kit Interpreter',
+        '- Component: Evidence Vault',
+        '## Data Contracts',
+        '- Contract: MissionPrompt',
+        '- Contract: ArtifactEvidence',
+        '- Contract: ValidationReport',
+        '## External Integrations',
+        '- Integration: OpenAI Assistants API',
+        '- Integration: Hugging Face Inference',
+        '- Integration: GitHub Enterprise',
+        '## Security & Compliance',
+        '',
+        '## Telemetry & Observability',
+        'Observability instrumentation described.',
+        '## Deployment Topology',
+        'Deployment model articulated.',
+      ].join('\n');
+
+      const buildPlanWithEmptySection = [
+        '# Build Plan with Missing Narrative',
+        '## Execution Strategy',
+        '',
+        '### Phase 1: Foundations',
+        '- [ ] Task: Prepare repository structure',
+        '- [ ] Task: Configure CI pipelines',
+        '- [ ] Task: Establish documentation baseline',
+        '### Phase 2: Runtime Enablement',
+        '- [ ] Task: Implement agent runtime core',
+        '- [ ] Task: Integrate reasoning providers',
+        '- [ ] Task: Harden telemetry ingestion',
+        '### Phase 3: Launch Readiness',
+        '- [ ] Task: Run mission rehearsal',
+        '- [ ] Task: Finalize security validations',
+        '- [ ] Task: Complete operations handoff',
+        '- [ ] Task: Publish readiness summary',
+        '## Risk Management',
+        'Risk mitigations defined.',
+        '## Validation Strategy',
+        'Validation approach established.',
+      ].join('\n');
+
+      await Promise.all([
+        fs.writeFile(path.join(specsDir, 'AgentNexus_Technical_Spec_Final.txt'), technicalSpecWithEmptySection),
+        fs.writeFile(path.join(specsDir, 'Comprehensive_Build_Plan_for_AgentNexus.txt'), buildPlanWithEmptySection),
+      ]);
+
+      const result = await runAgentNexusBuildPrompt(tempWorkspace);
+
+      expect(result.success).toBe(false);
+      expect(result.validationFailures).toEqual(
+        expect.arrayContaining([
+          'technical specification section "## Security & Compliance" must include descriptive content',
+          'build plan section "## Execution Strategy" must include descriptive content',
+        ])
+      );
+    });
+
+    it('requires each build phase to enumerate at least three actionable tasks', async () => {
+      const tempWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), 'agentnexus-phase-tasks-'));
+      const specsDir = path.join(tempWorkspace, 'docs/specs');
+      await fs.mkdir(specsDir, { recursive: true });
+
+      const technicalSpec = [
+        '# Balanced Technical Spec',
+        '## System Overview',
+        'Mission overview fully detailed.',
+        '## Core Subsystems',
+        '- Component: Mission Control Orchestrator',
+        '- Component: Cognitive Workspace Runtime',
+        '- Component: Spec Kit Interpreter',
+        '- Component: Evidence Vault',
+        '## Data Contracts',
+        '- Contract: MissionPrompt',
+        '- Contract: ArtifactEvidence',
+        '- Contract: ValidationReport',
+        '## External Integrations',
+        '- Integration: OpenAI Assistants API',
+        '- Integration: Hugging Face Inference',
+        '- Integration: GitHub Enterprise',
+        '## Security & Compliance',
+        'Security posture covered.',
+        '## Telemetry & Observability',
+        'Observability instrumentation described.',
+        '## Deployment Topology',
+        'Deployment model articulated.',
+      ].join('\n');
+
+      const buildPlan = [
+        '# Build Plan with Sparse Phase',
+        '## Execution Strategy',
+        'Execution steps enumerated.',
+        '### Phase 1: Foundations',
+        '- [ ] Task: Prepare repository structure',
+        '- [ ] Task: Configure CI pipelines',
+        '- [ ] Task: Establish documentation baseline',
+        '- [ ] Task: Automate lint and format checks',
+        '- [ ] Task: Bootstrap documentation portal',
+        '### Phase 2: Runtime Enablement',
+        '- [ ] Task: Implement agent runtime core',
+        '- [ ] Task: Integrate reasoning providers',
+        '- [ ] Task: Harden telemetry ingestion',
+        '- [ ] Task: Expand evidence ingestion',
+        '- [ ] Task: Enable mission rehearsal telemetry',
+        '### Phase 3: Launch Readiness',
+        '- [ ] Task: Finalize security validations',
+        '- [ ] Task: Complete operations handoff',
+        '## Risk Management',
+        'Risk mitigations defined.',
+        '## Validation Strategy',
+        'Validation approach established.',
+      ].join('\n');
+
+      await Promise.all([
+        fs.writeFile(path.join(specsDir, 'AgentNexus_Technical_Spec_Final.txt'), technicalSpec),
+        fs.writeFile(path.join(specsDir, 'Comprehensive_Build_Plan_for_AgentNexus.txt'), buildPlan),
+      ]);
+
+      const result = await runAgentNexusBuildPrompt(tempWorkspace);
+
+      expect(result.success).toBe(false);
+      expect(result.validationFailures).toEqual(
+        expect.arrayContaining([
+          'build plan phase "### Phase 3: Launch Readiness" must enumerate at least three tasks',
+        ])
+      );
+      expect(result.validationFailures).not.toEqual(expect.arrayContaining(['build plan must outline a minimum of ten actionable tasks']));
     });
   });
 }
