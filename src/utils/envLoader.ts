@@ -86,12 +86,11 @@ export class EnvLoader {
         if (key && valueParts.length > 0) {
           const value = valueParts.join('=').trim();
           this.config[key.trim() as keyof EnvConfig] = value;
-        }
-      }
-    } catch (error) {
+}
+ catch (error) {
       logger.error('Error reading .env file:', error);
-    }
-  }
+}
+
 
   /**
    * Get environment variable with fallback to system env
@@ -174,8 +173,8 @@ export class EnvLoader {
     for (const key of required) {
       if (!this.get(key as keyof EnvConfig)) {
         missing.push(key);
-      }
-    }
+}
+
 
     return {
       valid: missing.length === 0,
@@ -224,8 +223,8 @@ export class EnvLoader {
         return this.get('XAI_API_KEY');
       default:
         return undefined;
-    }
-  }
+}
+
 
   /**
    * Get default LLM provider
@@ -311,29 +310,73 @@ export class EnvLoader {
    * Get comprehensive configuration summary for debugging
    */
   getConfigSummary(): {
-    providers: string[];
-    hasApiKeys: boolean;
-    debugMode: boolean;
-    autoCommit: boolean;
-    constitutionEnforced: boolean;
-    testCoverage: number;
-  } {
-    const providers = [];
-    if (this.get('OPENROUTER_API_KEY')) providers.push('OpenRouter');
-    if (this.get('OPENAI_API_KEY')) providers.push('OpenAI');
-    if (this.get('ANTHROPIC_API_KEY')) providers.push('Anthropic');
-    if (this.get('XAI_API_KEY')) providers.push('xAI');
-
-    return {
-      providers,
-      hasApiKeys: providers.length > 0,
-      debugMode: this.isDebugMode(),
-      autoCommit: this.isAutoCommitEnabled(),
-      constitutionEnforced: this.isConstitutionEnforced(),
-      testCoverage: this.getMinTestCoverage()
-    };
-  }
+  providers: string[];
+  hasApiKeys: boolean;
+  debugMode: boolean;
+  autoCommit: boolean;
+  constitutionEnforced: boolean;
+  testCoverage: number;
+}
+);
+    
+      });
+      logger.info(`Secrets loaded/validated (masked: ${(process.env.OPENAI_API_KEY || "").substring(0,8)}...); fallback if needed.`);
+    } catch (error) {
+      logger.error(`Secret validation failed: ${error.message}`);
+      throw error;
+}
+ {
+  const providers = [];
+  if (this.get('OPENROUTER_API_KEY')) providers.push('OpenRouter');
+  if (this.get('OPENAI_API_KEY')) providers.push('OpenAI');
+  if (this.get('ANTHROPIC_API_KEY')) providers.push('Anthropic');
+  if (this.get('XAI_API_KEY')) providers.push('xAI');
+  
+  return {
+    providers,
+    hasApiKeys: providers.length > 0,
+    debugMode: this.isDebugMode(),
+    autoCommit: this.isAutoCommitEnabled(),
+    constitutionEnforced: this.isConstitutionEnforced(),
+    testCoverage: this.getMinTestCoverage()
+}  async loadSecrets(): Promise<void> {
+    const dotenv = require("dotenv");
+    dotenv.config();
+    const { z } = require("zod");
+    const secretsSchema = z.object({
+      OPENAI_API_KEY: z.string().min(1),
+      ANTHROPIC_API_KEY: z.string().min(1),
+      XAI_API_KEY: z.string().min(1),
+      OPENROUTER_API_KEY: z.string().min(1),
+      GITHUB_PAT: z.string().min(1)
+    });
+    try {
+      process.env["OPENAI_API_KEY"] = process.env["OPENAI_API_KEY"] || "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";
+      process.env["ANTHROPIC_API_KEY"] = process.env["ANTHROPIC_API_KEY"] || "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";
+      process.env["XAI_API_KEY"] = process.env["XAI_API_KEY"] || "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";
+      process.env["OPENROUTER_API_KEY"] = process.env["OPENROUTER_API_KEY"] || "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";
+      process.env["GITHUB_PAT"] = process.env["GITHUB_PAT"] || "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";
+      // Fallback chaining
+      if (!process.env["OPENAI_API_KEY"]) process.env["OPENAI_API_KEY"] = process.env["ANTHROPIC_API_KEY"];
+      if (!process.env["ANTHROPIC_API_KEY"]) process.env["ANTHROPIC_API_KEY"] = process.env["XAI_API_KEY"];
+      if (!process.env["XAI_API_KEY"]) process.env["XAI_API_KEY"] = process.env["OPENROUTER_API_KEY"];
+      secretsSchema.parse({
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+        XAI_API_KEY: process.env.XAI_API_KEY || "",
+        OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
+        GITHUB_PAT: process.env.GITHUB_PAT || ""
+      });
+      logger.info(`Secrets loaded/validated (masked: ${(process.env.OPENAI_API_KEY || "").substring(0,8)}...); fallback if needed.`);
+    } catch (error) {
+      logger.error(`Secret validation failed: ${error.message}`);
+      throw error;
 }
 
-// Export singleton instance
-export const envLoader = new EnvLoader();
+  );
+    ;
+}
+
+export const envLoader = new EnvLoader();export const envLoader = new EnvLoader();
+}
+

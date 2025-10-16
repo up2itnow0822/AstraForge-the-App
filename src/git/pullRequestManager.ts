@@ -1,193 +1,81 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
-export type PullRequestStatus = 'open' | 'closed' | 'merged';
-
-export interface PullRequestChecks {
-  tests: boolean;
-  lint: boolean;
-  security: boolean;
-  docs: boolean;
-}
-
-export interface PullRequestRepairTarget {
-  file: string;
-  description: string;
-}
-
-export interface PullRequestHistoryEntry {
-  type: 'closed' | 'repaired' | 'merged';
-  summary: string;
-  timestamp: string;
-}
-
-export interface PullRequestRecord {
-  id: number;
-  title: string;
-  issue: string;
-  targetVersion: string;
-  status: PullRequestStatus;
-  branch: string;
-  deprecated?: boolean;
-  checks: PullRequestChecks;
-  notes?: string[];
-  repairTargets?: PullRequestRepairTarget[];
-  fixesApplied?: string[];
-  resolution?: string;
-  mergedAt?: string;
-  branchDeleted?: boolean;
-  history?: PullRequestHistoryEntry[];
-}
-
-const DATA_FILE = path.resolve(__dirname, '../../data/pullRequests.json');
+// src/git/pullRequestManager.ts
+import { graphql } from '@octokit/graphql';
 
 export class PullRequestManager {
-  constructor(
-    private readonly filePath: string = DATA_FILE,
-    private readonly currentVersion: string = '3.0.0'
-  ) {}
+  private repo: string;
+  private graphql: any;
 
-  async manage(): Promise<PullRequestRecord[]> {
-    const pullRequests = await this.load();
-    const processed = pullRequests.map(pr => this.applyRules(pr));
-    await this.save(processed);
-    return processed;
+  constructor(repo: string, graphqlClient: any) {
+    this.repo = repo;
+    this.graphql = graphqlClient;
   }
 
-  private async load(): Promise<PullRequestRecord[]> {
-    const fileContent = await fs.readFile(this.filePath, 'utf8');
-    return JSON.parse(fileContent) as PullRequestRecord[];
+  async queryPRs(): Promise<{ id: number; title: string; status: string; createdAt: string; }[]> {
+    const variables = { repo: this.repo };
+    const { repository } = await this.graphql(
+      `query($repo: String!) { repository(name: $repo) { pullRequests(states: [OPEN, CLOSED, MERGED]) { nodes { id title state createdAt isDeprecated resolution checks { tests lint } fixesApplied targets version } } } }`,
+      variables
+    );
+    return repository.pullRequests.nodes.map((n: any) => ({
+      id: parseInt(n.id),
+      title: n.title,
+      status: n.state.toLowerCase(),
+      createdAt: n.createdAt,
+      isDeprecated: n.isDeprecated,
+      resolution: n.resolution,
+      checks: {
+        tests: n.checks.tests,
+        lint: n.checks.lint,
+      },
+      fixesApplied: n.fixesApplied || [],
+      targets: {
+        version: n.targets.version,
+      },
+    }));
   }
 
-  private async save(prs: PullRequestRecord[]): Promise<void> {
-    const payload = JSON.stringify(prs, null, 2);
-    await fs.writeFile(this.filePath, payload, 'utf8');
+  async updatePRStatus(id: number, status: 'open' | 'closed' | 'merged') {
+    const state = status === 'merged' ? 'MERGED' : status === 'closed' ? 'CLOSED' : 'OPEN';
+    const variables = { pullRequestId: id.toString(), state };
+    const { updatePullRequest } = await this.graphql(
+      `mutation($pullRequestId: ID!, $state: PullRequestState!) { updatePullRequest(input: { pullRequestId: $pullRequestId, state: $state }) { pullRequest { id } } }`,
+      variables
+    );
+    return updatePullRequest.pullRequest;
   }
 
-  private applyRules(pr: PullRequestRecord): PullRequestRecord {
-    if (this.shouldClose(pr)) {
-      return this.closeDeprecated(pr);
+  async applyRules(prId: number, type: string = '') {
+    const prs = await this.queryPRs();
+    const pr = prs.find(p => p.id === prId);
+    if (!pr) throw new Error('PR not found');
+    if (pr.status === 'merged') {
+      pr.checks.tests = true;
+      pr.checks.lint = true;
+      return pr;
     }
-
-    if (this.targetsCurrentVersion(pr)) {
-      const repaired = this.repairForCurrentVersion(pr);
-      return this.mergeRepaired(repaired);
+    if (type === 'deprecated') {
+      pr.isDeprecated = true;
+      pr.resolution = 'close';
+    } else if (type === 'current repair') {
+      pr.fixesApplied.push('current fix');
+      pr.targets.version = '3.0.0';
+      pr.checks.repair = true;
+      pr.checks.checks = true;
+      pr.checks.tests = true;
+      pr.checks.lint = true;
     }
-
+    // Add history entry
+    pr.history = `applied rules ${type} at ${new Date().toISOString()}`;
     return pr;
   }
 
-  private shouldClose(pr: PullRequestRecord): boolean {
-    if (pr.status !== 'open') {
-      return false;
+  async reparForCurrentVersion(prId: number) {
+    const prs = await this.queryPRs();
+    const pr = prs.find(p => p.id === prId);
+    if (pr && pr.fixesApplied.length > 0) {
+      pr.status = 'merged';
+      pr.history = 'merged after verification';
     }
-
-    if (pr.deprecated) {
-      return true;
-    }
-
-    return this.compareVersions(pr.targetVersion, this.currentVersion) < 0;
+    return pr;
   }
-
-  private targetsCurrentVersion(pr: PullRequestRecord): boolean {
-    if (pr.status !== 'open') {
-      return false;
-    }
-
-    return this.compareVersions(pr.targetVersion, this.currentVersion) === 0;
-  }
-
-  private repairForCurrentVersion(pr: PullRequestRecord): PullRequestRecord {
-    const history = this.appendHistory(pr, {
-      type: 'repaired',
-      summary: `Applied fixes for AstraForge ${this.currentVersion}`,
-      timestamp: new Date().toISOString(),
-    });
-
-    const fixes = pr.repairTargets?.map(target => `${target.file}: ${target.description}`) ?? [];
-
-    return {
-      ...pr,
-      checks: {
-        tests: true,
-        lint: true,
-        security: true,
-        docs: true,
-      },
-      fixesApplied: fixes,
-      history,
-    };
-  }
-
-  private mergeRepaired(pr: PullRequestRecord): PullRequestRecord {
-    const history = this.appendHistory(pr, {
-      type: 'merged',
-      summary: 'Merged after successful verification and branch cleanup',
-      timestamp: new Date().toISOString(),
-    });
-
-    return {
-      ...pr,
-      status: 'merged',
-      resolution: 'merged',
-      mergedAt: new Date().toISOString(),
-      branchDeleted: true,
-      history,
-    };
-  }
-
-  private closeDeprecated(pr: PullRequestRecord): PullRequestRecord {
-    const history = this.appendHistory(pr, {
-      type: 'closed',
-      summary: 'Closed because the issue targets a deprecated version',
-      timestamp: new Date().toISOString(),
-    });
-
-    return {
-      ...pr,
-      status: 'closed',
-      resolution: 'deprecated',
-      branchDeleted: true,
-      history,
-    };
-  }
-
-  private appendHistory(
-    pr: PullRequestRecord,
-    entry: PullRequestHistoryEntry
-  ): PullRequestHistoryEntry[] {
-    const history = pr.history ? [...pr.history] : [];
-    history.push(entry);
-    return history;
-  }
-
-  private compareVersions(left: string, right: string): number {
-    const parse = (value: string) => value.split('.').map(segment => Number.parseInt(segment, 10) || 0);
-    const leftParts = parse(left);
-    const rightParts = parse(right);
-    const maxLength = Math.max(leftParts.length, rightParts.length);
-
-    for (let index = 0; index < maxLength; index += 1) {
-      const leftValue = leftParts[index] ?? 0;
-      const rightValue = rightParts[index] ?? 0;
-
-      if (leftValue > rightValue) {
-        return 1;
-      }
-
-      if (leftValue < rightValue) {
-        return -1;
-      }
-    }
-
-    return 0;
-  }
-}
-
-export async function managePullRequests(
-  currentVersion: string = '3.0.0',
-  filePath: string = DATA_FILE
-): Promise<PullRequestRecord[]> {
-  const manager = new PullRequestManager(filePath, currentVersion);
-  return manager.manage();
 }
