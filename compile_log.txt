@@ -1,0 +1,102 @@
+
+> astraforge-ide@3.0.0 compile /root/AstraForge
+> tsc -p ./
+
+src/collaboration/CollaborativeSessionManager.ts(27,11): error TS2322: Type 'string' is not assignable to type 'Record<string, any>'.
+src/collaboration/CollaborativeSessionManager.ts(38,41): error TS2339: Property 'hybridSearch' does not exist on type 'VectorDB'.
+src/collaboration/rounds/CollaborationRound.ts(15,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../types/collaborationTypes.js'?
+src/db/vectorDB.ts(31,24): error TS2339: Property 'embed' does not exist on type 'LLMProvider'.
+src/db/vectorDB.ts(32,21): error TS2339: Property 'embed' does not exist on type 'LLMProvider'.
+src/db/vectorDB.ts(32,57): error TS2352: Conversion of type 'any[][]' to type 'number[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'any[]' is not comparable to type 'number'.
+src/db/vectorDB.ts(34,43): error TS2339: Property 'embed' does not exist on type 'LLMProvider'.
+src/db/vectorDB.ts(45,43): error TS2339: Property 'embed' does not exist on type 'LLMProvider'.
+src/emergent-behavior/EmergentBehaviorSystem.ts(14,36): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/emergent-behavior/index.ts(21,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './EmergentBehaviorSystem.js'?
+src/emergent-behavior/index.ts(31,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './detectors/PatternDetector.js'?
+src/emergent-behavior/index.ts(37,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './amplifiers/BehaviorAmplifier.js'?
+src/emergent-behavior/index.ts(44,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './analyzers/BehaviorAnalyzer.js'?
+src/emergent-behavior/index.ts(51,36): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/git/__tests__/gitManager.test.ts(4,10): error TS2614: Module '"../pullRequestManager.js"' has no exported member 'PullRequestManager'. Did you mean to use 'import PullRequestManager from "../pullRequestManager.js"' instead?
+src/inter-agent-evolution/InterAgentEvolutionSystem.ts(17,41): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/inter-agent-evolution/InterAgentEvolutionSystem.ts(18,40): error TS2307: Cannot find module '../emergent-behavior.js' or its corresponding type declarations.
+src/inter-agent-evolution/index.ts(30,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './InterAgentEvolutionSystem.js'?
+src/inter-agent-evolution/index.ts(36,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './specialization/AgentSpecializationSystem.js'?
+src/inter-agent-evolution/index.ts(43,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './knowledge/KnowledgeTransferSystem.js'?
+src/inter-agent-evolution/index.ts(49,41): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/inter-agent-evolution/index.ts(50,40): error TS2307: Cannot find module '../emergent-behavior.js' or its corresponding type declarations.
+src/llm/cache.ts(4,19): error TS2314: Generic type 'Options' requires 3 type argument(s).
+src/llm/llmManager.ts(2,77): error TS2307: Cannot find module './providers.js' or its corresponding type declarations.
+src/llm/llmManager.ts(19,35): error TS2345: Argument of type '(r: ConsensusResult) => number[]' is not assignable to parameter of type '(value: LLMResponse, index: number, array: LLMResponse[]) => number[]'.
+  Types of parameters 'r' and 'value' are incompatible.
+    Type 'LLMResponse' is missing the following properties from type 'ConsensusResult': text, confidence, sources
+src/llm/llmManager.ts(31,41): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: LLMResponse, index: number, array: LLMResponse[]) => value is LLMResponse, thisArg?: any): LLMResponse[]', gave the following error.
+    Argument of type '(r: ConsensusResult) => boolean' is not assignable to parameter of type '(value: LLMResponse, index: number, array: LLMResponse[]) => value is LLMResponse'.
+      Types of parameters 'r' and 'value' are incompatible.
+        Type 'LLMResponse' is missing the following properties from type 'ConsensusResult': text, confidence, sources
+  Overload 2 of 2, '(predicate: (value: LLMResponse, index: number, array: LLMResponse[]) => unknown, thisArg?: any): LLMResponse[]', gave the following error.
+    Argument of type '(r: ConsensusResult) => boolean' is not assignable to parameter of type '(value: LLMResponse, index: number, array: LLMResponse[]) => unknown'.
+      Types of parameters 'r' and 'value' are incompatible.
+        Type 'LLMResponse' is missing the following properties from type 'ConsensusResult': text, confidence, sources
+src/llm/llmManager.ts(31,67): error TS2339: Property 'finishReason' does not exist on type 'ConsensusResult'.
+src/llm/llmManager.ts(32,38): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: LLMResponse, currentValue: LLMResponse, currentIndex: number, array: LLMResponse[]) => LLMResponse, initialValue: LLMResponse): LLMResponse', gave the following error.
+    Argument of type '(max: number, curr: ConsensusResult, idx: number) => number' is not assignable to parameter of type '(previousValue: LLMResponse, currentValue: LLMResponse, currentIndex: number, array: LLMResponse[]) => LLMResponse'.
+      Types of parameters 'max' and 'previousValue' are incompatible.
+        Type 'LLMResponse' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: LLMResponse, currentIndex: number, array: LLMResponse[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(max: number, curr: ConsensusResult, idx: number) => number' is not assignable to parameter of type '(previousValue: number, currentValue: LLMResponse, currentIndex: number, array: LLMResponse[]) => number'.
+      Types of parameters 'curr' and 'currentValue' are incompatible.
+        Type 'LLMResponse' is missing the following properties from type 'ConsensusResult': text, confidence, sources
+src/llm/llmManager.ts(32,96): error TS2339: Property 'tokensUsed' does not exist on type 'ConsensusResult'.
+src/llm/llmManager.ts(34,24): error TS2538: Type 'LLMResponse' cannot be used as an index type.
+src/llm/llmManager.ts(37,31): error TS2345: Argument of type '(r: ConsensusResult, i: number) => string' is not assignable to parameter of type '(value: LLMResponse, index: number, array: LLMResponse[]) => string'.
+  Types of parameters 'r' and 'value' are incompatible.
+    Type 'LLMResponse' is missing the following properties from type 'ConsensusResult': text, confidence, sources
+src/llm/llmManager.ts(38,25): error TS2538: Type 'LLMResponse' cannot be used as an index type.
+src/llm/providers/AnthropicProvider.ts(21,47): error TS2339: Property 'prompt' does not exist on type 'LLMConfig'.
+src/llm/providers/AnthropicProvider.ts(29,5): error TS2739: Type '{ content: any; usage: { input: number; output: number; }; }' is missing the following properties from type 'LLMResponse': tokensUsed, finishReason
+src/llm/providers/GitHubProvider.ts(21,47): error TS2339: Property 'prompt' does not exist on type 'LLMConfig'.
+src/llm/providers/GitHubProvider.ts(27,5): error TS2739: Type '{ content: any; usage: { input: number; output: number; }; }' is missing the following properties from type 'LLMResponse': tokensUsed, finishReason
+src/llm/providers/OpenAICompatibleProvider.ts(28,47): error TS2339: Property 'prompt' does not exist on type 'LLMConfig'.
+src/llm/providers/OpenAICompatibleProvider.ts(35,5): error TS2739: Type '{ content: string; usage: { input: number; output: number; }; }' is missing the following properties from type 'LLMResponse': tokensUsed, finishReason
+src/llm/providers/baseProvider.ts(3,16): error TS2420: Class 'LLMProviderImpl' incorrectly implements interface 'LLMProvider'.
+  Type 'LLMProviderImpl' is missing the following properties from type 'LLMProvider': name, generate
+src/meta-learning/index.ts(25,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './MetaLearningSystem.js'?
+src/meta-learning/index.ts(34,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './patterns/PatternAnalyzer.js'?
+src/meta-learning/index.ts(40,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './strategies/StrategyOptimizer.js'?
+src/meta-learning/index.ts(46,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './insights/InsightsEngine.js'?
+src/quantum-decision/QuantumDecisionSystem.ts(17,41): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/quantum-decision/QuantumDecisionSystem.ts(18,40): error TS2307: Cannot find module '../emergent-behavior.js' or its corresponding type declarations.
+src/quantum-decision/index.ts(26,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './QuantumDecisionSystem.js'?
+src/quantum-decision/index.ts(31,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './algorithms/QuantumAlgorithms.js'?
+src/quantum-decision/index.ts(38,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './annealing/QuantumAnnealingSystem.js'?
+src/quantum-decision/index.ts(45,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './networks/QuantumNeuralNetworks.js'?
+src/quantum-decision/index.ts(51,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './optimization/QuantumOptimizationSystem.js'?
+src/quantum-decision/index.ts(59,41): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/quantum-decision/index.ts(60,40): error TS2307: Cannot find module '../emergent-behavior.js' or its corresponding type declarations.
+src/self-modification/SelfModificationSystem.ts(22,41): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/self-modification/SelfModificationSystem.ts(23,40): error TS2307: Cannot find module '../emergent-behavior.js' or its corresponding type declarations.
+src/self-modification/index.ts(23,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './SelfModificationSystem.js'?
+src/self-modification/index.ts(28,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './analyzers/SelfAnalysisEngine.js'?
+src/self-modification/index.ts(34,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './modifiers/CodeModificationSystem.js'?
+src/self-modification/index.ts(41,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './validators/ValidationFramework.js'?
+src/self-modification/index.ts(48,8): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './safety/SafetyFramework.js'?
+src/self-modification/index.ts(56,41): error TS2307: Cannot find module '../meta-learning.js' or its corresponding type declarations.
+src/self-modification/index.ts(57,40): error TS2307: Cannot find module '../emergent-behavior.js' or its corresponding type declarations.
+src/spec-kit/__tests__/specKitManager.test.ts(2,24): error TS2307: Cannot find module '../llm/llmManager.js' or its corresponding type declarations.
+src/testing/__tests__/apiTester.test.ts(32,48): error TS2345: Argument of type '{ status: number; stdout: string; }' is not assignable to parameter of type 'SpawnSyncReturns<string | Buffer<ArrayBufferLike>>'.
+  Type '{ status: number; stdout: string; }' is missing the following properties from type 'SpawnSyncReturns<string | Buffer<ArrayBufferLike>>': pid, output, stderr, signal
+src/testing/__tests__/apiTester.test.ts(38,52): error TS2345: Argument of type '"mock prompt"' is not assignable to parameter of type 'never'.
+src/testing/__tests__/apiTester.test.ts(39,45): error TS2345: Argument of type '{ success: boolean; coverage: number; errors: never[]; }' is not assignable to parameter of type 'never'.
+src/testing/__tests__/apiTester.test.ts(44,19): error TS2322: Type 'Jest' is not assignable to type 'void | TestReturnValuePromise | TestReturnValueGenerator'.
+src/testing/__tests__/apiTester.test.ts(103,52): error TS2345: Argument of type '{ status: number; stdout: string; stderr: string; }' is not assignable to parameter of type 'SpawnSyncReturns<string | Buffer<ArrayBufferLike>>'.
+  Type '{ status: number; stdout: string; stderr: string; }' is missing the following properties from type 'SpawnSyncReturns<string | Buffer<ArrayBufferLike>>': pid, output, signal
+src/testing/apiTesterCLI.ts(9,14): error TS2349: This expression is not callable.
+  Type 'typeof import("/root/AstraForge/node_modules/.pnpm/@types+yargs@17.0.33/node_modules/@types/yargs/index", { with: { "resolution-mode": "import" } })' has no call signatures.
+src/testing/apiTesterCore.ts(25,16): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'F-008': string[]; 'F-009': string[]; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'F-008': string[]; 'F-009': string[]; }'.
+src/testing/apiTesterCore.ts(25,41): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'F-008': string[]; 'F-009': string[]; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'F-008': string[]; 'F-009': string[]; }'.
+ ELIFECYCLE  Command failed with exit code 2.

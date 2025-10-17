@@ -1,190 +1,242 @@
 {
   "name": "astraforge-ide",
-"type": "module",
-  "displayName": "AstraForge IDE V3 🚀✨",
-  "description": "Visionary V3: Spec-driven automation, secure API orchestration, and environment-aware multi-LLM collaboration",
-  "version": "3.0.0",
-  "publisher": "astraforge",
-  "engines": {
-    "vscode": "^1.102.0",
-    "node": ">=18.0.0"
-  },
+  "displayName": "AstraForge IDE",
+  "description": "Advanced AI-powered VS Code extension for quantum-enhanced development",
+  "version": "0.5.0",
+  "publisher": "up2itnow",
+  "type": "module",
+  "main": "./out/extension.js",
+  "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/astraforge/astraforge-ide.git"
+    "url": "git+https://github.com/up2itnow/AstraForge.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": "^18"
   },
   "categories": [
-    "Extension Packs"
+    "Other"
   ],
-  "main": "./extension/out/extension.js",
-  "files": [
-    "extension/out/**/*",
-    "media/**/*",
-    "package.json",
-    "README.md",
-    "LICENSE"
+  "keywords": [
+    "AI",
+    "quantum",
+    "development"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:astraforge.projectIgnition",
+    "onCommand:astraforge.setupWizard",
+    "onCommand:astraforge.apiTester",
+    "onCommand:astraforge.health",
+    "onCommand:astraforge.monitor",
+    "onCommand:astraforge.collaborateSession",
+    "onCommand:astraforge.gitSync",
+    "onCommand:astraforge.llmConsensus",
+    "onCommand:astraforge.emergentDetect",
+    "onCommand:astraforge.quantumSim",
+    "onCommand:astraforge.rbacManage",
+    "onCommand:astraforge.scalingConfig",
+    "onCommand:astraforge.securityAudit",
+    "onCommand:astraforge.perfOptimize"
   ],
   "contributes": {
-    "views": {
-      "explorer": [
+    "commands": [
+      {
+        "command": "astraforge.projectIgnition",
+        "title": "Project Ignition",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.setupWizard",
+        "title": "Setup Wizard",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.apiTester",
+        "title": "API Tester",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.health",
+        "title": "Health Check",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.monitor",
+        "title": "Monitor KPIs",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.collaborateSession",
+        "title": "Start Collaboration Session",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.gitSync",
+        "title": "Git Sync",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.llmConsensus",
+        "title": "LLM Consensus Query",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.emergentDetect",
+        "title": "Detect Emergent Behavior",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.quantumSim",
+        "title": "Run Quantum Simulation",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.rbacManage",
+        "title": "Manage RBAC",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.scalingConfig",
+        "title": "Configure Scaling",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.securityAudit",
+        "title": "Run Security Audit",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.perfOptimize",
+        "title": "Optimize Performance",
+        "category": "AstraForge"
+      },
+      {
+        "command": "astraforge.telemetryView",
+        "title": "Open Telemetry Panel",
+        "category": "AstraForge"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
         {
-          "id": "astraforge.projectIgnition",
-          "name": "Project Ignition"
-"type": "module",
+          "command": "astraforge.projectIgnition",
+          "group": "navigation",
+          "when": "resourceExtname == .ts || resourceExtname == .js"
         },
         {
-          "id": "astraforge.apiTester",
-          "name": "API Tester"
-"type": "module",
+          "command": "astraforge.gitSync",
+          "group": "1_modification",
+          "when": "explorerResourceIsFolder"
         },
         {
-          "id": "astraforge.metaLearning",
-          "name": "🧠 Meta-Learning"
-"type": "module",
+          "command": "astraforge.apiTester",
+          "group": "z_commands"
         },
         {
-          "id": "astraforge.emergentBehavior",
-          "name": "🌟 Emergent Behavior"
-"type": "module",
+          "command": "astraforge.llmConsensus",
+          "group": "z_commands"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "astraforge.projectIgnition"
         },
         {
-          "id": "astraforge.quantumDecision",
-          "name": "🔮 Quantum Decision Making"
-"type": "module",
-        },
-        {
-          "id": "astraforge.agentEvolution",
-          "name": "🧬 Agent Evolution"
-"type": "module",
-        },
-        {
-          "id": "astraforge.selfModification",
-          "name": "⚙️ Self-Modification"
-"type": "module",
+          "command": "astraforge.monitor"
         }
       ]
     },
-    "commands": [
+    "keybindings": [
       {
-        "command": "astraforge.testAPIs",
-        "title": "Test APIs",
-        "category": "AstraForge"
+        "command": "astraforge.projectIgnition",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i",
+        "when": "editorTextFocus"
       },
       {
-        "command": "astraforge.showMetaLearning",
-        "title": "Show Meta-Learning Dashboard",
-        "category": "AstraForge"
+        "command": "astraforge.health",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h",
+        "when": "editorTextFocus"
       },
       {
-        "command": "astraforge.showEmergentBehavior",
-        "title": "Show Emergent Behavior Dashboard",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.showQuantumDecision",
-        "title": "Show Quantum Decision Making Dashboard",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.showAgentEvolution",
-        "title": "Show Agent Evolution Dashboard",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.showSelfModification",
-        "title": "Show Self-Modification Dashboard",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.evolveAgents",
-        "title": "Evolve Agent Population",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.specializeAgents",
-        "title": "Specialize Agents",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.transferKnowledge",
-        "title": "Transfer Knowledge Between Agents",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.optimizeEvolution",
-        "title": "Optimize Evolution Parameters",
-        "category": "AstraForge"
+        "command": "astraforge.monitor",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m",
+        "when": "editorTextFocus"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "astraforge-sidebar",
+          "title": "AstraForge",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "astraforge-sidebar": [
+        {
+          "id": "astraforge.telemetry",
+          "name": "Telemetry",
+          "type": "webview",
+          "icon": "$(graph)"
+        },
+        {
+          "id": "astraforge.llmPanel",
+          "name": "Multi-LLM Panel",
+          "type": "webview",
+          "icon": "$(bot)"
+        },
+        {
+          "id": "astraforge.monitorView",
+          "name": "KPIs Monitor",
+          "type": "webview",
+          "icon": "$(dashboard)"
+        }
+      ]
+    }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,json,md}\"",
-    "type-check": "tsc --noEmit",
-    "test:api": "node out/testing/apiTesterCLI.js",
-    "test:codacy": "node scripts/run-codacy-tests.cjs",
-    "package": "vsce package",
-    "clean": "rimraf out dist coverage .nyc_output",
-    "agentnexus:build": "npm run compile && node ./extension/out/cli/runAgentNexusBuildPrompt.js"
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTests.js",
+    "lint": "eslint src --ext ts",
+    "review": "node scripts/biWeeklyReview.js",
+    "audit": "node scripts/quarterlyAudit.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@fast-check/jest": "^2.1.1",
-    "@playwright/test": "^1.56.1",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/exec": "^7.1.0",
-    "@semantic-release/git": "^10.0.1",
-    "@types/axios": "^0.14.4",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^20.19.21",
-    "@types/uuid": "^11.0.0",
-    "@types/vscode": "^1.102.0",
-    "@types/yargs": "^17.0.33",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
-    "@vscode/vsce": "^2.32.0",
-    "apache-arrow": "^15.0.0",
-    "axe-core": "^4.11.0",
-    "axios": "^1.11.0",
-    "eslint": "^9.32.0",
-    "fast-check": "^4.3.0",
-    "jest": "^30.0.5",
-    "playwright": "^1.56.1",
-    "prettier": "^3.6.2",
-    "rimraf": "^5.0.10",
-    "snyk": "^1.1300.0",
-    "ts-jest": "^29.4.1",
-    "typescript": "^5.1.6",
-    "uuid": "^13.0.0",
-    "zod": "^3.23.8"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.3",
-    "@huggingface/inference": "^4.6.1",
-    "@lancedb/lancedb": "^0.22.0",
-    "@octokit/graphql": "^9.0.2",
+    "@axe-core/puppeteer": "^4.10.2",
+    "@elastic/elasticsearch": "^9.1.1",
     "@octokit/rest": "^22.0.0",
-    "@types/mathjs": "^9.4.2",
-    "commander": "^14.0.0",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.1",
-    "lancedb": "^0.0.1",
-    "lru-cache": "^11.2.2",
-    "mathjs": "^15.0.0",
-    "openai": "^4.104.0",
-    "simple-git": "^3.19.1",
-    "socket.io": "^4.7.1",
-    "socket.io-client": "^4.7.1",
-    "supertest": "^7.1.4",
-    "ws": "^8.14.0"
-  }
+    "@types/glob": "^8.1.0",
+    "@types/jest": "^29.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18",
+    "@types/vscode": "^1.85.0",
+    "axe-core": "^4.11.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
+    "prom-client": "^15.1.3",
+    "puppeteer": "^24.25.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "types": "./out/extension.d.ts",
+  "bugs": {
+    "url": "https://github.com/up2itnow/AstraForge/issues"
+  },
+  "homepage": "https://github.com/up2itnow/AstraForge#readme",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "author": "",
+  "license": "ISC"
 }
