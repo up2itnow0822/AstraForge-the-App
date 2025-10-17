@@ -1,0 +1,1 @@
+OpenSpec Spec SecurityPolicy Complete: VS Code secure guidelines (trustedCodeActions false/no unsafe eval/vuln mgmt) + GitHub disclosure (reporting/90-day coord/credits/code scanning alerts)
