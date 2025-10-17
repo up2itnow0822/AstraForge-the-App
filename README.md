@@ -21,37 +21,70 @@ AstraForge: Advanced VS Code extension for LLM-powered code collaboration, conse
 - F-014: Feature Flags and A/B Testing
 - F-015: User Feedback and Iteration Loops
 ## Visuals
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ![Quickstart Demo](media/quickstart.gif) *Placeholder: Animated GIF showing installation, command palette activation, and LLM collab session in VS Code.*
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ![Extension Screenshot](.github/media/screenshot.png) *Placeholder: Static image of AstraForge sidebar with vector search results and consensus panel.*
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ## Quickstart
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 Install with one command:
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ```bash
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 code --install-extension astraforge.vsix
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ```
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 Alternatively, search 'AstraForge' in the VS Code Extensions marketplace.
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ## Installation
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 ### Local Development
+## Badges
+[![Dependabot](https://github.com/up2itnow/AstraForge/actions/workflows/dependabot.yml/badge.svg)]
+[![Snyk](https://snyk.io/test/github/up2itnow/AstraForge/badge.svg)]
 1. Clone the repository:
-  ```bash
+ ```bash
 git clone https://github.com/up2itnow/AstraForge.git
 cd AstraForge
 ```
 2. Install dependencies:
-  ```bash
+ ```bash
 npm install
 ```
 3. Compile the extension:
-  ```bash
+ ```bash
 npm run compile
 ```
 4. Package the extension:
-  ```bash
+ ```bash
 npm install -g @vscode/vsce  # If not installed
 git checkout main  # Switch to main for stable
 vsce package
 ```
 5. Install locally:
-  ```bash
+ ```bash
 code --install-extension astraforge-1.0.0.vsix
 ```
 ### Cloud (Marketplace)

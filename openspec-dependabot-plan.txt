@@ -1,0 +1,1 @@
+OpenSpec Plan DependabotWorkflows Complete: .github/dependabot.yml weekly npm PRs limit5/reviewers @up2itnow ignore major + workflows/security.yml Snyk/CodeQL PR dependabot[bot] + README badges SVG
