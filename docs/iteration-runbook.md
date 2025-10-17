@@ -1,15 +1,5 @@
 
-## Zero-Downtime K8s Updates
-
-deployment.yaml spec.strategy.type: RollingUpdate
-maxUnavailable: 0
-maxSurge: 25%
-readinessProbe:
-  httpGet:
-    path: /healthz
-    port: 8080  # adjust port if needed
-  initialDelaySeconds: 10
-  periodSeconds: 5
-
-Apply: kubectl apply -f deployment.yaml
-Monitor: kubectl rollout status deployment/astrafoge-deployment
+## Incidents
+- P1 (outage): Blue-green deploy rollback via K8s; monitor Grafana alerts.
+- KPIs: Latency <500ms (consensus), uptime 99.9%; Queries: SELECT avg(duration) FROM traces.
+- Quarterly Audit: Run npm audit, review ADRs, retrain LLM ethics (secret2 check).
