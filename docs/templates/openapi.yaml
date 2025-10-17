@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: AstraForge API
+  version: 1.0.0
+descrption: Enterprise LLM/Quantum/Collab APIs.
+
+paths:
+  /llm/consensus:
+    post:
+      summary: Generate consensus via LLM chain.
+      parameters:
+        - name: prompt
+          in: body
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consensus result.
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+        - ApiKey: []
+  /collab/ws:
+    get:
+      summary: Upgrade to collaborative WebSocket.
+      responses:
+        '101':
+          description: Switching protocols.
+      security:
+        - OAuth2: []
+  /vectors/search:
+    get:
+      summary: Vector-based search.
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results.
+
+securitySchemes:
+  ApiKey:
+    type: apiKey
+    in: header
+    name: X-API-Key
+  OAuth2:
+    type: oauth2
+    flows:
+      implicit:
+        authorizationUrl: /oauth/authorize
+        scopes:
+          write: grants write access
+components:
+  schemas: {}
