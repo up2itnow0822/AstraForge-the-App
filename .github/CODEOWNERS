@@ -1,0 +1,9 @@
+# Code owners for pull request approvals
+# Documentation
+/docs/ @up2itnow
+# LLM source code
+/src/llm/ @up2itnow
+# All source code
+/src/ @up2itnow
+# Default for everything else
+* @up2itnow

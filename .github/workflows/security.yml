@@ -1,0 +1,45 @@
+name: Security
+on:
+ pull_request:
+   types: [opened, synchronize, reopened]
+   paths:
+     - 'src/**'
+   if: github.actor == 'dependabot[bot]'
+jobs:
+ snyk-monitor:
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v3
+     - name: Snyk Auth
+       run: echo "${{ secrets.SNYK_TOKEN }}" | snyk auth
+       env:
+         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+     - name: Snyk Test
+       uses: snyk/actions/node@master
+       env:
+         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+       with:
+         args: --severity-threshold=high
+     - name: Snyk Monitor
+       uses: snyk/actions/node@master
+       env:
+         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+       with:
+         args: --monitor
+ codeql-analyze:
+   runs-on: ubuntu-latest
+   permissions:
+     actions: read
+     contents: read
+     security-events: write
+   steps:
+     - name: Checkout repository
+       uses: actions/checkout@v3
+     - name: Initialize CodeQL
+       uses: github/codeql-action/init@v2
+       with:
+         languages: javascript,typescript
+     - name: Autobuild
+       uses: github/codeql-action/autobuild@v2
+     - name: Perform CodeQL Analysis
+       uses: github/codeql-action/analyze@v2

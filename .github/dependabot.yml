@@ -1,0 +1,16 @@
+version: 2
+updates:
+ - package-ecosystem: "npm"
+   directory: "/"
+   schedule:
+     interval: "weekly"
+   open-pull-requests-limit: 5
+   reviewers:
+     - "up2itnow"
+   ignore:
+     - dependency-name: "*"
+       update-types: ["version-update:semver-major"]
+   rebase-strategy: "auto"
+   commit-message:
+     prefix: "Update"
+     pattern: "^{{dependency-name}} to {{version}}"
