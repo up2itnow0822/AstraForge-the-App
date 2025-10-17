@@ -1,0 +1,343 @@
+
+> astraforge-ide@0.5.0 docs-lint
+> eslint src/**/*.ts
+
+
+/root/AstraForge/src/collaboration/CollaborativeSessionManager.ts
+  37:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/db/vectorDB.ts
+  36:54  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  42:43  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  51:28  error    'query' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  51:43  error    'k' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  51:54  error    'qTerms' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  51:84  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/emergent-behavior/EmergentBehaviorSystem.ts
+   82:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   89:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  148:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  263:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  290:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  336:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  337:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  501:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  501:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  517:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  517:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  524:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  524:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  544:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  571:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  571:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  581:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  581:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  589:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  649:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  649:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  664:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  721:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  978:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/emergent-behavior/index.ts
+   91:29  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  126:11  warning  Unexpected console statement                                                no-console
+  127:11  warning  Unexpected console statement                                                no-console
+  128:11  warning  Unexpected console statement                                                no-console
+  129:11  warning  Unexpected console statement                                                no-console
+  138:34  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  177:32  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  216:27  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  218:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  246:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  247:14  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  292:3   warning  Method 'getWebviewContent' has too many lines (145). Maximum allowed is 80  max-lines-per-function
+
+/root/AstraForge/src/git/gitManager.ts
+  1:10  error  'connect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/git/httpRetry.ts
+  12:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/git/pullRequestManager.ts
+  1:13  error    'fs' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:72  warning  Unexpected any. Specify a different type                              @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/inter-agent-evolution/InterAgentEvolutionSystem.ts
+   371:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   426:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   876:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   908:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   930:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   971:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1010:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1011:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1309:86  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1319:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/inter-agent-evolution/index.ts
+   79:37  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   94:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   95:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   96:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  103:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  165:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  166:14  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  207:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  270:20  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  273:26  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  315:22  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  316:27  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  317:30  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  357:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  358:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  359:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  365:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  413:41  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  438:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  440:6   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  489:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  490:22  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  502:40  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  522:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  541:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  543:6   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  561:49  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  561:70  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  570:43  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  575:56  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  616:3   warning  Method 'getWebviewContent' has too many lines (178). Maximum allowed is 80  max-lines-per-function
+  822:23  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  823:9   warning  Unexpected console statement                                                no-console
+
+/root/AstraForge/src/llm/interfaces.ts
+  20:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/llm/llmManager.ts
+  56:24  error  'text' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/meta-learning/MetaLearningSystem.ts
+   28:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  369:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  609:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  618:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/meta-learning/index.ts
+   99:30  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  141:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  142:25  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  143:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  144:27  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  218:3   warning  Method 'getWebviewContent' has too many lines (150). Maximum allowed is 80  max-lines-per-function
+
+/root/AstraForge/src/providers/projectIgnition.ts
+  1:10  error  'WorkflowManager' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/quantum-decision/QuantumDecisionSystem.ts
+    27:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+    39:20  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+    40:26  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+    61:21  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+    69:21  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+    79:10  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+    80:28  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   130:37  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   145:3   warning  Async method 'makeDecision' has too many lines (81). Maximum allowed is 80                  max-lines-per-function
+   147:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   165:26  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   230:3   warning  Async method 'quantumAnnealingOptimization' has too many lines (94). Maximum allowed is 80  max-lines-per-function
+   329:12  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   330:12  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   337:17  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   345:19  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   351:24  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   465:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   570:81  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   596:80  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   625:80  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   651:75  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   673:70  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   689:74  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   707:76  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   739:45  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   752:36  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   774:45  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   796:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   858:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+   870:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1059:58  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1081:43  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1081:84  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1099:52  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1099:85  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1110:54  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1110:74  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1114:65  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1124:64  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1133:70  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1147:49  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1147:69  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1147:75  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1162:47  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1174:37  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1197:76  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1206:12  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1207:12  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1210:14  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1220:18  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1222:6   warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1237:18  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1239:15  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  1249:52  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/quantum-decision/index.ts
+   95:38  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  106:14  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  107:62  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  108:57  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  109:48  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  111:15  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  115:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  116:18  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  168:7   warning  Unexpected console statement                                                no-console
+  239:7   warning  Unexpected console statement                                                no-console
+  253:14  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  254:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  255:46  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  299:7   warning  Unexpected console statement                                                no-console
+  354:7   warning  Unexpected console statement                                                no-console
+  363:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  364:22  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  365:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  366:25  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  411:14  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  412:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  413:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  414:6   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  426:41  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  426:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  447:20  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  448:6   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  459:18  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  460:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  461:6   warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  496:3   warning  Method 'getWebviewContent' has too many lines (164). Maximum allowed is 80  max-lines-per-function
+  682:23  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  683:9   warning  Unexpected console statement                                                no-console
+
+/root/AstraForge/src/rl/adaptiveWorkflow.ts
+  316:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/self-modification/SelfModificationSystem.ts
+  182:3   warning  Async method 'applyModification' has too many lines (96). Maximum allowed is 80  max-lines-per-function
+  263:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  646:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  677:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/self-modification/index.ts
+  112:20  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  113:15  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  114:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  171:7   warning  Unexpected console statement                                                no-console
+  185:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  193:14  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  194:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  248:7   warning  Unexpected console statement                                                no-console
+  261:15  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  262:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  263:20  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  264:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  265:13  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  320:15  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  321:19  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  322:20  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  329:62  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  342:30  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  357:49  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  416:3   warning  Method 'getWebviewContent' has too many lines (145). Maximum allowed is 80  max-lines-per-function
+  587:9   warning  Unexpected console statement                                                no-console
+
+/root/AstraForge/src/server/collaborationServer.ts
+   22:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   50:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   57:11  warning  Unexpected console statement              no-console
+   71:9   warning  Unexpected console statement              no-console
+   79:7   warning  Unexpected console statement              no-console
+   97:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:5   warning  Unexpected console statement              no-console
+  148:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  299:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  313:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  329:7   warning  Unexpected console statement              no-console
+  349:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  353:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/spec-kit/specKitManager.ts
+  1:8  error  'LLMManager' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/spec-kit/types.ts
+  1:10  error  'z' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/testing/apiTester.ts
+  28:60  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  33:13  error    'provider' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/testing/apiTesterCLI.ts
+  16:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:3   warning  Unexpected console statement              no-console
+  30:7   warning  Unexpected console statement              no-console
+  32:7   warning  Unexpected console statement              no-console
+  34:7   warning  Unexpected console statement              no-console
+  37:3   warning  Unexpected console statement              no-console
+
+/root/AstraForge/src/testing/apiTesterCore.ts
+  84:41  error    'provider' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  86:5   warning  Unexpected console statement                                                no-console
+
+/root/AstraForge/src/testing/apiTesterProvider.ts
+  1:10  error  'Provider' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/utils/secureLogger.ts
+   32:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge/src/utils/testEnv.ts
+  1:10  error  'envLoader' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/root/AstraForge/src/workflow/workflowManager.ts
+  3:21  error  'spec' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 278 problems (14 errors, 264 warnings)
+
