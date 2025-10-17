@@ -67,3 +67,12 @@ export class LLMManager {
 }
 
 export default LLMManager;
+/**
+ * Manages LLM operations for consensus generation.
+ * @param {string} prompt - The prompt for LLM chain.
+ * @param {number} [temperature=0.7] - Sampling temperature 0-1.
+ * @returns {Promise<string>} Generated consensus response.
+ * @example const response = await llmManager.generateConsensus('Optimize quantum decision', 0.8); // Chains prompts for robust output.
+ * @see QuantumDecisionSystem for integration.
+ * @security Uses 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; rate-limited to 10/min; no PII in prompts.
+ */

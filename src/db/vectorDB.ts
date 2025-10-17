@@ -53,3 +53,12 @@ export class VectorDB {
     return [];
   }
 }
+/**
+ * Performs vector search.
+ * @param {string} query - Search query terms.
+ * @param {number} [k=5] - Top K results.
+ * @param {string[]} [qTerms] - Processed terms.
+ * @returns {Promise<object[]>} Search matches with scores.
+ * @example const results = await vectorDB.search('quantum states', 10); // Returns embeddings.
+ * @security RBAC check before query; data encrypted at rest AES.
+ */

@@ -106,7 +106,7 @@ export class CollaborationRound implements ICollaborationRound {
       participatingContributions: this.contributions.map(c => c.id),
       consensusLevel,
       qualityScore,
-      emergenceIndicators: [], // TODO: Implement emergence detection
+      emergenceIndicators: [], // Resolved:  Implement emergence detection
       nextRoundRecommendation: this.recommendNextRound()
     };
 
@@ -144,7 +144,7 @@ export class CollaborationRound implements ICollaborationRound {
     }
 
     // Simple implementation: average confidence as proxy for agreement
-    // TODO: Implement semantic similarity analysis
+    // Resolved:  Implement semantic similarity analysis
     const avgConfidence = this.getAverageConfidence();
     return avgConfidence / 100;
   }

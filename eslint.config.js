@@ -1,34 +1,26 @@
-import js from '@eslint/js';
-import typescript from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
+import jsdoc from 'eslint-plugin-jsdoc';
+import tsParser from '@typescript-eslint/parser';
+import ts from '@typescript-eslint/eslint-plugin';
 
-export default [
-  js.configs.recommended,
+export default ts.configs.recommended,
+  jsdoc.configs.recommended,
   {
-    files: ['src/**/*.ts'],
+    files: ['**/*.ts'],
     languageOptions: {
-      parser: typescriptParser,
-      ecmaVersion: 2021,
-      sourceType: 'module',
+      parser: tsParser,
+      parserOptions: { ecmaVersion: 2022, sourceType: 'module' }
     },
-    plugins: {
-      '@typescript-eslint': typescript,
-    },
+    plugins: { jsdoc, '@typescript-eslint': ts },
     rules: {
-      complexity: ['error', 15],
-      'max-lines-per-function': ['warn', 80],
-      'no-console': 'warn',
-      'no-unused-vars': 'off', // Turn off base rule, handled by TypeScript version
-      '@typescript-eslint/no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_'
-      }],
+      'jsdoc/require-jsdoc': ['error', { require: { FunctionDeclaration: true, MethodDefinition: true, ClassDeclaration: false } }],
+      'jsdoc/require-param-description': 'warn',
+      'jsdoc/require-returns-description': 'warn',
+      'jsdoc/require-example': 'off',
+      'jsdoc/require-see': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      'no-undef': 'off', // TypeScript handles this
-    },
-  },
-  {
-    ignores: ['out/**', 'node_modules/**', 'temp_folder/**', 'coverage/**'],
-  },
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'no-console': 'warn',
+      'max-lines-per-function': ['warn', 100]
+    }
+  }
 ];

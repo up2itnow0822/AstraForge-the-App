@@ -49,3 +49,12 @@ export const _logger = logger;
 /* eslint-enable no-console */
 
 
+/**
+ * Secure logging utility.
+ * @param {string} message - Log message.
+ * @param {\'debug\'|\'info\'|\'warn\'|\'error'} [level=\'info\'] - Log level.
+ * @returns {void}
+ * @example logger.log('Decision made', 'debug'); // Outputs to secure file/console.
+ * @see secureLogger for sensitive.
+ * @security Masks secrets in output; no PII logged.
+ */

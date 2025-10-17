@@ -1,0 +1,8 @@
+src/collaboration/rounds/CollaborationRound.ts:109:      emergenceIndicators: [], // TODO: Implement emergence detection
+src/collaboration/rounds/CollaborationRound.ts:147:    // TODO: Implement semantic similarity analysis
+src/workflow/agentNexusBuildRunner.ts:45:  { label: 'TODO', pattern: /\bTODO\b/i },
+src/self-modification/analyzers/SelfAnalysisEngine.ts:335:      // Check for TODO comments
+src/self-modification/analyzers/SelfAnalysisEngine.ts:336:      if (line.includes('TODO') || line.includes('FIXME')) {
+src/self-modification/analyzers/SelfAnalysisEngine.ts:340:          title: 'TODO/FIXME comment found',
+src/self-modification/analyzers/SelfAnalysisEngine.ts:341:          description: 'Address TODO and FIXME comments',
+src/self-modification/analyzers/SelfAnalysisEngine.ts:348:          suggestion: 'Address the TODO/FIXME comment or remove it if no longer relevant',

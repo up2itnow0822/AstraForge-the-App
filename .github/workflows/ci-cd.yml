@@ -1,0 +1,92 @@
+name: CI/CD Pipeline for AstraForge
+
+on:
+  push:
+    branches: [main, phase5-deploy]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [main, phase5-deploy]
+  release:
+    types: [published]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+    - name: Install dependencies
+      run: pnpm ci --frozen-lockfile
+    - name: Run tests with coverage
+      run: pnpm test --coverage
+      env:
+        ASTRAFORGE_API_KEY_ONE: ${{ secrets.ASTRAFORGE_API_KEY_ONE }}
+        ASTRAFORGE_API_KEY_TWO: ${{ secrets.ASTRAFORGE_API_KEY_TWO }}
+        ASTRAFORGE_API_KEY_THREE: ${{ secrets.ASTRAFORGE_API_KEY_THREE }}
+        ASTRAFORGE_API_KEY_FOUR: ${{ secrets.ASTRAFORGE_API_KEY_FOUR }}
+        ASTRAFORGE_API_KEY_FIVE: ${{ secrets.ASTRAFORGE_API_KEY_FIVE }}
+    - name: Coverage threshold
+      run: |
+        if [ (node -pe "require('child_process').execSync('pnpm test --coverage --silent --coverageReporters=text-summary | grep 'Lines' | awk '{print \2}'").toString().trim() ) -lt 85 ]; then exit 1; fi
+    - name: Security scan with Snyk
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --file=package.json --command=install
+        fail-on-upgradable: false
+    - name: Build and package VSIX
+      run: |
+        pnpm run compile
+        npx vsce package --out dist/astraforge.vsix
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: astraforge-vsix
+        path: dist/astraforge.vsix
+        retention-days: 5
+
+  deploy-test:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/phase5-deploy'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download VSIX
+      uses: actions/download-artifact@v4
+      with:
+        name: astraforge-vsix
+    - name: Deploy to test environment
+      run: |
+        # Stub: echo 'Deploying to test env' or AWS S3 sync/cp vsix to test bucket
+        ls -la astraforge-vsix
+
+  deploy-prod:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download VSIX
+      uses: actions/download-artifact@v4
+      with:
+        name: astraforge-vsix
+    - name: Publish to Marketplace
+      uses: microsoft/vscode-github-actions@v0.2.0
+      with:
+        pat: ${{ secrets.GITHUB_PAT }}
+        packagePath: ./
+    - name: Semantic versioning
+      id: semver
+      run: echo 'version=$(echo ${{ github.ref }} | sed "s/refs\/tags\/v//")' >> $GITHUB_OUTPUT
+    - name: Publish VSIX
+      run: npx vsce publish -p ${{ secrets.GITHUB_PAT }} --packageVersion ${{ steps.semver.outputs.version }}
