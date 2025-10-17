@@ -1,40 +1,32 @@
-import { Anthropic } from '@anthropic-ai/sdk';
+import { LLMConfig, LLMResponse } from '../interfaces';
+import { BaseLLMProvider } from './baseProvider';
+import Anthropic from '@anthropic-ai/sdk';
 
-interface GenerateResponse {
-  text: string;
-  confidence: number;
-}
-
-export class AnthropicProvider {
+export class AnthropicProvider extends BaseLLMProvider {
   private client: Anthropic;
 
   constructor(apiKey: string) {
+    super('Anthropic', 'claude-3-sonnet-20240229', apiKey, 'https://api.anthropic.com/v1');
     this.client = new Anthropic({ apiKey });
   }
 
-  async generate(prompt: string): Promise<GenerateResponse> {
-    try {
-      const message = await this.client.messages.create({
-        model: 'claude-3-5-sonnet-20240620',
-        max_tokens: 1024,
-        temperature: 0.7,
-        messages: [{ role: 'user', content: prompt }],
-      });
-
-      const text = message.content[0]?.text || '';
-      const confidence = message.stop_reason === 'end_turn' ? 0.85 : 0.6;
-
-      return { text, confidence };
-    } catch (error) {
-      console.error('Anthropic generate error:', error);
-      throw error;
-    }
+  async generate(prompt: string, options: LLMConfig = {}): Promise<LLMResponse> {
+    const msg = await this.client.messages.create({
+      model: options.model || this.model,
+      max_tokens: options.maxTokens || 1024,
+      messages: [{ role: 'user', content: this.sanitizePrompt(prompt) }],
+    });
+    const contentBlock = msg.content[0];
+    const text = contentBlock.type === 'text' ? contentBlock.text : '';
+    return {
+      content: text,
+      tokensUsed: msg.usage?.output_tokens || 0,
+      finishReason: msg.stop_reason || 'stop',
+      usage: this.extractUsage(msg),
+    };
   }
 
-  static createForTwo(): AnthropicProvider {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY not set');
-    }
-    return new AnthropicProvider(process.env.ANTHROPIC_API_KEY);
+  static createForTwo(key: string) {
+    return new AnthropicProvider(key);
   }
 }

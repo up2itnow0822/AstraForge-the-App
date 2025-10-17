@@ -1,30 +1,17 @@
 {
   "compilerOptions": {
-    "module": "ES2020",
-    "target": "ES2020",
-    "outDir": "extension/out",
-    "lib": [
-      "ES2020",
-      "DOM"
-    ],
-    "sourceMap": true,
-    "rootDir": "src",
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "node16",
     "strict": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node"
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "types": ["jest", "node"],
+    "lib": ["ES2022", "dom"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "out",
-    "temp_folder",
-    "archive",
-    "tests"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

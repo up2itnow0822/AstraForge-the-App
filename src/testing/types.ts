@@ -1,1 +1,8 @@
-export interface Provider {\n  id: number;\n  name: string;\n  apiKey: string;\n  baseUrl?: string;\n  model?: string;\n  role?: string;\n}
+export interface Provider {
+  id: number;
+  name: string;
+  apiKey: string;
+  baseUrl?: string;
+  model?: string;
+  role?: string;
+}

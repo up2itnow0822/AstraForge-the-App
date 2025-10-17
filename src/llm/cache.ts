@@ -1,25 +1,43 @@
 import { LRUCache } from 'lru-cache';
 import { ConsensusResult } from './interfaces';
 
-export class LLMCache extends LRUCache<string, ConsensusResult> {
-  constructor(options?: LRUCache.Options<string, ConsensusResult>) {
-    super({
-      max: 100,
-      ttl: 30 * 60 * 1000, // 30 min
-      ...options,
-    });
+type LRUOptions = LRUCache.Options<string, ConsensusResult>;
+
+export class LLMCache {
+  private cache: LRUCache<string, ConsensusResult>;
+
+  constructor(options: LRUOptions = { ttl: 5 * 60 * 1000, max: 1000, updateAgeOnGet: true }) {
+    this.cache = new LRUCache(options);
   }
 
-  set(key: string, value: ConsensusResult): void {
+  set(key: string, value: ConsensusResult): this {
     value.timestamp = Date.now();
-    super.set(key, value);
+    this.cache.set(key, value);
+    return this;
   }
 
-  evictTTL(ttl: number): void {
-    for (const [key, value] of this.entries()) {
-      if (Date.now() - (value.timestamp || 0) > ttl) {
-        this.delete(key);
-      }
+  get(key: string): ConsensusResult | undefined {
+    const value = this.cache.get(key);
+    if (value && Date.now() - (value.timestamp || 0) > 5 * 60 * 1000) {
+      this.cache.delete(key);
+      return undefined;
     }
+    return value;
+  }
+
+  has(key: string): boolean {
+    return this.cache.has(key);
+  }
+
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  size(): number {
+    return this.cache.size;
   }
 }

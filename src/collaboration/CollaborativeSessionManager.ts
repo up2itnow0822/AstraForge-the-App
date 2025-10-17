@@ -1,115 +1,48 @@
-import { VectorDB, Document } from '../db/vectorDB';
-import * as crypto from 'node:crypto';
-
-export interface EditEvent {
-  pos: number;
-  text: string;
-  diff?: string;
-}
-
-export interface SessionEvent {
-  type: 'join' | 'leave' | 'edit';
-  room: string;
-  userId: string;
-  event?: EditEvent;
-  timestamp: number;
-}
+import { VectorDB } from '../db/vectorDB';
+import * as io from 'socket.io';
 
 export class CollaborativeSessionManager {
-  private rooms: Map<string, Set<string>> = new Map();
   private vectorDB: VectorDB;
+  private io: io.Server;
 
-  constructor(vectorDB: VectorDB) {
+  constructor(vectorDB: VectorDB, io: io.Server) {
     this.vectorDB = vectorDB;
+    this.io = io;
+    this.setupEvents();
   }
 
-  async join(room: string, userId: string): Promise<void> {
-    if (!this.rooms.has(room)) {
-      this.rooms.set(room, new Set());
-    }
-    this.rooms.get(room)!.add(userId);
+  private setupEvents() {
+    this.io.on('connection', (socket) => {
+      socket.on('join-room', (room: string, user: string) => {
+        socket.join(room);
+        socket.to(room).emit('user-joined', user);
+      });
 
-    const event: SessionEvent = {
-      type: 'join',
-      room,
-      userId,
-      timestamp: Date.now(),
-    };
+      socket.on('code-change', (data: {room: string, code: string, user: string}) => {
+        this.io.to(data.room).emit('code-update', {code: data.code, user: data.user});
+        this.vectorDB.addDocument({
+          id: `collab-${Date.now()}`,
+          vector: [], // Mock
+          text: data.code,
+          metadata: JSON.stringify({room: data.room, user: data.user})
+        });
+      });
 
-    const doc: Document = {
-      id: `event_${crypto.randomUUID()}_${room}_${userId}`,
-      text: JSON.stringify(event),
-      metadata: { room, userId, type: 'join' },
-    };
-
-    await this.vectorDB.upsert([doc]);
+      socket.on('disconnect', () => {
+        // Cleanup
+      });
+    });
   }
 
-  async leave(room: string, userId: string): Promise<void> {
-    const roomUsers = this.rooms.get(room);
-    if (roomUsers?.has(userId)) {
-      roomUsers.delete(userId);
-      if (roomUsers.size === 0) {
-        this.rooms.delete(room);
-      }
-
-      const event: SessionEvent = {
-        type: 'leave',
-        room,
-        userId,
-        timestamp: Date.now(),
-      };
-
-      const doc: Document = {
-        id: `event_${crypto.randomUUID()}_leave_${room}_${userId}`,
-        text: JSON.stringify(event),
-        metadata: { room, userId, type: 'leave' },
-      };
-
-      await this.vectorDB.upsert([doc]);
-    }
-  }
-
-  async edit(room: string, userId: string, event: EditEvent): Promise<SessionEvent> {
-    const roomUsers = this.rooms.get(room);
-    if (!roomUsers || !roomUsers.has(userId)) {
-      throw new Error('User not in room');
-    }
-
-    const sessionEvent: SessionEvent = {
-      type: 'edit',
-      room,
-      userId,
-      event,
-      timestamp: Date.now(),
-    };
-
-    const doc: Document = {
-      id: `event_${crypto.randomUUID()}_edit_${room}_${userId}`,
-      text: JSON.stringify(sessionEvent),
-      metadata: { room, userId, type: 'edit' },
-    };
-
-    await this.vectorDB.upsert([doc]);
-
-    return sessionEvent;
-  }
-
-  getRoomUsers(room: string): Set<string> {
-    return this.rooms.get(room) || new Set();
-  }
-
-  isUserInRoom(room: string, userId: string): boolean {
-    return this.rooms.has(room) && this.rooms.get(room)!.has(userId);
-  }
-
-  async getSessionEvents(room: string, limit = 100): Promise<any[]> {
-    // Query vectorDB for events in room, filter type join/leave/edit
-    // Impl using vectorDB.search with query '' limit, filter metadata.room === room
-    const results = await this.vectorDB.search('', limit);
+  async getRoomHistory(room: string): Promise<any[]> {
+    const results = await this.vectorDB.hybridSearch(room, 100);
     return results
-      .filter(r => JSON.parse(r.metadata).room === room)
-      .map(r => JSON.parse(r.text))
-      .sort((a, b) => a.timestamp - b.timestamp);
+      .filter((r: any) => JSON.parse(r.metadata).room === room)
+      .map((r: any) => JSON.parse(r.text))
+      .sort((a: any, b: any) => (a.timestamp as number) - (b.timestamp as number));
+  }
+
+  close() {
+    this.io.close();
   }
 }

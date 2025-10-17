@@ -1,1 +1,7 @@
-import { envLoader } from './envLoader'; // Fixed: import exported envLoader
+import { envLoader } from './envLoader';
+
+jest.mock('./envLoader', () => ({
+  EnvLoader: {
+    get: jest.fn().mockReturnValue('mock-value'),
+  },
+}));

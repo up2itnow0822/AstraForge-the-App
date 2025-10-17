@@ -1,1 +1,3 @@
-import { LLMManager } from '../llm/llmManager';
+import LLMManager from '../llm/llmManager';
+
+// Use default LLMManager

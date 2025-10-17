@@ -1,5 +1,6 @@
 {
   "name": "astraforge-ide",
+"type": "module",
   "displayName": "AstraForge IDE V3 🚀✨",
   "description": "Visionary V3: Spec-driven automation, secure API orchestration, and environment-aware multi-LLM collaboration",
   "version": "3.0.0",
@@ -29,30 +30,37 @@
         {
           "id": "astraforge.projectIgnition",
           "name": "Project Ignition"
+"type": "module",
         },
         {
           "id": "astraforge.apiTester",
           "name": "API Tester"
+"type": "module",
         },
         {
           "id": "astraforge.metaLearning",
           "name": "🧠 Meta-Learning"
+"type": "module",
         },
         {
           "id": "astraforge.emergentBehavior",
           "name": "🌟 Emergent Behavior"
+"type": "module",
         },
         {
           "id": "astraforge.quantumDecision",
           "name": "🔮 Quantum Decision Making"
+"type": "module",
         },
         {
           "id": "astraforge.agentEvolution",
           "name": "🧬 Agent Evolution"
+"type": "module",
         },
         {
           "id": "astraforge.selfModification",
           "name": "⚙️ Self-Modification"
+"type": "module",
         }
       ]
     },
@@ -130,22 +138,34 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@fast-check/jest": "^2.1.1",
+    "@playwright/test": "^1.56.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
+    "@types/axios": "^0.14.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.21",
+    "@types/uuid": "^11.0.0",
     "@types/vscode": "^1.102.0",
+    "@types/yargs": "^17.0.33",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "@vscode/vsce": "^2.32.0",
+    "apache-arrow": "^15.0.0",
+    "axe-core": "^4.11.0",
+    "axios": "^1.11.0",
     "eslint": "^9.32.0",
     "fast-check": "^4.3.0",
     "jest": "^30.0.5",
+    "playwright": "^1.56.1",
     "prettier": "^3.6.2",
     "rimraf": "^5.0.10",
+    "snyk": "^1.1300.0",
     "ts-jest": "^29.4.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "uuid": "^13.0.0",
+    "zod": "^3.23.8"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
@@ -154,8 +174,6 @@
     "@octokit/graphql": "^9.0.2",
     "@octokit/rest": "^22.0.0",
     "@types/mathjs": "^9.4.2",
-    "apache-arrow": "^15.0.0",
-    "axios": "^1.11.0",
     "commander": "^14.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.1",
@@ -167,7 +185,6 @@
     "socket.io": "^4.7.1",
     "socket.io-client": "^4.7.1",
     "supertest": "^7.1.4",
-    "ws": "^8.14.0",
-    "zod": "^3.23.8"
+    "ws": "^8.14.0"
   }
 }
