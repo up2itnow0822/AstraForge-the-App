@@ -1,90 +1,58 @@
-/**
- * LLM Provider Interfaces for AstraForge
- * Provides clean abstraction for different LLM providers
- */
-
-export type LLMRole =
-  | 'primary'
-  | 'secondary'
-  | 'concept'
-  | 'development'
-  | 'coding'
-  | 'review'
-  | 'integration';
-
-export interface LLMConfig {
-  provider: 'OpenAI' | 'Anthropic' | 'xAI' | 'OpenRouter';
-  key: string;
-  model: string;
-  role: LLMRole | string;
-  maxTokens?: number;
-  temperature?: number;
+export interface GenerateResponse {
+  text: string;
+  confidence: number;
 }
 
-export interface LLMResponse {
-  content: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  metadata?: Record<string, any>;
-}
-
-export interface _LLMResponse {
-  content: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  metadata?: Record<string, any>;
+export interface ConsensusResult extends GenerateResponse {
+  sources: string[];
+  aggregateVote: number;
+  fallbackUsed?: boolean;
 }
 
 export interface LLMProvider {
-  /**
-   * Query the LLM with a prompt
-   * @param prompt The input prompt
-   * @param config Provider configuration
-   * @returns Promise resolving to LLM response
-   */
-  query(prompt: string, config: LLMConfig): Promise<LLMResponse>;
-
-  /**
-   * Validate API key and configuration
-   * @param config Provider configuration
-   * @returns Promise resolving to validation result
-   */
-  validateConfig(config: LLMConfig): Promise<boolean>;
-
-  /**
-   * Get available models for this provider
-   * @param config Provider configuration
-   * @returns Promise resolving to available models
-   */
-  getAvailableModels(config: LLMConfig): Promise<string[]>;
+  name: string;
+  model: string;
+  apiKey: string;
+  generate(prompt: string): Promise<GenerateResponse>;
+  embed?(text: string): Promise<number[]>;
 }
+EOF && cat > src/llm/providers/GitHubProvider.ts << 'EOF'
+import { Octokit } from '@octokit/rest';
+import { LLMProvider, GenerateResponse } from '../interfaces';
 
-export interface VoteResult {
-  option: string;
-  votes: number;
-  confidence: number;
-}
+export class GitHubProvider implements LLMProvider {
+  name = 'GitHub';
+  model = 'vcs-context';
+  apiKey: string;
 
-export interface ConferenceResult {
-  finalResult: string;
-  discussionHistory: string[];
-  consensus: number; // 0-1 scale
-}
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+    if (!apiKey) throw new Error('GitHub token required');
+  }
 
-export interface _VoteResult {
-  option: string;
-  votes: number;
-  confidence: number;
-}
+  async generate(prompt: string): Promise<GenerateResponse> {
+    try {
+      const octokit = new Octokit({ auth: this.apiKey });
+      // Assume default repo from vscode or fallback
+      const { data } = await octokit.search.code({
+        q: prompt,
+        per_page: 5,
+      });
+      const context = data.items.slice(0, 3).map(item => item.text_matches?.[0]?.fragment || '').join('\n');
+      const text = context ? `VCS Context for \"${prompt}\":\n${context}` : 'No VCS context found.';
+      return { text, confidence: 1.0 };
+    } catch (error) {
+      console.error('GitHub generate error:', error);
+      return { text: 'GitHub context unavailable.', confidence: 0.5 };
+    }
+  }
 
-export interface _ConferenceResult {
-  finalResult: string;
-  discussionHistory: string[];
-  consensus: number; // 0-1 scale
+  async embed(text: string): Promise<number[]> {
+    // Mock embedding for compatibility, same dim as text-embedding-3-small
+    return Array(1536).fill(0.001);
+  }
+
+  static createForFive(apiKey: string): GitHubProvider {
+    return new GitHubProvider(apiKey);
+  }
 }

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Consensus Panel</title>
+    <style>
+        body { font-family: var(--vscode-font-family); padding: 10px; }
+        input { width: 70%; padding: 5px; }
+        button { padding: 5px 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid var(--vscode-panel-border); padding: 8px; text-align: left; }
+        th { background: var(--vscode-panelTitle-background); }
+    </style>
+</head>
+<body>
+    <h2>LLM Consensus Panel</h2>
+    <form>
+        <label for="prompt">Prompt:</label><br>
+        <input type="text" id="prompt" placeholder="Enter your prompt for consensus..." style="width: 80%;"><br><br>
+        <button type="button" id="runConsensus" onclick="generate()">Run Consensus</button>
+    </form>
+    <table id="results">
+        <thead>
+            <tr>
+                <th>Sources</th>
+                <th>Response Text</th>
+                <th>Confidence</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        async function generate() {
+            const promptInput = document.getElementById('prompt');
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt');
+                return;
+            }
+            const button = document.getElementById('runConsensus');
+            button.disabled = true;
+            button.textContent = 'Generating...';
+            vscode.postMessage({ command: 'generate', prompt });
+            promptInput.value = '';
+        }
+
+        window.addEventListener('message', event => {
+            const msg = event.data;
+            const button = document.getElementById('runConsensus');
+            button.disabled = false;
+            button.textContent = 'Run Consensus';
+            if (msg.command === 'result') {
+                const table = document.getElementById('results').getElementsByTagName('tbody')[0];
+                const row = table.insertRow();
+                const cell1 = row.insertCell(0);
+                cell1.textContent = msg.result.sources.join(', ');
+                const cell2 = row.insertCell(1);
+                cell2.textContent = msg.result.text.length > 200 ? msg.result.text.substring(0, 200) + '...' : msg.result.text;
+                const cell3 = row.insertCell(2);
+                cell3.textContent = msg.result.confidence.toFixed(2);
+                if (msg.result.fallbackUsed) {
+                    cell3.style.color = 'orange';
+                    cell3.textContent += ' (Fallback)';
+                }
+            } else if (msg.command === 'error') {
+                alert('Error: ' + msg.error);
+            }
+        });
+    </script>
+</body>
+</html>
+EOF && cat >> src/extension.ts << 'EOF'
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+import LLMManager from './llm/llmManager';
+import { EnvLoader } from './utils/envLoader';
+
+let panel: vscode.WebviewPanel | undefined;
+
+export function activate(context: vscode.ExtensionContext) {
+    // Initialize LLM Manager and secrets
+    EnvLoader.loadSecrets().then(() => {
+        LLMManager.init().catch(err => {
+            console.error('Failed to initialize LLM Manager:', err);
+            vscode.window.showErrorMessage('AstraForge: Failed to load secrets or initialize LLMs');
+        });
+    }).catch(err => {
+        console.error('Failed to load secrets:', err);
+        vscode.window.showErrorMessage('AstraForge: Failed to load API secrets');
+    });
+
+    // Register LLM Panel command
+    const disposable = vscode.commands.registerCommand('astraforge.llmPanel', async () => {
+        if (panel) {
+            panel.reveal(vscode.ViewColumn.One);
+            return;
+        }
+
+        const webviewPath = path.join(context.extensionPath, 'src', 'webviews', 'llmPanel.html');
+        if (!fs.existsSync(webviewPath)) {
+            vscode.window.showErrorMessage('Webview HTML not found');
+            return;
+        }
+
+        const htmlContent = fs.readFileSync(webviewPath, 'utf8');
+
+        panel = vscode.window.createWebviewPanel(
+            'astraforge.llmPanel',
+            'LLM Consensus Panel',
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+            }
+        );
+
+        panel.webview.html = htmlContent;
+
+        panel.webview.onDidReceiveMessage(async (msg) => {
+            switch (msg.command) {
+                case 'generate':
+                    try {
+                        const result = await LLMManager.consensusGenerate(msg.prompt);
+                        panel!.webview.postMessage({
+                            command: 'result',
+                            result: result,
+                        });
+                    } catch (error) {
+                        panel!.webview.postMessage({
+                            command: 'error',
+                            error: (error as Error).message,
+                        });
+                    }
+                    break;
+            }
+        }, undefined, context.subscriptions);
+
+        panel.onDidDispose(() => {
+            panel = undefined;
+        }, undefined, context.subscriptions);
+    });
+
+    context.subscriptions.push(disposable);
+}
+

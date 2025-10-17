@@ -1,390 +1,133 @@
-/**
- * Refactored LLM Manager with modular provider architecture
- * Supports parallel requests, caching, and clean provider abstraction
- */
-
-import * as vscode from 'vscode';
-import {
-  LLMConfig,
-  LLMProvider,
-  LLMRole,
-  _LLMResponse,
-  _VoteResult,
-  _ConferenceResult,
-} from './interfaces';
-import { createProvider } from './providers';
+import * as crypto from 'node:crypto';
+import * as math from 'mathjs';
+import { setTimeout } from 'timers/promises';
+import { EnvLoader } from '../utils/envLoader';
 import { LLMCache } from './cache';
+import { OpenAICompatibleProvider, AnthropicProvider, GitHubProvider } from './providers';
+import { LLMProvider, GenerateResponse, ConsensusResult } from './interfaces';
 
-export class LLMManager {
-  private panel: LLMConfig[] = [];
-  private providers = new Map<string, LLMProvider>();
+class LLMManager {
+  private providers: LLMProvider[] = [];
   private cache: LLMCache;
-  private readonly maxConcurrentRequests: number;
+  private circuitOpen = false;
+  private failedCount = 0;
 
-  constructor(initialPanel?: LLMConfig[]) {
-    this.panel = initialPanel ?? this.loadPanelFromEnvironment();
-    this.cache = new LLMCache(
-      3600, // 1 hour TTL
-      60, // 60 requests per minute
-      60000 // 1 minute window
-    );
-    this.maxConcurrentRequests = vscode.workspace
-      .getConfiguration('astraforge')
-      .get('maxConcurrentRequests', 3);
-
-    this.initializeProviders(true);
+  constructor(cache?: LLMCache) {
+    this.cache = cache || new LLMCache();
   }
 
-  /**
-   * Override the LLM panel configuration at runtime
-   */
-  public setPanel(panel: LLMConfig[]): void {
-    this.panel = panel ?? [];
-    this.initializeProviders(true);
+  async init(): Promise<void> {
+    await EnvLoader.loadSecrets();
+
+    const openaiKey = process.env.OPENAI_API_KEY!;
+    const anthroKey = process.env.ANTHROPIC_API_KEY!;
+    const xaiKey = process.env.XAI_API_KEY!;
+    const routerKey = process.env.OPENROUTER_API_KEY!;
+    const githubToken = process.env.GITHUB_TOKEN!;
+
+    if (!openaiKey || !anthroKey || !xaiKey || !routerKey || !githubToken) {
+      throw new Error('Missing required API keys from environment');
+    }
+
+    this.providers = [
+      OpenAICompatibleProvider.createForOne(openaiKey),
+      AnthropicProvider.createForTwo(anthroKey),
+      OpenAICompatibleProvider.createForThree(xaiKey),
+      OpenAICompatibleProvider.createForFour(routerKey),
+      GitHubProvider.createForFive(githubToken),
+    ];
   }
 
-  private loadPanelFromEnvironment(): LLMConfig[] {
-    const configuredPanel =
-      vscode.workspace
-        .getConfiguration('astraforge')
-        .get<LLMConfig[]>('llmPanel', []) ?? [];
-
-    if (configuredPanel.length > 0) {
-      return configuredPanel;
+  async consensusGenerate(prompt: string): Promise<ConsensusResult> {
+    if (this.circuitOpen) {
+      throw new Error('Circuit breaker is open. Please wait.');
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    const models = (process.env.OPENROUTER_MODELS_TO_USE || '')
-      .split(',')
-      .map(model => model.trim())
-      .filter(model => model.length > 0);
-
-    if (!apiKey || models.length === 0) {
-      return configuredPanel;
+    const key = crypto.createHash('md5').update(prompt).digest('hex');
+    if (this.cache.has(key)) {
+      return this.cache.get(key)!;
     }
 
-    const roles: LLMRole[] = ['concept', 'development', 'coding', 'review'];
+    const genEntries = this.providers.map((p) => p.generate(prompt).then(res => ({ provider: p.name, res })).catch(err => ({ provider: p.name, error: err })));
+    const results = await Promise.allSettled(genEntries);
+    const successful = (results.filter((r): r is PromiseFulfilledResult<{ provider: string; res: GenerateResponse }> => r.status === 'fulfilled').map(r => r.value)).filter(v => !('error' in v));
 
-    return models.map((model, index) => ({
-      provider: 'OpenRouter',
-      key: apiKey,
-      model,
-      role: roles[index] ?? 'secondary',
-    }));
-  }
+    let agg: ConsensusResult;
+    let fallbackUsed = false;
 
-  /**
-   * Initialize providers for all configured LLMs
-   */
-  private initializeProviders(reset: boolean = false): void {
-    if (reset) {
-      this.providers.clear();
-    }
+    if (successful.length >= 3) {
+      const texts = successful.map(v => v.res.text);
+      // Embed all texts using first provider (OpenAI capable for embeddings)
+      const embedPromises = texts.map(t => this.providers[0].embed!(t));
+      const embs = await Promise.all(embedPromises);
 
-    for (const config of this.panel) {
-      if (!this.providers.has(config.provider)) {
-        try {
-          const provider = createProvider(config.provider);
-          this.providers.set(config.provider, provider);
-        } catch (error) {
-          console.error(`Failed to initialize provider ${config.provider}:`, error);
+      const sims: number[] = [];
+      for (let i = 0; i < embs.length; i++) {
+        for (let j = i + 1; j < embs.length; j++) {
+          if (embs[i].length > 0 && embs[j].length > 0) {
+            const dot = math.dot(embs[i], embs[j]);
+            const normI = math.norm(embs[i], '2');
+            const normJ = math.norm(embs[j], '2');
+            const sim = dot / (normI * normJ);
+            sims.push(sim);
+          }
         }
       }
-    }
-  }
+      const avgSim = sims.length > 0 ? sims.reduce((a, b) => a + b, 0) / sims.length : 0;
 
-  /**
-   * Get a copy of the configured LLM panel
-   */
-  public getPanelConfigs(): LLMConfig[] {
-    return this.panel.map(config => ({ ...config }));
-  }
-
-  /**
-   * Query a specific LLM by index with caching and error handling
-   */
-  async queryLLM(index: number, prompt: string): Promise<string> {
-    const config = this.panel[index];
-    if (!config) {
-      return 'No LLM configured at index ' + index;
-    }
-
-    // Check cache first
-    const cachedResponse = this.cache.get(prompt, config.provider, config.model);
-    if (cachedResponse) {
-      return cachedResponse.response;
-    }
-
-    // Check throttling
-    if (this.cache.isThrottled(config.provider)) {
-      return 'Rate limit exceeded. Please try again later.';
-    }
-
-    try {
-      const provider = this.providers.get(config.provider);
-      if (!provider) {
-        throw new Error(`Provider ${config.provider} not initialized`);
+      if (avgSim > 0.7) {
+        // Select response with highest confidence
+        const maxIdx = successful.reduce((maxI, cur, i) => cur.res.confidence > successful[maxI].res.confidence ? i : maxI, 0);
+        agg = {
+          text: successful[maxIdx].res.text,
+          confidence: avgSim,
+          sources: successful.map(v => v.provider),
+          aggregateVote: avgSim,
+        };
+      } else {
+        fallbackUsed = true;
+        agg = await this.fallbackGenerate(prompt);
       }
-
-      const response = await provider.query(prompt, config);
-
-      // Cache the response
-      this.cache.set(prompt, config.provider, config.model, response.content, response.usage);
-
-      return response.content;
-    } catch (error: any) {
-      vscode.window.showErrorMessage(`LLM query failed: ${error.message}. Falling back...`);
-
-      // Fallback to primary LLM
-      if (index !== 0) {
-        return this.queryLLM(0, prompt);
-      }
-
-      return `Error: ${error.message}`;
+    } else {
+      fallbackUsed = true;
+      agg = await this.fallbackGenerate(prompt);
     }
+
+    // Update circuit based on failures
+    const failures = results.filter(r => r.status === 'rejected').length + (successful.filter(v => 'error' in v).length);
+    this.failedCount += failures;
+    if (this.failedCount > 3) {
+      this.circuitOpen = true;
+      setTimeout(() => {
+        this.circuitOpen = false;
+        this.failedCount = 0;
+      }, 5000);
+    }
+
+    agg.fallbackUsed = fallbackUsed;
+    this.cache.set(key, agg);
+    return agg;
   }
 
-  /**
-   * Parallel voting system with improved accuracy and fuzzy matching
-   */
-  async voteOnDecision(prompt: string, options: string[]): Promise<string> {
-    if (this.panel.length === 0 || options.length === 0) {
-      return options[0] || 'No options provided';
-    }
-
-    const votes = new Map<string, number>(options.map(opt => [opt, 0]));
-
-    // Enhanced voting prompt
-    const votePrompt = `${prompt}
-
-Please vote on ONE of these options: ${options.join(', ')}
-Respond with ONLY the option you choose, exactly as written.`;
-
-    // Create voting promises with concurrency limit
-    const votePromises = this.panel.map(async (_, i) => {
+  private async fallbackGenerate(prompt: string): Promise<ConsensusResult> {
+    for (const provider of this.providers.slice(0, 4)) {  // Skip GitHub for fallback
       try {
-        const response = await this.queryLLM(i, votePrompt);
-        return { response, success: true, index: i };
-      } catch {
-        return { response: options[0], success: false, index: i };
-      }
-    });
-
-    // Execute with controlled concurrency
-    const results = await this.executeWithConcurrencyLimit(votePromises);
-
-    // Process votes with fuzzy matching
-    results.forEach(result => {
-      const response = result.response.toLowerCase().trim();
-      const voted = options.find(
-        opt =>
-          response.includes(opt.toLowerCase()) ||
-          opt.toLowerCase().includes(response) ||
-          this.calculateSimilarity(response, opt.toLowerCase()) > 0.7
-      );
-
-      if (voted) {
-        votes.set(voted, (votes.get(voted) || 0) + 1);
-      }
-    });
-
-    // Find majority winner with tie-breaking
-    let max = 0;
-    let winner = options[0];
-    votes.forEach((count, opt) => {
-      if (count > max || (count === max && opt === options[0])) {
-        max = count;
-        winner = opt;
-      }
-    });
-
-    // Enhanced logging for audit trail
-    const voteResults = Array.from(votes.entries()).map(([option, count]) => ({ option, count }));
-    console.log(
-      `Vote results for "${prompt.substring(0, 50)}...": ${JSON.stringify(voteResults)}, Winner: ${winner}`
-    );
-
-    return winner;
-  }
-
-  /**
-   * Conference system for collaborative discussion
-   */
-  async conference(prompt: string): Promise<string> {
-    if (this.panel.length === 0) {
-      return 'No LLMs configured for conference';
-    }
-
-    let discussion = prompt;
-    const discussionHistory: string[] = [prompt];
-
-    // Sequential discussion with each LLM
-    for (let i = 0; i < this.panel.length; i++) {
-      const config = this.panel[i];
-      const response = await this.queryLLM(i, discussion);
-      const contribution = `\nLLM ${i + 1} (${config.role} - ${config.provider}): ${response}`;
-      discussion += contribution;
-      discussionHistory.push(contribution);
-    }
-
-    return discussion;
-  }
-
-  /**
-   * Validate all configured LLM providers
-   */
-  async validateAllConfigurations(): Promise<Record<string, boolean>> {
-    const results: Record<string, boolean> = {};
-
-    const validationPromises = this.panel.map(async (config, index) => {
-      const provider = this.providers.get(config.provider);
-      if (!provider) {
-        return { index, valid: false };
-      }
-
-      try {
-        const valid = await provider.validateConfig(config);
-        return { index, valid };
-      } catch {
-        return { index, valid: false };
-      }
-    });
-
-    const validationResults = await Promise.all(validationPromises);
-
-    validationResults.forEach(result => {
-      const config = this.panel[result.index];
-      results[`${config.provider}-${result.index}`] = result.valid;
-    });
-
-    return results;
-  }
-
-  /**
-   * Get available models for all providers
-   */
-  async getAvailableModels(): Promise<Record<string, string[]>> {
-    const models: Record<string, string[]> = {};
-
-    for (const [providerName, provider] of this.providers.entries()) {
-      const config = this.panel.find(c => c.provider === providerName);
-      if (config) {
-        try {
-          models[providerName] = await provider.getAvailableModels(config);
-        } catch {
-          models[providerName] = [];
+        const res = await provider.generate(prompt);
+        if (res.text.length > 0) {
+          return {
+            text: res.text,
+            confidence: 0.75,
+            sources: [provider.name],
+            aggregateVote: 0.75,
+            fallbackUsed: true,
+          };
         }
+      } catch (error) {
+        console.error(`Fallback error from ${provider.name}:`, error);  // Masked in logger
       }
     }
-
-    return models;
-  }
-
-  /**
-   * Execute promises with concurrency limit
-   */
-  private async executeWithConcurrencyLimit<T>(promises: Promise<T>[]): Promise<T[]> {
-    const results: T[] = [];
-    const executing: Promise<any>[] = [];
-
-    for (const promise of promises) {
-      const p = promise.then(result => {
-        results.push(result);
-        executing.splice(executing.indexOf(p), 1);
-        return result;
-      });
-
-      executing.push(p);
-
-      if (executing.length >= this.maxConcurrentRequests) {
-        await Promise.race(executing);
-      }
-    }
-
-    await Promise.all(executing);
-    return results;
-  }
-
-  /**
-   * Calculate string similarity for fuzzy matching
-   */
-  private calculateSimilarity(str1: string, str2: string): number {
-    const maxLength = Math.max(str1.length, str2.length);
-    if (maxLength === 0) return 1;
-
-    const distance = this.levenshteinDistance(str1, str2);
-    return (maxLength - distance) / maxLength;
-  }
-
-  /**
-   * Calculate Levenshtein distance between two strings
-   */
-  private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1)
-      .fill(null)
-      .map(() => Array(str1.length + 1).fill(null));
-
-    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
-    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
-
-    for (let j = 1; j <= str2.length; j++) {
-      for (let i = 1; i <= str1.length; i++) {
-        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,
-          matrix[j - 1][i] + 1,
-          matrix[j - 1][i - 1] + indicator
-        );
-      }
-    }
-
-    return matrix[str2.length][str1.length];
-  }
-
-  /**
-   * Get cache statistics
-   */
-  getCacheStats(): ReturnType<LLMCache['getStats']> {
-    return this.cache.getStats();
-  }
-
-  /**
-   * Clear cache
-   */
-  clearCache(): void {
-    this.cache.clear();
-  }
-
-  /**
-   * Generate response from a specific provider (alias for queryLLM for compatibility)
-   */
-  async generateResponse(provider: string, prompt: string, model?: string): Promise<string> {
-    if (this.panel.length === 0) {
-      return this.queryLLM(0, prompt);
-    }
-
-    const normalizedProvider = provider.toLowerCase();
-    const normalizedModel = model?.toLowerCase();
-
-    let providerIndex = this.panel.findIndex(p => {
-      const providerMatches = p.provider.toLowerCase() === normalizedProvider;
-      if (!providerMatches) {
-        return false;
-      }
-      if (!normalizedModel) {
-        return true;
-      }
-      return p.model?.toLowerCase() === normalizedModel;
-    });
-
-    if (providerIndex === -1) {
-      providerIndex = this.panel.findIndex(p => p.provider.toLowerCase() === normalizedProvider);
-    }
-
-    if (providerIndex === -1) {
-      providerIndex = 0;
-    }
-
-    return this.queryLLM(providerIndex, prompt);
+    throw new Error('All fallback providers failed');
   }
 }
+
+export default new LLMManager();
