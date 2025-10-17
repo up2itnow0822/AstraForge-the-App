@@ -1,0 +1,1 @@
+*Quickstart Demo Placeholder: Animated GIF showing vsix install, command palette activation, LLM collab session in VS Code.
