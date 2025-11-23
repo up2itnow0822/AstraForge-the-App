@@ -1,7 +1,11 @@
-import { envLoader } from './envLoader';
+export const testEnv = {
+  isTest: true,
+  mockExternalApis: true,
+  enableCoverage: true,
+  coverageThreshold: 85
+};
 
-jest.mock('./envLoader', () => ({
-  EnvLoader: {
-    get: jest.fn().mockReturnValue('mock-value'),
-  },
-}));
+export function setupTestEnvironment(): void {
+  process.env.NODE_ENV = 'test';
+  process.env.ENABLE_MOCKS = 'true';
+}

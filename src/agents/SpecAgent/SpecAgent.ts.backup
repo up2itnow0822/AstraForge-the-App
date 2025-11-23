@@ -1,0 +1,193 @@
+// SpecAgent.ts - Main SpecAgent implementation
+import { z } from 'zod';
+import { AgentTask, AgentResult } from '../../types/AgentTypes.js';
+import { SpecAgentPrompts } from './prompts.js';
+import { Specification, ValidationResult, ValidationIssue, SpecAgentOutput, TechnicalSpec, AcceptanceCriterion } from './types.js';
+import { SpecificationSchema, ValidationResultSchema } from './types.js';
+
+
+export interface BaseAgent {
+  agentId: string;
+  agentType: string;
+  executeTask(task: AgentTask): Promise<AgentResult>;
+  validateOutput(output: any): boolean;
+}
+
+export class SpecAgent implements BaseAgent {
+  public readonly agentId: string;
+  public readonly agentType = 'spec';
+
+  constructor() {
+    this.agentId = `spec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async executeTask(task: AgentTask): Promise<AgentResult> {
+    try {
+      console.log(`[SpecAgent] Executing task: ${task.taskId}`);
+
+      const translatedReqs = await this.translateRequirements(task.prompt, task.context || {});
+      const specification = await this.generateSpec(translatedReqs, task.context || {});
+      const validationResult = await this.validateSpec(specification);
+
+      const output: SpecAgentOutput = {
+        specId: specification.specId,
+        specifications: specification,
+        validationResult: validationResult
+      };
+
+      const status: AgentResult['status'] = validationResult.isValid ? 'completed' : 'blocked';
+      
+      return {
+        agentType: this.agentType,
+        status: status,
+        output: JSON.stringify(output, null, 2),
+        metadata: {
+          specId: specification.specId,
+          requirementCount: translatedReqs.count,
+          estimatedEffort: specification.estimatedEffort,
+          validationScore: validationResult.score,
+          validationIssues: validationResult.issues.length
+        },
+        score: validationResult.score
+      };
+    } catch (error) {
+      return {
+        agentType: this.agentType,
+        status: 'failed',
+        output: '',
+        metadata: task.metadata || {},
+        error: error instanceof Error ? error.message : 'Unknown error',
+        score: 0
+      };
+    }
+  }
+
+  private async translateRequirements(reqs: string, context: Record<string, any>): Promise<{structured: any, count: number}> {
+    try {
+      const lines = reqs.split(/\\n|\\./).filter(l => l.trim().length > 0);
+      const structured = {
+        raw: reqs,
+        extracted: lines.map((line, idx) => ({
+          id: `REQ-${String(idx + 1).padStart(3, '0')}`,
+          text: line.trim(),
+          priority: idx < 3 ? 'high' : 'medium',
+          complexity: 'medium'
+        }))
+      };
+      return {
+        structured: structured,
+        count: lines.length
+      };
+    } catch (error) {
+      throw new Error(`Requirements translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  private async generateSpec(translated: {structured: any, count: number}, context: Record<string, any>): Promise<Specification> {
+    try {
+      console.log('[SpecAgent] Generating specification...');
+      
+      const techSpecs: TechnicalSpec[] = translated.structured.extracted.map((req: any, idx: number) => ({
+        requirementId: req.id,
+        category: idx % 2 === 0 ? 'functional' : 'non_functional',
+        description: `Detailed spec for: ${req.text}`,
+        constraints: context.constraints || [],
+        validation: `Validate that ${req.text} is implemented correctly`
+      }));
+
+      const acceptanceCriteria: AcceptanceCriterion[] = translated.structured.extracted.slice(0, 3).map((req: any, idx: number) => ({
+        criterionId: `ACC-${String(idx + 1).padStart(3, '0')}`,
+        requirementRef: req.id,
+        condition: `System ${req.text}`,
+        successMetric: 'Implementation matches requirement',
+        verificationMethod: idx % 2 === 0 ? 'automated' : 'manual'
+      }));
+
+      const specification: Specification = {
+        specId: `SPEC-${Date.now()}`,
+        requirements: translated.structured.raw,
+        technicalSpecs: techSpecs,
+        acceptanceCriteria: acceptanceCriteria,
+        assumptions: context.assumptions || ['Assumes standard development environment'],
+        dependencies: context.dependencies || [],
+        estimatedEffort: translated.count > 5 ? 'high' : translated.count > 2 ? 'medium' : 'low',
+        generatedAt: new Date()
+      };
+
+      // Validate using Zod
+      const result = SpecificationSchema.safeParse(specification);
+      if (!result.success) {
+        throw new Error(`Spec validation failed: ${JSON.stringify(result.error.issues)}`);
+      }
+
+      return result.data as Specification;
+    } catch (error) {
+      throw new Error(`Specification generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  private async validateSpec(spec: Specification): Promise<ValidationResult> {
+    try {
+      console.log('[SpecAgent] Validating specification...');
+      
+      const issues: ValidationIssue[] = [];
+      
+      if (spec.technicalSpecs.length === 0) {
+        issues.push({
+          severity: 'error',
+          message: 'No technical specifications provided',
+          location: 'technicalSpecs',
+          suggestion: 'Add at least one technical specification'
+        });
+      }
+      
+      if (spec.acceptanceCriteria.length === 0) {
+        issues.push({
+          severity: 'warning',
+          message: 'No acceptance criteria defined',
+          location: 'acceptanceCriteria',
+          suggestion: 'Define testable acceptance criteria for requirements'
+        });
+      }
+      
+      let score = 100;
+      if (issues.length > 0) {
+        const errorCount = issues.filter(i => i.severity === 'error').length;
+        const warningCount = issues.filter(i => i.severity === 'warning').length;
+        score = Math.max(0, 100 - (errorCount * 25) - (warningCount * 10));
+      }
+
+      const validationResult: ValidationResult = {
+        isValid: issues.filter(i => i.severity === 'error').length === 0,
+        issues: issues,
+        score: Math.round(score)
+      };
+
+      const result = ValidationResultSchema.safeParse(validationResult);
+      if (!result.success) {
+        throw new Error(`Validation result validation failed: ${JSON.stringify(result.error.issues)}`);
+      }
+
+      return result.data as ValidationResult;
+    } catch (error) {
+      throw new Error(`Spec validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  validateOutput(output: any): boolean {
+    try {
+      if (typeof output === 'string') {
+        const parsed = JSON.parse(output);
+        return SpecificationSchema.safeParse(parsed.specifications).success &&
+               ValidationResultSchema.safeParse(parsed.validationResult).success;
+      } else if (typeof output === 'object') {
+        return SpecificationSchema.safeParse(output.specifications).success &&
+               ValidationResultSchema.safeParse(output.validationResult).success;
+      }
+      return false;
+    } catch (error) {
+      console.error('Output validation error:', error);
+      return false;
+    }
+  }
+}

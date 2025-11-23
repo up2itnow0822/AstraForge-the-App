@@ -2,8 +2,7 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import tsParser from '@typescript-eslint/parser';
 import ts from '@typescript-eslint/eslint-plugin';
 
-export default ts.configs.recommended,
-  jsdoc.configs.recommended,
+export default [
   {
     files: ['**/*.ts'],
     languageOptions: {
@@ -12,6 +11,8 @@ export default ts.configs.recommended,
     },
     plugins: { jsdoc, '@typescript-eslint': ts },
     rules: {
+      ...ts.configs.recommended.rules,
+      ...jsdoc.configs.recommended.rules,
       'jsdoc/require-jsdoc': ['error', { require: { FunctionDeclaration: true, MethodDefinition: true, ClassDeclaration: false } }],
       'jsdoc/require-param-description': 'warn',
       'jsdoc/require-returns-description': 'warn',

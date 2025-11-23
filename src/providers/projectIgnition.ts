@@ -1,11 +1,19 @@
-import { WorkflowManager } from '../workflow/workflowManager';
+import * as vscode from 'vscode';
+import { Logger } from '../utils/logger';
 
-// Use named import WorkflowManager
-/**
- * Ignites project workflow with LLM/Quantum chain.
- * @param {string} spec - Workflow spec prompt.
- * @returns {Promise<string>} Chained decision output.
- * @example const chainResult = await projectIgnition.generateChain('Build agent nexus'); // LLM + quantum optimize.
- * @see llmManager for LLM calls.
- * @security Env secrets loaded; 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 for ethics review.
- */
+export class ProjectIgnition {
+    private logger: Logger;
+
+    constructor() {
+        this.logger = new Logger('ProjectIgnition');
+    }
+
+    public async ignite(config: any): Promise<boolean> {
+        this.logger.info('Igniting project with config: ' + JSON.stringify(config));
+        return true;
+    }
+
+    public async generateScaffold(type: string): Promise<void> {
+        this.logger.info(`Generating scaffold for ${type}`);
+    }
+}

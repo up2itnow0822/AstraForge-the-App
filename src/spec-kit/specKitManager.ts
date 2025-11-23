@@ -1,11 +1,60 @@
-import LLMManager from '../llm/llmManager';
+import { EventEmitter } from 'events';
+import { LanceDBClient } from '../core/storage/LanceDBClient';
 
-// Use default LLMManager
-/**
- * Generates spec kit for development.
- * @param {string} input - Input spec prompt.
- * @returns {Promise<object>} Generated spec.
- * @example const spec = await specKitManager.generate('OpenSpec for docs'); // YAML/JSON output.
- * @see OpenSpec CLI integration.
- * @security No external calls without auth.
- */
+export interface Specification {
+}
+
+export interface Requirement {
+}
+
+export interface AcceptanceCriteria {
+}
+
+export interface SpecificationTemplate {
+}
+
+interface SpecKitConfig {
+}
+
+export class SpecKitManager extends EventEmitter {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

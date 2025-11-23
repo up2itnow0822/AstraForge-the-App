@@ -1,0 +1,213 @@
+import { Router, Application } from 'express';
+import { AgentRouter } from './$1.js';
+import { RSIManager } from './$1.js';
+import { DecisionEngine } from './$1.js';
+import { LanceDBClient } from '../$1.js';
+
+/**
+ * Local Orchestration Engine for AstraForge V3
+ * Handles agent routing, RSI loops, and decision making
+ */
+export class LocalOrchestrationEngine {
+  private router: Router;
+  private agentRouter: AgentRouter;
+  private rsiManager: RSIManager;
+  private decisionEngine: DecisionEngine;
+  private lanceDB: LanceDBClient;
+
+  constructor(app: Application) {
+    this.router = Router();
+    this.agentRouter = new AgentRouter();
+    this.rsiManager = new RSIManager();
+    this.decisionEngine = new DecisionEngine();
+    this.lanceDB = new LanceDBClient('./.astraforge/lancedb');
+
+    // Initialize LanceDB on startup
+    this.initializeLanceDB();
+    
+    this.setupRoutes(app);
+  }
+
+  private async initializeLanceDB(): Promise<void> {
+    try {
+      await this.lanceDB.initialize();
+      console.log('[LocalEngine] LanceDB initialized successfully');
+    } catch (error) {
+      console.error('[LocalEngine] Failed to initialize LanceDB:', error);
+    }
+  }
+
+  private setupRoutes(app: Application): void {
+    // API routes for local orchestration
+    app.use('/api', this.router);
+
+    this.router.post('/execute', async (req, res) => {
+      try {
+        const result = await this.executeAgentTask(req.body);
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.router.post('/vector/search', async (req, res) => {
+      try {
+        const results = await this.searchVectors(req.body.query);
+        res.json(results);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.router.post('/rsi/evolve', async (req, res) => {
+      try {
+        const result = await this.runRSILoop(req.body);
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // New batch operations endpoints
+    this.router.post('/vector/batch-add', async (req, res) => {
+      try {
+        const { documents } = req.body;
+        if (!documents || !Array.isArray(documents)) {
+          return res.status(400).json({ error: 'documents array required' });
+        }
+        
+        const ids = await this.lanceDB.addDocumentsBatch(documents);
+        res.json({ ids, count: ids.length });
+      } catch (error) {
+        console.error('[LocalEngine] Batch add failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.router.post('/vector/batch-search', async (req, res) => {
+      try {
+        const { queries } = req.body;
+        if (!queries || !Array.isArray(queries)) {
+          return res.status(400).json({ error: 'queries array required' });
+        }
+        
+        const results = await this.lanceDB.searchBatch(queries);
+        res.json({ results, queryCount: queries.length });
+      } catch (error) {
+        console.error('[LocalEngine] Batch search failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.router.post('/vector/batch-delete', async (req, res) => {
+      try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) {
+          return res.status(400).json({ error: 'ids array required' });
+        }
+        
+        await this.lanceDB.deleteDocumentsBatch(ids);
+        res.json({ deleted: ids.length });
+      } catch (error) {
+        console.error('[LocalEngine] Batch delete failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // New filtered search endpoint
+    this.router.post('/vector/search-filtered', async (req, res) => {
+      try {
+        const { query, filter, limit } = req.body;
+        if (!query || !filter) {
+          return res.status(400).json({ error: 'query and filter required' });
+        }
+        
+        const results = await this.lanceDB.searchWithFilter(query, filter, limit || 5);
+        res.json({ results, query, filter });
+      } catch (error) {
+        console.error('[LocalEngine] Filtered search failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // New index management endpoints
+    this.router.post('/vector/create-index', async (req, res) => {
+      try {
+        const { column, metric } = req.body;
+        await this.lanceDB.createIndex(column, metric);
+        res.json({ success: true, message: 'Index created successfully' });
+      } catch (error) {
+        console.error('[LocalEngine] Create index failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.router.post('/vector/optimize', async (req, res) => {
+      try {
+        await this.lanceDB.optimizeTable();
+        res.json({ success: true, message: 'Table optimized successfully' });
+      } catch (error) {
+        console.error('[LocalEngine] Optimize table failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Migration endpoint
+    this.router.post('/vector/migrate-from-postgres', async (req, res) => {
+      try {
+        const { postgresPath } = req.body;
+        if (!postgresPath) {
+          return res.status(400).json({ error: 'postgresPath required' });
+        }
+        
+        // Note: This is a placeholder - actual migration would need pg module
+        // For now, return mock result
+        const result = {
+          migrated: 0,
+          failed: 0,
+          message: 'Migration from PostgreSQL not yet implemented - requires pg module'
+        };
+        
+        res.json(result);
+      } catch (error) {
+        console.error('[LocalEngine] Migration failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Statistics endpoint
+    this.router.get('/vector/stats', async (req, res) => {
+      try {
+        const stats = await this.lanceDB.getStats();
+        res.json(stats);
+      } catch (error) {
+        console.error('[LocalEngine] Get stats failed:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }
+
+  /**
+   * Execute an agent task through the Agent Router
+   */
+  async executeAgentTask(task: any): Promise<any> {
+    console.log(`[LocalEngine] Executing task: ${task.type}`);
+    return await this.agentRouter.routeTask(task);
+  }
+
+  /**
+   * Search vectors in LanceDB
+   */
+  async searchVectors(query: string): Promise<any[]> {
+    console.log(`[LocalEngine] Searching vectors for: ${query}`);
+    return await this.lanceDB.search(query);
+  }
+
+  /**
+   * Run RSI evolution loop
+   */
+  async runRSILoop(data: any): Promise<any> {
+    console.log(`[LocalEngine] Running RSI evolution`);
+    return await this.rsiManager.evolve(data);
+  }
+}

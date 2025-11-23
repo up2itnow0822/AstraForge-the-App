@@ -1,15 +1,34 @@
-import * as fs from 'fs';
-
-// Dynamic import for octokit rest ESM
-class PullRequestManager {
-  async createPR(title: string, body: string, branch: string): Promise<any> {
-    const { Octokit } = await import('@octokit/rest');
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    // ... impl
-    return octokit.rest.pulls.create({ owner: 'repo', repo: 'repo', title, body, head: branch, base: 'main' });
-  }
-
-  // ... other methods
+export interface PullRequest {
+    id: number;
+    title: string;
+    body: string;
+    head: string;
+    base: string;
+    state: 'open' | 'closed' | 'merged';
 }
 
-export default PullRequestManager;
+export class PullRequestManager {
+    async createPullRequest(title: string, body: string, head: string, base: string): Promise<PullRequest> {
+        // Stub implementation
+        return {
+            id: Math.floor(Math.random() * 1000),
+            title,
+            body,
+            head,
+            base,
+            state: 'open'
+        };
+    }
+
+    async getPullRequest(id: number): Promise<PullRequest | null> {
+        // Stub implementation
+        return {
+            id,
+            title: 'Stub PR',
+            body: 'Stub Body',
+            head: 'feature',
+            base: 'main',
+            state: 'open'
+        };
+    }
+}

@@ -1,60 +1,27 @@
-/* eslint-disable no-console */
+import * as vscode from 'vscode';
 
-/**
- * Lightweight logger wrapper to centralize logging and avoid console.* lint warnings.
- * Allows level-based filtering via LOG_LEVEL env (error|warn|info|debug).
- */
+export class Logger {
+    private name: string;
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+    constructor(name: string = 'Global') {
+        this.name = name;
+    }
 
-const levelOrder: Record<LogLevel, number> = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  debug: 3,
-};
+    public info(message: string): void {
+        console.log(`[INFO][${this.name}] ${message}`);
+    }
 
-const envLevel = (process.env.LOG_LEVEL as LogLevel) || 'info';
-const currentLevel = levelOrder[envLevel] ?? levelOrder.info;
+    public warn(message: string): void {
+        console.warn(`[WARN][${this.name}] ${message}`);
+    }
 
-function shouldLog(level: LogLevel): boolean {
-  return levelOrder[level] <= currentLevel;
+    public error(message: string): void {
+        console.error(`[ERROR][${this.name}] ${message}`);
+    }
+
+    public log(message: string): void {
+        console.log(`[LOG][${this.name}] ${message}`);
+    }
 }
 
-function emit(level: LogLevel, method: 'error' | 'warn' | 'info' | 'debug', args: unknown[]): void {
-  if (!shouldLog(level)) {
-    return;
-  }
-
-  (console[method] as (...logArgs: unknown[]) => void)(...args);
-}
-
-export const logger = {
-  error(...args: unknown[]): void {
-    emit('error', 'error', args);
-  },
-  warn(...args: unknown[]): void {
-    emit('warn', 'warn', args);
-  },
-  info(...args: unknown[]): void {
-    emit('info', 'info', args);
-  },
-  debug(...args: unknown[]): void {
-    emit('debug', 'debug', args);
-  },
-};
-
-export const _logger = logger;
-
-/* eslint-enable no-console */
-
-
-/**
- * Secure logging utility.
- * @param {string} message - Log message.
- * @param {\'debug\'|\'info\'|\'warn\'|\'error'} [level=\'info\'] - Log level.
- * @returns {void}
- * @example logger.log('Decision made', 'debug'); // Outputs to secure file/console.
- * @see secureLogger for sensitive.
- * @security Masks secrets in output; no PII logged.
- */
+export const logger = new Logger();

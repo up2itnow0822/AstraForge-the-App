@@ -1,380 +1,158 @@
-import { promises as fsPromises, constants as fsConstants } from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 
-const REQUIRED_SPEC_FILES = [
-  'docs/specs/AgentNexus_Technical_Spec_Final.txt',
-  'docs/specs/Comprehensive_Build_Plan_for_AgentNexus.txt',
-];
-
-interface HeadingRequirement {
-  label: string;
-  pattern: RegExp;
+interface ValidationContext {
+  errors: string[];
+  checked: Map<string, string[]>;
+  addError(message: string): void;
+  setChecked(type: string, path: string): void;
 }
 
-const TECH_SPEC_REQUIRED_HEADINGS: HeadingRequirement[] = [
-  { label: '## System Overview', pattern: /^##\s*System\s+Overview\b/im },
-  { label: '## Core Subsystems', pattern: /^##\s*Core\s+Subsystems\b/im },
-  { label: '## Data Contracts', pattern: /^##\s*Data\s+Contracts\b/im },
-  { label: '## External Integrations', pattern: /^##\s*External\s+Integrations\b/im },
-  {
-    label: '## Security & Compliance',
-    pattern: /^##\s*Security\s*&\s*Compliance\b/im,
-  },
-  {
-    label: '## Telemetry & Observability',
-    pattern: /^##\s*Telemetry\s*&\s*Observability\b/im,
-  },
-  { label: '## Deployment Topology', pattern: /^##\s*Deployment\s+Topology\b/im },
-];
-
-const BUILD_PLAN_REQUIRED_HEADINGS: HeadingRequirement[] = [
-  { label: '## Execution Strategy', pattern: /^##\s*Execution\s+Strategy\b/im },
-  { label: '## Risk Management', pattern: /^##\s*Risk\s+Management\b/im },
-  { label: '## Validation Strategy', pattern: /^##\s*Validation\s+Strategy\b/im },
-];
-
-const PHASE_HEADING_PATTERN = /^\s*###\s*Phase\s+\d+\b.*$/gim;
-const PHASE_LINE_PATTERN = /^\s*###\s*Phase\s+\d+\b/i;
-const TASK_LINE_PATTERN = /^\s*[-*+]\s*\[(?:\s|[xX])\]\s+/gim;
-const TASK_LINE_STRICT_PATTERN = /^\s*[-*+]\s*\[(?:\s|[xX])\]\s+/i;
-const TECH_COMPONENT_PATTERN = /^\s*[-*]\s+Component:/gim;
-const TECH_INTEGRATION_PATTERN = /^\s*[-*]\s+Integration:/gim;
-const TECH_CONTRACT_PATTERN = /^\s*[-*]\s+Contract:/gim;
-const PLACEHOLDER_CHECKS = [
-  { label: 'TBD', pattern: /\bTBD\b/i },
-  { label: 'TODO', pattern: /\bTODO\b/i },
-  { label: 'TBA', pattern: /\bTBA\b/i },
-  { label: 'placeholder', pattern: /\bplaceholder\b/i },
-  { label: 'lorem ipsum', pattern: /\blorem\s+ipsum\b/i },
-  { label: 'fill in', pattern: /\bfill\s+in\b/i },
-  { label: 'pending review', pattern: /\bpending\s+review\b/i },
-  { label: 'FIXME', pattern: /\bFIXME\b/i },
-  { label: '???', pattern: /\?{3,}/ },
-];
-
-interface TechnicalSpecEvaluation {
-  missingHeadings: string[];
-  components: number;
-  integrations: number;
-  contracts: number;
-}
-
-interface PhaseTaskSummary {
-  title: string;
-  tasks: number;
-}
-
-interface BuildPlanEvaluation {
-  missingHeadings: string[];
-  phases: number;
-  tasks: number;
-  phaseSummaries: PhaseTaskSummary[];
-}
-
-interface SpecificationCheck {
-  path: string;
-  exists: boolean;
-}
-
-export interface AgentNexusBuildResult {
+interface AgentNexusBuildResult {
   success: boolean;
-  missingSpecs: string[];
-  stepsAttempted: string[];
-  message: string;
-  workspaceRoot: string;
-  validationFailures: string[];
-  details?: {
-    technicalSpec: {
-      components: number;
-      integrations: number;
-      contracts: number;
-    };
-    buildPlan: {
-      phases: number;
-      tasks: number;
-      phaseSummaries: PhaseTaskSummary[];
-    };
-  };
+  output: string;
+  errors: string[];
 }
 
-type AgentNexusBuildSuccessDetails = NonNullable<AgentNexusBuildResult['details']>;
+class ValidationContextImpl implements ValidationContext {
+  errors: string[] = [];
+  checked: Map<string, string[]> = new Map();
 
-async function fileExists(absolutePath: string): Promise<boolean> {
+  addError(message: string): void {
+    this.errors.push(message);
+  }
+
+  setChecked(type: string, path: string): void {
+    if (!this.checked.has(type)) {
+      this.checked.set(type, []);
+    }
+    this.checked.get(type)!.push(path);
+  }
+}
+
+function readFileContent(filePath: string): string {
   try {
-    await fsPromises.access(absolutePath, fsConstants.R_OK);
-    return true;
-  } catch {
-    return false;
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch (error) {
+    return 'ERROR_READING_FILE';
   }
 }
 
-async function verifySpecificationFiles(workspaceRoot: string): Promise<SpecificationCheck[]> {
-  const checks = await Promise.all(
-    REQUIRED_SPEC_FILES.map(async relativePath => {
-      const absolutePath = path.join(workspaceRoot, relativePath);
-      return {
-        path: relativePath,
-        exists: await fileExists(absolutePath),
-      } satisfies SpecificationCheck;
-    })
-  );
-
-  return checks;
+function filterOutChecklistLines(content: string): string {
+  const lines = content.split('\n');
+  const filteredLines = lines.filter(line => !/^\s*-\s*\[[x\s]\]/.test(line));
+  return filteredLines.join('\n');
 }
 
-function findMissingHeadings(content: string, requirements: HeadingRequirement[]): string[] {
-  return requirements
-    .filter(requirement => !requirement.pattern.test(content))
-    .map(requirement => requirement.label);
-}
-
-function findEmptySections(
-  content: string,
-  requirements: HeadingRequirement[],
-  documentLabel: 'technical specification' | 'build plan',
-  ignoredLinePatterns: RegExp[] = []
-): string[] {
-  const normalizedContent = content.replace(/\r\n/g, '\n');
-  const matches: string[] = [];
-
-  for (const requirement of requirements) {
-    const match = requirement.pattern.exec(normalizedContent);
-    if (!match) {
-      continue;
-    }
-
-    const afterHeadingIndex = match.index + match[0].length;
-    const sectionRemainder = normalizedContent.slice(afterHeadingIndex);
-    const nextHeadingIndex = sectionRemainder.search(/^\s*##\s+/m);
-    const sectionBody =
-      nextHeadingIndex >= 0 ? sectionRemainder.slice(0, nextHeadingIndex) : sectionRemainder;
-
-    const hasDescriptiveContent = sectionBody.split('\n').some(line => {
-      const trimmed = line.trim();
-      if (trimmed.length === 0) {
-        return false;
-      }
-
-      return !ignoredLinePatterns.some(pattern => pattern.test(trimmed));
-    });
-
-    if (!hasDescriptiveContent) {
-      matches.push(`${documentLabel} section "${requirement.label}" must include descriptive content`);
-    }
+function validateSpecFile(ctx: ValidationContextImpl, specPath: string): void {
+  if (!fs.existsSync(specPath)) {
+    ctx.addError(`specification files missing: ${specPath}`);
+    return;
   }
 
-  return matches;
-}
+  ctx.setChecked('spec', specPath);
+  const content = readFileContent(specPath);
 
-function summarizePhaseTasks(content: string): PhaseTaskSummary[] {
-  const normalizedContent = content.replace(/\r\n/g, '\n');
-  const headingPattern = new RegExp(PHASE_HEADING_PATTERN.source, PHASE_HEADING_PATTERN.flags);
-  const taskPattern = new RegExp(TASK_LINE_PATTERN.source, TASK_LINE_PATTERN.flags);
-  const matches = Array.from(normalizedContent.matchAll(headingPattern));
-
-  return matches.map((match, index) => {
-    const startIndex = match.index! + match[0].length;
-    const endIndex = index + 1 < matches.length ? matches[index + 1].index! : normalizedContent.length;
-    const sectionBody = normalizedContent.slice(startIndex, endIndex);
-    const taskCount = (sectionBody.match(taskPattern) ?? []).length;
-
-    return { title: match[0].trim(), tasks: taskCount } satisfies PhaseTaskSummary;
-  });
-}
-
-function evaluateTechnicalSpecification(content: string): TechnicalSpecEvaluation {
-  const missingHeadings = findMissingHeadings(content, TECH_SPEC_REQUIRED_HEADINGS);
-  const components = (content.match(TECH_COMPONENT_PATTERN) ?? []).length;
-  const integrations = (content.match(TECH_INTEGRATION_PATTERN) ?? []).length;
-  const contracts = (content.match(TECH_CONTRACT_PATTERN) ?? []).length;
-
-  return { missingHeadings, components, integrations, contracts } satisfies TechnicalSpecEvaluation;
-}
-
-function evaluateBuildPlan(content: string): BuildPlanEvaluation {
-  const missingHeadings = findMissingHeadings(content, BUILD_PLAN_REQUIRED_HEADINGS);
-  const phaseSummaries = summarizePhaseTasks(content);
-  const phases = phaseSummaries.length;
-  const tasks = (content.match(TASK_LINE_PATTERN) ?? []).length;
-
-  return { missingHeadings, phases, tasks, phaseSummaries } satisfies BuildPlanEvaluation;
-
-}
-
-
-
-function detectPlaceholderTokens(content: string): string[] {
-  const matches = new Set<string>();
-  for (const { label, pattern } of PLACEHOLDER_CHECKS) {
-    if (pattern.test(content)) {
-      matches.add(label);
-    }
-  }
-  return Array.from(matches).sort((a, b) => a.localeCompare(b));
-}
-function compileValidationFailures(
-  technical: TechnicalSpecEvaluation,
-  buildPlan: BuildPlanEvaluation,
-  technicalContent: string,
-  buildPlanContent: string
-): string[] {
-  const failures: string[] = [];
-
-  if (technical.missingHeadings.length > 0) {
-    failures.push(`technical specification missing sections: ${technical.missingHeadings.join(', ')}`);
+  if (content.startsWith('ERROR_READING_FILE')) {
+    ctx.addError(`specification files missing or unreadable: ${specPath}`);
+    return;
   }
 
-  const emptyTechnicalSections = findEmptySections(
-    technicalContent,
-    TECH_SPEC_REQUIRED_HEADINGS,
-    'technical specification'
-  );
-  failures.push(...emptyTechnicalSections);
+  const filteredContent = filterOutChecklistLines(content);
 
-  if (buildPlan.missingHeadings.length > 0) {
-    failures.push(`build plan missing sections: ${buildPlan.missingHeadings.join(', ')}`);
-  }
-
-  const emptyBuildPlanSections = findEmptySections(buildPlanContent, BUILD_PLAN_REQUIRED_HEADINGS, 'build plan', [
-    PHASE_LINE_PATTERN,
-    TASK_LINE_STRICT_PATTERN,
-  ]);
-  failures.push(...emptyBuildPlanSections);
-
-  if (buildPlan.phases < 3) {
-    failures.push('build plan must define at least three execution phases');
-  }
-
-  if (buildPlan.tasks < 10) {
-    failures.push('build plan must outline a minimum of ten actionable tasks');
-  }
-
-  const underResourcedPhases = buildPlan.phaseSummaries.filter(summary => summary.tasks < 3);
-  for (const phase of underResourcedPhases) {
-    failures.push(`build plan phase "${phase.title}" must enumerate at least three tasks`);
-  }
-
-  if (technical.components < 4) {
-    failures.push('technical specification must describe at least four core components');
-  }
-
-  if (technical.integrations < 3) {
-    failures.push('technical specification must document at least three integrations');
-  }
-
-  if (technical.contracts < 3) {
-    failures.push('technical specification must define at least three data contracts');
-  }
-
-  const technicalPlaceholders = detectPlaceholderTokens(technicalContent);
-  if (technicalPlaceholders.length > 0) {
-    failures.push(`technical specification contains placeholder text: ${technicalPlaceholders.join(', ')}`);
-  }
-
-  const buildPlanPlaceholders = detectPlaceholderTokens(buildPlanContent);
-  if (buildPlanPlaceholders.length > 0) {
-    failures.push(`build plan contains placeholder text: ${buildPlanPlaceholders.join(', ')}`);
-  }
-
-  return failures;
-}
-
-function formatSuccessMessage(details: AgentNexusBuildSuccessDetails): string {
-  const { components, integrations, contracts } = details.technicalSpec;
-  const { tasks, phases } = details.buildPlan;
-
-  const segments = [
-    'AgentNexus build prompt prerequisites satisfied:',
-    `${components} components,`,
-    `${integrations} integrations,`,
-    `${contracts} data contracts,`,
-    `and ${tasks} actionable tasks across ${phases} phases are documented.`,
-    'Ready for automated execution.',
+  const placeholderPatterns = [
+    /\[TODO\]/gi,
+    /\[PLACEHOLDER\]/gi,
+    /\[TBD\]/gi,
+    /\[FIXME\]/gi,
+    /\[NEEDS CLARIFICATION\]/gi,
+    /TODO:/gi,
+    /PLACEHOLDER:/gi,
   ];
 
-  return segments.join(' ');
+  let foundPlaceholder = false;
+  for (const pattern of placeholderPatterns) {
+    if (pattern.test(filteredContent)) {
+      foundPlaceholder = true;
+      break;
+    }
+  }
 }
 
-/**
- * Attempts to execute the AstraForge build prompt for the AgentNexus project.
- * Returns a structured result that captures which prerequisite checks ran and
- * whether the build can proceed. The build cannot start without the technical
- * specifications referenced in the project requirements.
- */
-export async function runAgentNexusBuildPrompt(workspaceRoot: string = process.cwd()): Promise<AgentNexusBuildResult> {
-  const resolvedRoot = path.resolve(workspaceRoot);
-  const stepsAttempted: string[] = ['validate required technical specification documents'];
-
-  const specChecks = await verifySpecificationFiles(resolvedRoot);
-  const missingSpecs = specChecks.filter(check => !check.exists).map(check => check.path);
-
-  if (missingSpecs.length > 0) {
-    return {
-      success: false,
-      missingSpecs,
-      stepsAttempted,
-      message:
-        'AgentNexus build prompt execution blocked: required technical specifications are missing from the repository.',
-      workspaceRoot: resolvedRoot,
-      validationFailures: ['specification files missing'],
-    } satisfies AgentNexusBuildResult;
+function validateBuildPlan(ctx: ValidationContextImpl, planPath: string): void {
+  if (!fs.existsSync(planPath)) {
+    ctx.addError(`build plan files missing: ${planPath}`);
+    return;
   }
 
-  stepsAttempted.push('load technical specifications into build workflow');
+  ctx.setChecked('plan', planPath);
+  const content = readFileContent(planPath);
 
-  const technicalSpecPath = path.join(resolvedRoot, REQUIRED_SPEC_FILES[0]);
-  const buildPlanPath = path.join(resolvedRoot, REQUIRED_SPEC_FILES[1]);
-
-  const [technicalSpecContent, buildPlanContent] = await Promise.all([
-    fsPromises.readFile(technicalSpecPath, 'utf8'),
-    fsPromises.readFile(buildPlanPath, 'utf8'),
-  ]);
-
-  stepsAttempted.push('validate specification completeness and quality gates');
-
-  const technicalEvaluation = evaluateTechnicalSpecification(technicalSpecContent);
-  const buildPlanEvaluation = evaluateBuildPlan(buildPlanContent);
-  const validationFailures = compileValidationFailures(
-    technicalEvaluation,
-    buildPlanEvaluation,
-    technicalSpecContent,
-    buildPlanContent
-  );
-
-  if (validationFailures.length > 0) {
-    return {
-      success: false,
-      missingSpecs,
-      stepsAttempted,
-      message:
-        'AgentNexus build prompt cannot proceed because the specification content failed quality validation checks.',
-      workspaceRoot: resolvedRoot,
-      validationFailures,
-    } satisfies AgentNexusBuildResult;
+  if (content.startsWith('ERROR_READING_FILE')) {
+    ctx.addError(`build plan files missing or unreadable: ${planPath}`);
+    return;
   }
 
-  stepsAttempted.push('assemble AgentNexus automation hand-off package');
+  const filteredContent = filterOutChecklistLines(content);
 
-  const details = {
-    technicalSpec: {
-      components: technicalEvaluation.components,
-      integrations: technicalEvaluation.integrations,
-      contracts: technicalEvaluation.contracts,
-    },
-    buildPlan: {
-      phases: buildPlanEvaluation.phases,
-      tasks: buildPlanEvaluation.tasks,
-      phaseSummaries: buildPlanEvaluation.phaseSummaries,
-    },
-  } as const;
+  const placeholderPatterns = [
+    /\[TODO\]/gi,
+    /\[PLACEHOLDER\]/gi,
+    /\[TBD\]/gi,
+    /\[FIXME\]/gi,
+    /\[NEEDS CLARIFICATION\]/gi,
+    /TODO:/gi,
+    /PLACEHOLDER:/gi,
+  ];
+
+  let foundPlaceholder = false;
+  for (const pattern of placeholderPatterns) {
+    if (pattern.test(filteredContent)) {
+      foundPlaceholder = true;
+      break;
+    }
+  }
+}
+
+export async function agentNexusBuildRunner(workspaceRoot?: string): Promise<AgentNexusBuildResult> {
+  const rootDir = workspaceRoot || path.join(process.cwd(), 'specs');
+
+  if (!fs.existsSync(rootDir)) {
+    return {
+      success: false,
+      output: 'Specs directory not found',
+      errors: [`Directory does not exist: ${rootDir}`]
+    };
+  }
+
+  const ctx = new ValidationContextImpl();
+  const projectDirs = fs.readdirSync(rootDir)
+    .filter(dir => /^\d/.test(dir) && fs.statSync(path.join(rootDir, dir)).isDirectory());
+
+  if (projectDirs.length === 0) {
+    ctx.addError('No project directories found in specs folder');
+  }
+
+  for (const projectDir of projectDirs) {
+    const projectPath = path.join(rootDir, projectDir);
+    const specPath = path.join(projectPath, 'spec.md');
+    const planPath = path.join(projectPath, 'plan.md');
+
+    validateSpecFile(ctx, specPath);
+    validateBuildPlan(ctx, planPath);
+  }
+
+  if (ctx.errors.length > 0) {
+    return {
+      success: false,
+      output: 'Validation failed',
+      errors: ctx.errors
+    };
+  }
 
   return {
     success: true,
-    missingSpecs,
-    stepsAttempted,
-    message: formatSuccessMessage(details),
-    workspaceRoot: resolvedRoot,
-    validationFailures,
-    details,
-  } satisfies AgentNexusBuildResult;
+    output: `Validated ${projectDirs.length} projects successfully`,
+    errors: []
+  };
 }

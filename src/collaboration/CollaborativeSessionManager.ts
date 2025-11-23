@@ -1,48 +1,62 @@
-import { VectorDB } from '../db/vectorDB';
-import * as io from 'socket.io';
+import { EventEmitter } from 'events';
 
-export class CollaborativeSessionManager {
-  private vectorDB: VectorDB;
-  private io: io.Server;
+export interface SessionConfig {
+  userId: string;
+  priority: 'low' | 'medium' | 'high';
+}
 
-  constructor(vectorDB: VectorDB, io: io.Server) {
-    this.vectorDB = vectorDB;
-    this.io = io;
-    this.setupEvents();
+export interface Message {
+  type: string;
+  data: any;
+  priority: 'low' | 'medium' | 'high';
+}
+
+export interface ParticipantConfig {
+  role: string;
+}
+
+export class CollaborativeSessionManager extends EventEmitter {
+  private active: boolean = false;
+  private participants: Map<string, any> = new Map();
+  private sessionId: string = '';
+
+  constructor() {
+    super();
   }
 
-  private setupEvents() {
-    this.io.on('connection', (socket) => {
-      socket.on('join-room', (room: string, user: string) => {
-        socket.join(room);
-        socket.to(room).emit('user-joined', user);
-      });
-
-      socket.on('code-change', (data: {room: string, code: string, user: string}) => {
-        this.io.to(data.room).emit('code-update', {code: data.code, user: data.user});
-        this.vectorDB.addDocument({
-          id: `collab-${Date.now()}`,
-          vector: [], // Mock
-          text: data.code,
-          metadata: JSON.stringify({room: data.room, user: data.user})
-        });
-      });
-
-      socket.on('disconnect', () => {
-        // Cleanup
-      });
-    });
+  async startSession(sessionId: string, config: SessionConfig): Promise<void> {
+    this.sessionId = sessionId;
+    this.active = true;
+    this.participants.set(config.userId, { role: 'host', ...config });
   }
 
-  async getRoomHistory(room: string): Promise<any[]> {
-    const results = await this.vectorDB.hybridSearch(room, 100);
-    return results
-      .filter((r: any) => JSON.parse(r.metadata).room === room)
-      .map((r: any) => JSON.parse(r.text))
-      .sort((a: any, b: any) => (a.timestamp as number) - (b.timestamp as number));
+  async stopSession(): Promise<void> {
+    this.active = false;
+    this.participants.clear();
+    this.sessionId = '';
   }
 
-  close() {
-    this.io.close();
+  isActive(): boolean {
+    return this.active;
+  }
+
+  async broadcastMessage(message: Message): Promise<{ success: boolean }> {
+    if (!this.active) {
+      return { success: false };
+    }
+    // Process message
+    return { success: true };
+  }
+
+  async addParticipant(participantId: string, config: ParticipantConfig): Promise<void> {
+    this.participants.set(participantId, config);
+  }
+
+  async removeParticipant(participantId: string): Promise<void> {
+    this.participants.delete(participantId);
+  }
+
+  getParticipantCount(): number {
+    return this.participants.size;
   }
 }

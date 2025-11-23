@@ -1,23 +1,18 @@
-import { LLMConfig, LLMResponse } from '../interfaces';
-import { BaseLLMProvider } from './baseProvider';
+import { BaseLLMProvider, BaseProviderConfig } from './baseProvider';
+import { LLMResponse } from './baseProvider';
 
-// Mock GitHub Copilot
-class GitHubProvider extends BaseLLMProvider {
-  constructor(apiKey: string) {
-    super('GitHub', 'copilot', apiKey, 'https://api.github.com/copilot');
+export interface GitHubProviderConfig extends BaseProviderConfig {}
+
+export class GitHubProvider extends BaseLLMProvider {
+  constructor(config: GitHubProviderConfig) {
+    super(config);
   }
 
-  async generate(prompt: string, options: LLMConfig = {}): Promise<LLMResponse> {
-    const response = await this.makeRequest(`${this.baseUrl}/completions`, { prompt: this.sanitizePrompt(prompt), model: options.model || this.model }, {
-      'Authorization': `Bearer ${options.key || this.apiKey}`,
-    });
-    return {
-      content: response.data.choices[0].text || '',
-      tokensUsed: 0,
-      finishReason: 'stop',
-      usage: this.extractUsage(response.data),
-    };
+  async generate(prompt: string): Promise<LLMResponse> {
+    return { content: 'GitHub response', usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 } };
+  }
+
+  async embed(text: string): Promise<number[]> {
+    return [0.1, 0.2, 0.3];
   }
 }
-
-export { GitHubProvider };

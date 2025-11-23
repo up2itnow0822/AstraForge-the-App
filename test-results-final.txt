@@ -1,0 +1,179 @@
+
+> astraforge-ide@0.5.0 test
+> jest --config jest.config.cjs --coverage --coverage
+
+PASS src/llm/__tests__/llmManager.test.ts
+PASS src/collaboration/__tests__/CollaborativeSessionManager.test.ts
+PASS src/git/__tests__/pullRequestManager.test.ts
+PASS src/git/__tests__/gitManager.test.ts
+PASS src/git/__tests__/extension.test.ts
+PASS src/self-modification/__tests__/SelfModificationSystem.test.ts
+PASS src/quantum-decision/__tests__/QuantumDecisionSystem.test.ts
+PASS src/workflow/__tests__/e2e.test.ts
+PASS src/testing/__tests__/emergent.test.ts
+PASS src/spec-kit/__tests__/specKitManager.test.ts
+PASS src/emergent-behavior/__tests__/EmergentBehaviorSystem.test.ts
+PASS src/testing/__tests__/apiTester.test.ts
+PASS src/inter-agent-evolution/__tests__/InterAgentEvolutionSystem.test.ts
+------------------------------------------|---------|----------|---------|---------|------------------------------
+File                                      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s            
+------------------------------------------|---------|----------|---------|---------|------------------------------
+All files                                 |   12.02 |    12.12 |   14.55 |   12.97 |                              
+ src                                      |       0 |      100 |       0 |       0 |                              
+  electron-main.ts                        |       0 |      100 |       0 |       0 | 1-26                         
+ src/agents/ArchAgent                     |       0 |        0 |       0 |       0 |                              
+  ArchAgent.ts                            |       0 |        0 |       0 |       0 | 1-51                         
+  prompts.ts                              |       0 |      100 |       0 |       0 | 5-64                         
+ src/agents/BackendAgent                  |       0 |        0 |       0 |       0 |                              
+  BackendAgent.ts                         |       0 |        0 |       0 |       0 | 1-37                         
+  prompts.ts                              |       0 |      100 |       0 |       0 | 6-239                        
+  types.ts                                |       0 |      100 |     100 |       0 | 6-850                        
+ src/agents/SpecAgent                     |       0 |        0 |       0 |       0 |                              
+  SpecAgent.ts                            |       0 |        0 |       0 |       0 | 1-38                         
+  prompts.ts                              |       0 |      100 |       0 |       0 | 6-90                         
+  types.ts                                |       0 |      100 |     100 |       0 | 6-56                         
+ src/automation                           |       0 |      100 |     100 |       0 |                              
+  workflowManager.ts                      |       0 |      100 |     100 |       0 | 6                            
+ src/collaboration                        |      75 |    66.66 |   92.85 |   76.74 |                              
+  CollaborativeSessionManager.ts          |   94.28 |    66.66 |     100 |   94.28 | 58,69                        
+  agentPanel.ts                           |       0 |      100 |     100 |       0 | 1-13                         
+  index.ts                                |       0 |      100 |       0 |       0 | 1-2                          
+  pullRequestManager.ts                   |       0 |      100 |     100 |       0 | 6-10                         
+  votingSystem.ts                         |       0 |      100 |     100 |       0 | 1-12                         
+ src/collaboration/rounds                 |       0 |      100 |     100 |       0 |                              
+  CollaborationRound.ts                   |       0 |      100 |     100 |       0 | 5                            
+ src/collaboration/timing                 |       0 |      100 |     100 |       0 |                              
+  TimeManager.ts                          |       0 |      100 |     100 |       0 | 5                            
+ src/core                                 |       0 |      100 |       0 |       0 |                              
+  Agent.ts                                |       0 |      100 |       0 |       0 | 25-42                        
+  index.ts                                |       0 |      100 |       0 |       0 | 1-3                          
+ src/core/orchestration                   |       0 |        0 |       0 |       0 |                              
+  AgentRouter.ts                          |       0 |      100 |     100 |       0 | 2-16                         
+  LocalOrchestrationEngine.ts             |       0 |        0 |       0 |       0 | 16-80                        
+ src/core/storage                         |       0 |        0 |       0 |       0 |                              
+  LanceDBClient.backup.ts                 |       0 |      100 |     100 |       0 | 4-26                         
+  LanceDBClient.ts                        |       0 |        0 |       0 |       0 | 2-41                         
+ src/db                                   |       0 |      100 |     100 |       0 |                              
+  vectorDB.migration.ts                   |       0 |      100 |     100 |       0 | 6                            
+ src/emergent-behavior                    |      50 |      100 |     100 |      50 |                              
+  EmergentBehaviorSystem.ts               |     100 |      100 |     100 |     100 |                              
+  index.ts                                |       0 |      100 |     100 |       0 | 1                            
+ src/emergent-behavior/amplifiers         |       0 |      100 |     100 |       0 |                              
+  BehaviorAmplifier.ts                    |       0 |      100 |     100 |       0 | 5                            
+ src/emergent-behavior/analyzers          |       0 |      100 |     100 |       0 |                              
+  BehaviorAnalyzer.ts                     |       0 |      100 |     100 |       0 | 5                            
+ src/emergent-behavior/detectors          |       0 |      100 |     100 |       0 |                              
+  PatternDetector.ts                      |       0 |      100 |     100 |       0 | 4                            
+ src/git                                  |   14.28 |        0 |   16.66 |   14.28 |                              
+  gitManager.ts                           |   16.66 |        0 |   16.66 |   16.66 | 11-40                        
+  httpRetry.ts                            |       0 |      100 |     100 |       0 | 2                            
+  pullRequestManager.ts                   |       0 |      100 |     100 |       0 | 8-9                          
+ src/inter-agent                          |       0 |      100 |     100 |       0 |                              
+  behaviorAmplifier.ts                    |       0 |      100 |     100 |       0 | 1-15                         
+  evolutionEngine.ts                      |       0 |      100 |     100 |       0 | 1-15                         
+  knowledgeTransfer.ts                    |       0 |      100 |     100 |       0 | 1-14                         
+ src/inter-agent-evolution                |       0 |      100 |       0 |       0 |                              
+  InterAgentEvolutionSystem.ts            |       0 |      100 |     100 |       0 | 6                            
+  index.ts                                |       0 |      100 |       0 |       0 | 1-2                          
+ src/inter-agent-evolution/knowledge      |       0 |      100 |     100 |       0 |                              
+  KnowledgeTransferSystem.ts              |       0 |      100 |     100 |       0 | 4                            
+ src/inter-agent-evolution/specialization |       0 |      100 |     100 |       0 |                              
+  AgentSpecializationSystem.ts            |       0 |      100 |     100 |       0 | 5                            
+ src/llm                                  |   18.62 |    17.14 |   22.72 |   19.38 |                              
+  cache.ts                                |       0 |      100 |     100 |       0 | 4                            
+  index.ts                                |       0 |      100 |       0 |       0 | 1-4                          
+  llmManager.ts                           |      20 |    17.14 |      25 |   20.43 | 57,66-67,80-88,94-95,107-256 
+ src/llm/providers                        |      50 |      100 |   26.66 |   68.18 |                              
+  AnthropicProvider.ts                    |      75 |      100 |      50 |      75 | 14                           
+  GitHubProvider.ts                       |      75 |      100 |      50 |      75 | 14                           
+  OpenAICompatibleProvider.ts             |      75 |      100 |      50 |      75 | 14                           
+  baseProvider.ts                         |     100 |      100 |     100 |     100 |                              
+  index.ts                                |       0 |      100 |       0 |       0 | 1-4                          
+ src/meta-learning                        |       0 |      100 |     100 |       0 |                              
+  MetaLearningSystem.ts                   |       0 |      100 |     100 |       0 | 4                            
+  index.ts                                |       0 |      100 |     100 |       0 | 1                            
+  metaLearner.ts                          |       0 |      100 |     100 |       0 | 1-14                         
+ src/meta-learning/insights               |       0 |      100 |     100 |       0 |                              
+  InsightsEngine.ts                       |       0 |      100 |     100 |       0 | 6                            
+ src/meta-learning/patterns               |       0 |      100 |     100 |       0 |                              
+  PatternAnalyzer.ts                      |       0 |      100 |     100 |       0 | 5                            
+ src/meta-learning/strategies             |       0 |      100 |     100 |       0 |                              
+  StrategyOptimizer.ts                    |       0 |      100 |     100 |       0 | 5                            
+ src/providers                            |       0 |      100 |       0 |       0 |                              
+  index.ts                                |       0 |      100 |       0 |       0 | 1                            
+  projectIgnition.ts                      |       0 |      100 |     100 |       0 | 4                            
+  setupWizard.ts                          |       0 |      100 |       0 |       0 | 3-26                         
+ src/quantum-decision                     |      50 |      100 |     100 |      50 |                              
+  QuantumDecisionSystem.ts                |     100 |      100 |     100 |     100 |                              
+  index.ts                                |       0 |      100 |     100 |       0 | 1                            
+ src/quantum-decision/algorithms          |       0 |      100 |     100 |       0 |                              
+  QuantumAlgorithms.ts                    |       0 |      100 |     100 |       0 | 20-97                        
+ src/quantum-decision/annealing           |       0 |      100 |     100 |       0 |                              
+  QuantumAnnealingSystem.ts               |       0 |      100 |     100 |       0 | 33                           
+ src/quantum-decision/networks            |       0 |      100 |     100 |       0 |                              
+  QuantumNeuralNetworks.ts                |       0 |      100 |     100 |       0 | 27                           
+ src/quantum-decision/optimization        |       0 |      100 |     100 |       0 |                              
+  QuantumOptimizationSystem.ts            |       0 |      100 |     100 |       0 | 24                           
+ src/rl                                   |       0 |      100 |     100 |       0 |                              
+  adaptiveWorkflow.ts                     |       0 |      100 |     100 |       0 | 3                            
+ src/rsi                                  |       0 |      100 |     100 |       0 |                              
+  EvoLoop.ts                              |       0 |      100 |     100 |       0 | 1-13                         
+  RSIManager.ts                           |       0 |      100 |     100 |       0 | 1-15                         
+ src/self-modification                    |       0 |      100 |     100 |       0 |                              
+  SelfModificationSystem.ts               |       0 |      100 |     100 |       0 | 8                            
+  index.ts                                |       0 |      100 |     100 |       0 | 1                            
+  policyEngine.ts                         |       0 |      100 |     100 |       0 | 1-17                         
+ src/self-modification/analyzers          |       0 |      100 |     100 |       0 |                              
+  SelfAnalysisEngine.ts                   |       0 |      100 |     100 |       0 | 6                            
+ src/self-modification/modifiers          |       0 |      100 |     100 |       0 |                              
+  CodeModificationSystem.ts               |       0 |      100 |     100 |       0 | 6                            
+ src/self-modification/safety             |       0 |      100 |     100 |       0 |                              
+  SafetyFramework.ts                      |       0 |      100 |     100 |       0 | 6                            
+ src/self-modification/validators         |       0 |      100 |     100 |       0 |                              
+  ValidationFramework.ts                  |       0 |      100 |     100 |       0 | 5                            
+ src/server                               |       0 |      100 |     100 |       0 |                              
+  collaborationServer.ts                  |       0 |      100 |     100 |       0 | 16                           
+ src/spec-kit                             |       0 |      100 |     100 |       0 |                              
+  specKitManager.ts                       |       0 |      100 |     100 |       0 | 1-19                         
+ src/spec-kit/parser                      |       0 |      100 |       0 |       0 |                              
+  specAST.ts                              |       0 |      100 |       0 |       0 | 1-9                          
+  specParser.ts                           |       0 |      100 |       0 |       0 | 1-11                         
+ src/testing                              |       0 |      100 |       0 |       0 |                              
+  apiTester.ts                            |       0 |      100 |     100 |       0 | 2-10                         
+  apiTesterCLI.ts                         |       0 |      100 |       0 |       0 | 1-7                          
+  apiTesterCore.ts                        |       0 |      100 |       0 |       0 | 17-32                        
+  apiTesterProvider.ts                    |       0 |      100 |     100 |       0 | 3                            
+  emergent.ts                             |       0 |      100 |       0 |       0 | 1-7                          
+  index.ts                                |       0 |      100 |       0 |       0 | 1-2                          
+  testLogger.ts                           |       0 |      100 |     100 |       0 | 10                           
+ src/utils                                |       0 |        0 |       0 |       0 |                              
+  envLoader.ts                            |       0 |        0 |       0 |       0 | 1-14                         
+  httpRetry.ts                            |       0 |        0 |       0 |       0 | 1-44                         
+  index.ts                                |       0 |      100 |       0 |       0 | 1                            
+  inputValidation.ts                      |       0 |      100 |     100 |       0 | 8-22                         
+  logger.ts                               |       0 |      100 |     100 |       0 | 1-4                          
+  pathUtils.ts                            |       0 |        0 |       0 |       0 | 1-41                         
+  retry.ts                                |       0 |        0 |       0 |       0 | 7-37                         
+  secureLogger.ts                         |       0 |      100 |     100 |       0 | 1-3                          
+  testEnv.ts                              |       0 |      100 |       0 |       0 | 1-10                         
+ src/vector-db                            |       0 |      100 |       0 |       0 |                              
+  VectorDB.ts                             |       0 |      100 |     100 |       0 | 4                            
+  index.ts                                |       0 |      100 |       0 |       0 | 1                            
+ src/workflow                             |       0 |        0 |       0 |       0 |                              
+  agentNexusBuildRunner.ts                |       0 |        0 |       0 |       0 | 1-153                        
+  index.ts                                |       0 |      100 |       0 |       0 | 1-4                          
+  telemetryPipeline.ts                    |       0 |      100 |     100 |       0 | 3                            
+  workflowArbitrator.ts                   |       0 |      100 |     100 |       0 | 4                            
+  workflowManager.ts                      |       0 |      100 |     100 |       0 | 1-14                         
+  workflowOrchestrator.ts                 |       0 |      100 |     100 |       0 | 1-8                          
+------------------------------------------|---------|----------|---------|---------|------------------------------
+Jest: "global" coverage threshold for statements (92%) not met: 12.02%
+Jest: "global" coverage threshold for branches (90%) not met: 12.12%
+Jest: "global" coverage threshold for lines (92%) not met: 12.97%
+Jest: "global" coverage threshold for functions (92%) not met: 14.55%
+
+Test Suites: 13 passed, 13 total
+Tests:       59 passed, 59 total
+Snapshots:   0 total
+Time:        2.617 s
+Ran all test suites.

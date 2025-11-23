@@ -7,6 +7,8 @@ import fc from 'fast-check';
 import { QuantumAlgorithmsLibrary } from '../../src/quantum-decision/algorithms/QuantumAlgorithms';
 import { QuantumDecisionSystem } from '../../src/quantum-decision/QuantumDecisionSystem';
 import { QuantumOptimizationSystem } from '../../src/quantum-decision/optimization/QuantumOptimizationSystem';
+import { MetaLearningSystem } from '../../src/meta-learning/MetaLearningSystem';
+import { EmergentBehaviorSystem } from '../../src/emergent-behavior/EmergentBehaviorSystem';
 
 describe('Advanced Quantum Testing Suite', () => {
   let quantumLibrary: QuantumAlgorithmsLibrary;
@@ -15,7 +17,7 @@ describe('Advanced Quantum Testing Suite', () => {
 
   beforeEach(() => {
     quantumLibrary = new QuantumAlgorithmsLibrary();
-    quantumSystem = new QuantumDecisionSystem();
+    quantumSystem = new QuantumDecisionSystem(mockMetaLearning as any, mockEmergentBehavior as any);
     optimizationSystem = new QuantumOptimizationSystem();
   });
 

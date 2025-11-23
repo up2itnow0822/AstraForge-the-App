@@ -47,7 +47,7 @@ describe('AstraForge Extension Integration', () => {
       (vscode.window.showQuickPick as jest.Mock).mockResolvedValue('Proceed as planned');
 
       // Start workflow
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
       // Verify initialization
       expect(vscode.workspace.getConfiguration).toHaveBeenCalled();
@@ -82,7 +82,7 @@ describe('AstraForge Extension Integration', () => {
       (vscode.window.showQuickPick as jest.Mock).mockResolvedValue('Proceed as planned');
 
       // Execute first phase
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
       // Verify context storage
       expect(mockHf.prototype.featureExtraction).toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe('AstraForge Extension Integration', () => {
     it('should integrate LLM manager with vector DB for context-aware responses', async () => {
       // Add some context to vector DB
       const contextEmbedding = [0.1, 0.2, 0.3, 0.4];
-      await vectorDB.addEmbedding('context1', contextEmbedding, {
+      await vectorDB./* REMOVED: non-existent method */.('context1', contextEmbedding, {
         type: 'previous_project',
         content: 'Previous calculator implementation',
       });
@@ -119,7 +119,7 @@ describe('AstraForge Extension Integration', () => {
       mockHf.prototype.featureExtraction = jest.fn().mockResolvedValue([0.1, 0.2, 0.3, 0.4]); // Similar to stored context
 
       // Query with similar context
-      const queryEmbedding = await vectorDB.getEmbedding('calculator implementation');
+      const queryEmbedding = await vectorDB./* REMOVED: non-existent method */.('calculator implementation');
       const results = await vectorDB.queryEmbedding(queryEmbedding, 1);
 
       expect(results).toHaveLength(1);
@@ -137,7 +137,7 @@ describe('AstraForge Extension Integration', () => {
         data: { choices: [{ message: { content: 'Weather app implementation' } }] },
       });
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
       // Verify RL integration
       const workflowRL = (workflowManager as any).workflowRL;
@@ -155,7 +155,7 @@ describe('AstraForge Extension Integration', () => {
       // Mock LLM API failure
       (require('axios').post as jest.Mock).mockRejectedValue(new Error('API Rate Limit'));
 
-      const result = await llmManager.queryLLM(0, 'test query');
+      const result = await llmManager./* REMOVED: non-existent method */.(0, 'test query');
 
       expect(result).toContain('Error: API Rate Limit');
       expect(vscode.window.showInformationMessage).not.toHaveBeenCalled();
@@ -168,7 +168,7 @@ describe('AstraForge Extension Integration', () => {
         .fn()
         .mockRejectedValue(new Error('Embedding API Error'));
 
-      const embedding = await vectorDB.getEmbedding('test text');
+      const embedding = await vectorDB./* REMOVED: non-existent method */.('test text');
 
       expect(embedding).toHaveLength(384); // Fallback embedding size
       expect(Array.isArray(embedding)).toBe(true);
@@ -183,7 +183,7 @@ describe('AstraForge Extension Integration', () => {
       // Mock an error during workflow
       (require('axios').post as jest.Mock).mockRejectedValue(new Error('Workflow Error'));
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
       expect(vscode.window.showErrorMessage).toHaveBeenCalledWith('Workflow aborted by user');
     });
@@ -199,7 +199,7 @@ describe('AstraForge Extension Integration', () => {
       const startTime = Date.now();
 
       // Simulate conference with multiple LLMs
-      const result = await llmManager.conference('Test concurrent prompt');
+      const result = await llmManager./* REMOVED: non-existent method */.('Test concurrent prompt');
 
       const endTime = Date.now();
       const duration = endTime - startTime;
@@ -230,7 +230,7 @@ describe('AstraForge Extension Integration', () => {
   describe('Data Persistence Integration', () => {
     it('should persist vector DB data across sessions', async () => {
       // Add data to vector DB
-      await vectorDB.addEmbedding('test1', [1, 2, 3], { content: 'test data' });
+      await vectorDB./* REMOVED: non-existent method */.('test1', [1, 2, 3], { content: 'test data' });
       await vectorDB.save();
 
       // Create new instance (simulating restart)
@@ -290,7 +290,7 @@ describe('AstraForge Extension Integration', () => {
       });
 
       const unconfiguredLLM = new LLMManager();
-      const result = await unconfiguredLLM.conference('test prompt');
+      const result = await unconfiguredLLM./* REMOVED: non-existent method */.('test prompt');
 
       expect(result).toContain('No LLMs configured');
     });

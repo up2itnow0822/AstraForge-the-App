@@ -1,28 +1,53 @@
-export interface RetryOptions {
-  retries?: number;
-  baseDelayMs?: number;
-  maxDelayMs?: number;
+import { retryAsync } from './retry';
+import { Agent as HttpAgent } from 'http';
+import { Agent as HttpsAgent } from 'https';
+
+export interface HttpRetryOptions {
+  retries: number;
+  retryDelay: number;
+  retryOn: number[];
+  timeout: number;
 }
 
-export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-  const retries = options.retries ?? 3;
-  const base = options.baseDelayMs ?? 300;
-  const max = options.maxDelayMs ?? 3000;
+const defaultOptions: HttpRetryOptions = {
+  retries: 3,
+  retryDelay: 1000,
+  retryOn: [429, 500, 502, 503, 504],
+  timeout: 10000
+};
 
-  let attempt = 0;
-  let lastError: unknown;
+export async function fetchWithRetry(
+  url: string,
+  options: RequestInit & { retries?: HttpRetryOptions } = {}
+): Promise<Response> {
+  const retry = options.retries || defaultOptions;
+  
+  const fetchOptions = {
+    ...options,
+    agent: url.startsWith('https') ? new HttpsAgent({ keepAlive: true }) : new HttpAgent({ keepAlive: true })
+  };
 
-  while (attempt <= retries) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-      if (attempt === retries) break;
-      const jitter = Math.random() * base;
-      const delay = Math.min(max, base * Math.pow(2, attempt)) + jitter;
-      await new Promise(res => setTimeout(res, delay));
-      attempt += 1;
+  return retryAsync(
+    async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), retry.timeout);
+      
+      try {
+        const response = await fetch(url, { ...fetchOptions, signal: controller.signal });
+        
+        if (retry.retryOn.includes(response.status)) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        return response;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    {
+      maxRetries: retry.retries,
+      delay: retry.retryDelay,
+      backoff: 'exponential'
     }
-  }
-  throw lastError as Error;
+  );
 }

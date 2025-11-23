@@ -1,0 +1,364 @@
+import { Agent } from '../../core/Agent.js';
+import { LanceDBClient } from '../../core/storage/LanceDBClient.js';
+import { LLMProvider } from '../../llm/interfaces.js';
+import { AgentTask, AgentResult } from '../../types/index.js';
+import { z } from 'zod';
+
+export const BackendAgentOutputSchema = z.object({
+  serviceDefinition: z.object({
+    name: z.string(),
+    description: z.string(),
+    version: z.string(),
+    endpoints: z.array(z.object({
+      path: z.string(),
+      method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']),
+      description: z.string(),
+      authentication: z.boolean(),
+      parameters: z.array(z.object({
+        name: z.string(),
+        type: z.string(),
+        required: z.boolean(),
+        description: z.string()
+      })),
+      responseSchema: z.record(z.any())
+    })),
+    dataModels: z.array(z.object({
+      name: z.string(),
+      fields: z.array(z.object({
+        name: z.string(),
+        type: z.string(),
+        required: z.boolean(),
+        description: z.string()
+      })),
+      relationships: z.array(z.string()).optional()
+    })),
+    infrastructure: z.object({
+      requirements: z.array(z.string()),
+      deployment: z.enum(['container', 'serverless', 'vm']),
+      scaling: z.enum(['horizontal', 'vertical', 'none']),
+      database: z.string().optional(),
+      caching: z.string().optional()
+    }),
+    security: z.array(z.object({
+      requirement: z.string(),
+      implementation: z.string(),
+      priority: z.enum(['high', 'medium', 'low'])
+    })),
+    dependencies: z.array(z.string()),
+    estimatedComplexity: z.enum(['low', 'medium', 'high']),
+    estimatedTimeline: z.string()
+  }),
+  implementationPlan: z.object({
+    phases: z.array(z.object({
+      name: z.string(),
+      description: z.string(),
+      order: z.number(),
+      dependencies: z.array(z.string()),
+      estimatedDuration: z.string()
+    })),
+    testingStrategy: z.string(),
+    deploymentStrategy: z.string(),
+    riskMitigation: z.array(z.string())
+  }),
+  codeArtifacts: z.array(z.object({
+    filePath: z.string(),
+    content: z.string(),
+    description: z.string()
+  }))
+});
+
+export interface BackendAgentConfig {
+  llmProvider: LLMProvider;
+  dbClient: LanceDBClient;
+  maxRetries?: number;
+  timeout?: number;
+  model?: string;
+}
+
+export class BackendAgent extends Agent {
+  private llmProvider: LLMProvider;
+  private dbClient: LanceDBClient;
+  private maxRetries: number;
+  private timeout: number;
+  private model: string;
+
+  constructor(config: BackendAgentConfig) {
+    super();
+    this.llmProvider = config.llmProvider;
+    this.dbClient = config.dbClient;
+    this.maxRetries = config.maxRetries || 3;
+    this.timeout = config.timeout || 300000;
+    this.model = config.model || 'gpt-4';
+  }
+
+  async processTask(task: AgentTask): Promise<AgentResult> {
+    const startTime = Date.now();
+    
+    try {
+      if (task.type !== 'backend-development') {
+        throw new Error(`BackendAgent only handles 'backend-development' tasks, received: ${task.type}`);
+      }
+
+      const analysis = await this.analyzeSpecifications(task);
+      const serviceDef = await this.generateServiceDefinition(analysis, task);
+      const implementationPlan = await this.createImplementationPlan(serviceDef, task);
+      const codeArtifacts = await this.generateCodeArtifacts(serviceDef, implementationPlan);
+      await this.storeResults(serviceDef, implementationPlan, codeArtifacts, task.id);
+      
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+
+      return {
+        success: true,
+        data: {
+          serviceDefinition: serviceDef,
+          implementationPlan,
+          codeArtifacts,
+          metrics: {
+            duration,
+            timestamp: new Date().toISOString(),
+            analysisResults: analysis
+          }
+        },
+        metadata: {
+          agent: 'BackendAgent',
+          version: '1.0.0',
+          taskId: task.id
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: {
+          agent: 'BackendAgent',
+          version: '1.0.0',
+          taskId: task.id
+        }
+      };
+    }
+  }
+
+  private async analyzeSpecifications(task: AgentTask): Promise<any> {
+    const prompt = this.buildAnalysisPrompt(task);
+    
+    const response = await this.llmProvider.generate({
+      model: this.model,
+      prompt,
+      maxTokens: 2000,
+      temperature: 0.5
+    });
+
+    return JSON.parse(response.text);
+  }
+
+  private async generateServiceDefinition(analysis: any, task: AgentTask): Promise<any> {
+    const prompt = this.buildServiceDefinitionPrompt(analysis, task);
+    
+    const response = await this.llmProvider.generate({
+      model: this.model,
+      prompt,
+      maxTokens: 4000,
+      temperature: 0.6
+    });
+
+    const parsed = JSON.parse(response.text);
+    return BackendAgentOutputSchema.parse({ serviceDefinition: parsed }).serviceDefinition;
+  }
+
+  private async createImplementationPlan(serviceDef: any, task: AgentTask): Promise<any> {
+    const prompt = this.buildImplementationPlanPrompt(serviceDef, task);
+    
+    const response = await this.llmProvider.generate({
+      model: this.model,
+      prompt,
+      maxTokens: 3000,
+      temperature: 0.5
+    });
+
+    const parsed = JSON.parse(response.text);
+    return BackendAgentOutputSchema.parse({ implementationPlan: parsed }).implementationPlan;
+  }
+
+  private async generateCodeArtifacts(serviceDef: any, implementationPlan: any): Promise<any[]> {
+    const artifacts = [];
+    
+    artifacts.push({
+      filePath: 'src/app.ts',
+      content: this.generateAppFile(serviceDef),
+      description: 'Main Express application entry point'
+    });
+
+    artifacts.push({
+      filePath: 'package.json',
+      content: JSON.stringify({
+        name: serviceDef.name.toLowerCase().replace(/\s+/g, '-'),
+        version: serviceDef.version,
+        description: serviceDef.description,
+        main: 'dist/app.js',
+        scripts: {
+          build: 'tsc',
+          start: 'node dist/app.js',
+          dev: 'ts-node-dev --respawn src/app.ts',
+          test: 'jest'
+        },
+        dependencies: {
+          'express': '^4.18.2',
+          'cors': '^2.8.5',
+          'helmet': '^7.0.0',
+          'zod': '^3.21.4',
+          ...serviceDef.dependencies.reduce((acc: any, dep: string) => {
+            acc[dep] = '^1.0.0';
+            return acc;
+          }, {})
+        },
+        devDependencies: {
+          '@types/node': '^20.0.0',
+          '@types/express': '^4.17.17',
+          '@types/cors': '^2.8.13',
+          'typescript': '^5.0.0',
+          'ts-node-dev': '^2.0.0',
+          'jest': '^29.0.0',
+          '@types/jest': '^29.0.0',
+          'ts-jest': '^29.0.0'
+        }
+      }, null, 2),
+      description: 'Package configuration with dependencies'
+    });
+
+    artifacts.push({
+      filePath: 'tsconfig.json',
+      content: JSON.stringify({
+        compilerOptions: {
+          target: 'ES2020',
+          module: 'commonjs',
+          lib: ['ES2020'],
+          outDir: './dist',
+          rootDir: './src',
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+          resolveJsonModule: true
+        },
+        include: ['src/**/*'],
+        exclude: ['node_modules', 'dist', '**/*.test.ts']
+      }, null, 2),
+      description: 'TypeScript configuration'
+    });
+
+    return artifacts;
+  }
+
+  private generateAppFile(serviceDef: any): string {
+    const endpoints = serviceDef.endpoints.map((endpoint: any) => {
+      return `
+app.${endpoint.method.toLowerCase()}('${endpoint.path}', ${endpoint.authentication ? 'authenticate, ' : ''}async (req, res) => {
+  try {
+    const { ${endpoint.parameters.map((p: any) => p.name).join(', ')} } = req.${endpoint.method === 'GET' ? 'query' : 'body'};
+    res.json({ message: '${endpoint.path} endpoint' });
+  } catch (error) {
+    console.error('Error in ${endpoint.path}:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});`;
+    }).join('\n');
+
+    return `import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+const authenticate = (req: any, res: any, next: any) => {
+  next();
+};
+
+// Routes${endpoints}
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+app.listen(PORT, () => {
+  console.log(\`Server running on port \${PORT}\`);
+});
+
+export default app;
+`;
+  }
+
+  private buildAnalysisPrompt(task: AgentTask): string {
+    const requirements = task.data?.requirements || [];
+    
+    return `Analyze backend service requirements and identify components.
+
+REQUIREMENTS:
+${JSON.stringify(requirements, null, 2)}
+
+Provide JSON with:
+- Key components needed
+- Data models/schema requirements  
+- Technical constraints
+- Dependencies
+- Complexity assessment`;
+  }
+
+  private buildServiceDefinitionPrompt(analysis: any, task: AgentTask): string {
+    return `Create detailed service definition:
+
+ANALYSIS:
+${JSON.stringify(analysis, null, 2)}
+
+Provide complete service definition JSON with:
+- Service metadata
+- Complete endpoint definitions
+- Data models
+- Infrastructure requirements
+- Security features
+- Dependencies
+- Complexity and timeline estimates`;
+  }
+
+  private buildImplementationPlanPrompt(serviceDef: any, task: AgentTask): string {
+    return `Create implementation plan for service:
+
+SERVICE DEFINITION:
+${JSON.stringify(serviceDef, null, 2)}
+
+Provide implementation plan JSON with:
+- Development phases
+- Testing strategy
+- Deployment strategy
+- Risk mitigation steps`;
+  }
+
+  private async storeResults(serviceDef: any, implementationPlan: any, codeArtifacts: any[], taskId: string): Promise<void> {
+    await this.dbClient.insert('backend_development_results', {
+      taskId,
+      serviceDefinition: JSON.stringify(serviceDef),
+      implementationPlan: JSON.stringify(implementationPlan),
+      codeArtifacts: JSON.stringify(codeArtifacts),
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  validateOutput(output: string): boolean {
+    try {
+      const parsed = JSON.parse(output);
+      return BackendAgentOutputSchema.safeParse({ serviceDefinition: parsed }).success;
+    } catch {
+      return false;
+    }
+  }
+}

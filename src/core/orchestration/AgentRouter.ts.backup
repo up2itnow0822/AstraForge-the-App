@@ -1,0 +1,132 @@
+/**
+* Agent Router - Routes tasks to appropriate agents
+*/
+import { AgentTask, AgentResult } from '../../types/AgentTypes';
+import { SpecAgent } from '../../agents/SpecAgent/SpecAgent';
+import { ArchAgent } from '../../agents/ArchAgent/ArchAgent';
+import { BackendAgent } from '../../agents/BackendAgent/BackendAgent';
+
+export class AgentRouter {
+private agents: Map<string, any> = new Map();
+private specAgent: SpecAgent;
+private archAgent: ArchAgent;
+private backendAgent: BackendAgent;
+
+constructor() {
+// Initialize and instantiate agents
+this.specAgent = new SpecAgent();
+this.archAgent = new ArchAgent();
+this.backendAgent = new BackendAgent();
+
+this.registerAgents();
+}
+
+private registerAgents(): void {
+// Register agent handlers
+this.agents.set('spec', this.handleSpecAgent.bind(this));
+this.agents.set('architecture', this.handleArchAgent.bind(this));
+this.agents.set('backend', this.handleBackendAgent.bind(this));
+this.agents.set('frontend', this.handleFrontendAgent.bind(this));
+this.agents.set('security', this.handleSecurityAgent.bind(this));
+this.agents.set('test', this.handleTestAgent.bind(this));
+this.agents.set('performance', this.handlePerformanceAgent.bind(this));
+this.agents.set('docs', this.handleDocsAgent.bind(this));
+this.agents.set('judge', this.handleJudgeAgent.bind(this));
+this.agents.set('godel', this.handleGodelAgent.bind(this));
+}
+
+/**
+* Route a task to the appropriate agent
+*/
+async routeTask(task: AgentTask): Promise<AgentResult> {
+const agentHandler = this.agents.get(task.agentType);
+
+if (!agentHandler) {
+throw new Error(`Unknown agent type: ${task.agentType}`);
+}
+
+console.log(`[AgentRouter] Routing to ${task.agentType} agent`);
+return await agentHandler(task);
+}
+
+// Agent handlers - delegate to actual agent implementations
+private async handleSpecAgent(task: AgentTask): Promise<AgentResult> {
+return await this.specAgent.executeTask(task);
+}
+
+private async handleArchAgent(task: AgentTask): Promise<AgentResult> {
+return await this.archAgent.executeTask(task);
+}
+
+private async handleBackendAgent(task: AgentTask): Promise<AgentResult> {
+return await this.backendAgent.executeTask(task);
+}
+
+// Placeholder handlers for agents not yet implemented
+private async handleFrontendAgent(task: AgentTask): Promise<AgentResult> {
+return {
+agentType: 'frontend',
+status: 'completed',
+output: 'Frontend agent would build UI here',
+metadata: task.metadata
+};
+}
+
+private async handleSecurityAgent(task: AgentTask): Promise<AgentResult> {
+return {
+agentType: 'security',
+status: 'completed',
+output: 'Security agent would audit code here',
+metadata: task.metadata
+};
+}
+
+private async handleTestAgent(task: AgentTask): Promise<AgentResult> {
+return {
+agentType: 'test',
+status: 'completed',
+output: 'Test agent would generate tests here',
+metadata: task.metadata
+};
+}
+
+private async handlePerformanceAgent(task: AgentTask): Promise<AgentResult> {
+return {
+agentType: 'performance',
+status: 'completed',
+output: 'Performance agent would optimize here',
+metadata: task.metadata
+};
+}
+
+private async handleDocsAgent(task: AgentTask): Promise<AgentResult> {
+return {
+agentType: 'docs',
+status: 'completed',
+output: 'Docs agent would generate documentation here',
+metadata: task.metadata
+};
+}
+
+private async handleJudgeAgent(task: AgentTask): Promise<AgentResult> {
+// Judge agents evaluate outputs and assign scores
+const score = Math.random() * 100; // Placeholder scoring
+return {
+agentType: 'judge',
+status: 'completed',
+output: `Judge agent scored: ${score.toFixed(2)}`,
+metadata: { ...task.metadata, score },
+score
+};
+}
+
+private async handleGodelAgent(task: AgentTask): Promise<AgentResult> {
+// Gödel agent self-modifies strategies
+return {
+agentType: 'godel',
+status: 'completed',
+output: 'Gödel agent would self-modify strategies here',
+metadata: task.metadata
+};
+}
+}

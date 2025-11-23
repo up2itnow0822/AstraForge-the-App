@@ -1,34 +1,46 @@
 export interface LLMProvider {
-  name: string;
-  model: string;
-  apiKey: string;
-  generate(prompt: string, options?: LLMConfig): Promise<LLMResponse>;
+  generate(prompt: string, options?: any): Promise<GenerationResult>;
+  embed(texts: string[], options?: any): Promise<EmbeddingResult>;
+  getName(): string;
+  isAvailable(): boolean;
+  config: LLMConfig;
 }
 
 export interface LLMConfig {
-  temperature?: number;
-  maxTokens?: number;
-  stream?: boolean;
+  name: string;
+  apiKey: string;
   model?: string;
-  key?: string;
+  endpoint?: string;
+  maxTokens?: number;
+  temperature?: number;
 }
 
-export interface LLMResponse {
-  content: string;
-  tokensUsed: number;
-  finishReason: string;
-  usage?: any;
+export interface GenerationResult {
+  text: string;
+  tokens?: number;
+  confidence?: number;
+  provider?: string;
+  cost?: number;
+}
+
+export interface EmbeddingResult {
+  embeddings: number[][];
+  tokens?: number;
+  provider?: string;
 }
 
 export interface ConsensusResult {
-  text: string;
+  consensusReached: boolean;
+  consensusLevel: number;
+  finalResponse: string;
   confidence: number;
-  timestamp?: number;
-  sources: string[];
-  usage?: any;
+  providerResponses?: Array<{ provider: string; response: string; confidence: number }>;
+  alternativeSuggestions?: string[];
 }
 
-export interface GenerateResponse {
-  text: string;
-  metadata: any;
+export interface EmbeddingConsensus {
+  consensusReached: boolean;
+  consensusEmbedding: number[];
+  participants: string[];
+  variance: number;
 }

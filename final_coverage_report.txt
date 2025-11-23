@@ -1,0 +1,401 @@
+
+> astraforge-ide@0.5.0 test
+> jest --config jest.config.cjs --coverage
+
+PASS src/core/storage/__tests__/LanceDBClientExceptions.test.ts
+  ● Console
+
+    console.error
+      Failed to connect to LanceDB: Error: Connection failed
+          at Object.<anonymous> (/root/AstraForge/src/core/storage/__tests__/LanceDBClientExceptions.test.ts:44:35)
+          at Promise.then.completed (/root/AstraForge/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/root/AstraForge/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/root/AstraForge/node_modules/jest-circus/build/run.js:316:40)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+          at _runTest (/root/AstraForge/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/root/AstraForge/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/root/AstraForge/node_modules/jest-circus/build/run.js:121:9)
+          at run (/root/AstraForge/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/root/AstraForge/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/root/AstraForge/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/root/AstraForge/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/root/AstraForge/node_modules/jest-runner/build/runTest.js:444:34)
+          at Object.worker (/root/AstraForge/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      21 |       this.initialized = true;
+      22 |     } catch (error) {
+    > 23 |       console.error('Failed to connect to LanceDB:', error);
+         |               ^
+      24 |       throw error;
+      25 |     }
+      26 |   }
+
+      at LanceDBClient.error [as init] (src/core/storage/LanceDBClient.ts:23:15)
+      at Object.<anonymous> (src/core/storage/__tests__/LanceDBClientExceptions.test.ts:45:5)
+
+    console.error
+      Error ensuring table: Error: Table list failed
+          at Object.<anonymous> (/root/AstraForge/src/core/storage/__tests__/LanceDBClientExceptions.test.ts:64:51)
+          at Promise.then.completed (/root/AstraForge/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/root/AstraForge/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/root/AstraForge/node_modules/jest-circus/build/run.js:316:40)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+          at _runTest (/root/AstraForge/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/root/AstraForge/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/root/AstraForge/node_modules/jest-circus/build/run.js:121:9)
+          at run (/root/AstraForge/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/root/AstraForge/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/root/AstraForge/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/root/AstraForge/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/root/AstraForge/node_modules/jest-runner/build/runTest.js:444:34)
+          at Object.worker (/root/AstraForge/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      42 |       }
+      43 |     } catch (error) {
+    > 44 |       console.error('Error ensuring table:', error);
+         |               ^
+      45 |       throw error;
+      46 |     }
+      47 |   }
+
+      at LanceDBClient.error [as ensureTable] (src/core/storage/LanceDBClient.ts:44:15)
+      at Object.<anonymous> (src/core/storage/__tests__/LanceDBClientExceptions.test.ts:65:7)
+
+    console.error
+      Search failed: Error: Search error
+          at Object.<anonymous> (/root/AstraForge/src/core/storage/__tests__/LanceDBClientExceptions.test.ts:69:43)
+          at Promise.then.completed (/root/AstraForge/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/root/AstraForge/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/root/AstraForge/node_modules/jest-circus/build/run.js:316:40)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+          at _runTest (/root/AstraForge/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/root/AstraForge/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/root/AstraForge/node_modules/jest-circus/build/run.js:121:9)
+          at run (/root/AstraForge/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/root/AstraForge/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/root/AstraForge/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/root/AstraForge/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/root/AstraForge/node_modules/jest-runner/build/runTest.js:444:34)
+          at Object.worker (/root/AstraForge/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      74 |        return results;
+      75 |     } catch (error) {
+    > 76 |       console.error('Search failed:', error);
+         |               ^
+      77 |       return [];
+      78 |     }
+      79 |   }
+
+      at LanceDBClient.error [as search] (src/core/storage/LanceDBClient.ts:76:15)
+      at Object.<anonymous> (src/core/storage/__tests__/LanceDBClientExceptions.test.ts:70:23)
+
+PASS src/agents/SecurityAgent/__tests__/SecurityAgent.test.ts
+PASS src/self-modification/__tests__/SelfModificationSystem.test.ts
+  ● Console
+
+    console.log
+      [INFO][SelfModificationSystem] Analyzing codebase at /tmp
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][SelfModificationSystem] Proposing changes based on analysis
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][SelfModificationSystem] Proposing changes based on analysis
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][SelfModificationSystem] Applying 1 changes
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+PASS src/git/__tests__/gitManager.test.ts
+PASS src/llm/providers/__tests__/GitHubProvider.test.ts
+PASS src/__tests__/StubCoverage.test.ts
+PASS src/agents/ArchAgent/__tests__/ArchAgent.test.ts
+PASS src/core/orchestration/__tests__/LocalOrchestrationEngine.test.ts
+PASS src/agents/__tests__/coverage_definitions.test.ts
+PASS src/agents/__tests__/BackendAgent.test.ts
+PASS src/automation/__tests__/workflowManager.test.ts
+PASS src/agents/SpecAgent/__tests__/SpecAgent.test.ts
+PASS src/agents/__tests__/AllAgents.test.ts
+PASS src/agents/JudgeAgent/__tests__/JudgeAgent.test.ts
+PASS src/workflow/__tests__/agentNexusBuildRunner.test.ts
+PASS src/agents/BackendAgent/__tests__/BackendAgent.test.ts
+PASS src/workflow/__tests__/workflowManager.test.ts
+PASS src/agents/RsiAgent/__tests__/RsiAgent.test.ts
+PASS src/agents/GodelAgent/__tests__/GodelAgent.test.ts
+PASS src/llm/__tests__/providers.test.ts
+PASS src/testing/__tests__/testLogger.test.ts
+  ● Console
+
+    console.log
+      [2025-11-22T03:00:53.587Z] [INFO] test message
+
+      at TestLogger.log (src/testing/testLogger.ts:40:21)
+
+    console.log
+      [2025-11-22T03:00:53.602Z] [INFO] event test
+
+      at TestLogger.log (src/testing/testLogger.ts:40:21)
+
+PASS src/testing/__tests__/apiTesterProvider.test.ts
+PASS src/utils/__tests__/envLoader.test.ts
+PASS src/utils/__tests__/httpRetry.test.ts
+PASS src/core/__tests__/Agent.test.ts
+PASS src/core/orchestration/__tests__/llmRouter.test.ts
+PASS src/utils/__tests__/pathUtils.test.ts
+PASS src/quantum-decision/__tests__/QuantumDecisionSystem.test.ts
+  ● Console
+
+    console.log
+      [INFO][QuantumDecisionSystem] Making quantum decision from 2 options
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][QuantumDecisionSystem] Collapsing quantum state
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+PASS src/agents/DocsAgent/__tests__/DocsAgent.test.ts
+PASS src/testing/__tests__/apiTester.test.ts
+PASS src/collaboration/__tests__/agentPanel.test.ts
+PASS src/utils/__tests__/logger.test.ts
+PASS src/db/__tests__/metadataDB.test.ts
+  ● Console
+
+    console.log
+      Initializing metadata database at :memory:
+
+      at MetadataDB.log [as init] (src/db/metadataDB.ts:17:13)
+
+PASS src/testing/__tests__/apiTesterSkeleton.test.ts
+PASS src/testing/__tests__/emergent.test.ts
+PASS src/meta-learning/patterns/__tests__/PatternAnalyzer.test.ts
+PASS src/core/storage/__tests__/LanceDBClient.test.ts
+PASS src/agents/__tests__/PromptsCoverage.test.ts
+PASS src/emergent-behavior/__tests__/EmergentBehaviorSystem.test.ts
+  ● Console
+
+    console.log
+      [INFO][EmergentBehaviorSystem] Analyzing behavior for agent agent-1
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][EmergentBehaviorSystem] Detecting patterns
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][EmergentBehaviorSystem] Amplifying pattern: repetition
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+PASS src/vector-db/__tests__/vectorDBStub.test.ts
+PASS src/workflow/__tests__/workflowOrchestrator.test.ts
+PASS src/inter-agent-evolution/__tests__/InterAgentEvolutionSystem.test.ts
+  ● Console
+
+    console.log
+      [INFO][InterAgentEvolutionSystem] Evolving agent agent-A with score 0.9
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][InterAgentEvolutionSystem] Mutating agent agent-A
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+    console.log
+      [INFO][InterAgentEvolutionSystem] Crossover between A and B
+
+      at Logger.log [as info] (src/utils/logger.ts:11:17)
+
+PASS src/collaboration/rounds/__tests__/CollaborationRound.test.ts
+PASS src/llm/__tests__/cache.test.ts
+PASS src/spec-kit/parser/__tests__/specParser.test.ts
+PASS src/utils/__tests__/retry.test.ts
+PASS src/git/__tests__/pullRequestManager.test.ts
+PASS src/testing/__tests__/testingModule.test.ts
+PASS src/meta-learning/strategies/__tests__/StrategyOptimizer.test.ts
+PASS src/collaboration/timing/__tests__/TimeManager.test.ts
+PASS src/llm/__tests__/llmManager.test.ts
+PASS src/db/__tests__/migrations.test.ts
+PASS src/testing/__tests__/apiTesterCore.test.ts
+PASS src/__tests__/CoverageGap.test.ts
+PASS src/core/orchestration/__tests__/interAgentSync.test.ts
+PASS src/collaboration/__tests__/CollaborativeSessionManager.test.ts
+PASS src/utils/__tests__/testEnv.test.ts
+PASS src/utils/__tests__/secureLogger.test.ts
+PASS src/workflow/__tests__/workflowArbitrator.test.ts
+PASS src/spec-kit/__tests__/specKitManager.test.ts
+PASS src/providers/__tests__/projectIgnition.test.ts
+PASS src/llm/__tests__/llmManager.consensus.test.ts
+PASS src/db/__tests__/vectorDB.test.ts
+PASS src/providers/__tests__/setupWizard.test.ts
+PASS src/automation/__tests__/workflowManagerStub.test.ts
+PASS src/meta-learning/insights/__tests__/InsightsEngine.test.ts
+PASS src/workflow/__tests__/e2e.test.ts
+PASS src/core/orchestration/__tests__/AgentRouter.test.ts
+PASS src/spec-kit/parser/__tests__/specAST.test.ts
+PASS src/git/__tests__/extension.test.ts
+PASS src/llm/providers/__tests__/AnthropicProvider.test.ts
+PASS src/testing/__tests__/apiTesterCLI.test.ts
+PASS src/utils/__tests__/inputValidation.test.ts
+PASS src/workflow/__tests__/telemetryPipeline.test.ts
+PASS src/collaboration/__tests__/votingSystem.test.ts
+PASS src/agents/TestAgent/__tests__/TestAgent.test.ts
+PASS src/meta-learning/__tests__/MetaLearningSystem.test.ts
+--------------------------------------|---------|----------|---------|---------|---------------------
+File                                  | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s   
+--------------------------------------|---------|----------|---------|---------|---------------------
+All files                             |   95.82 |    72.98 |   97.57 |   96.47 |                     
+ agents/ArchAgent                     |     100 |       50 |     100 |     100 |                     
+  ArchAgent.ts                        |     100 |       50 |     100 |     100 | 52                  
+  prompts.ts                          |     100 |      100 |     100 |     100 |                     
+ agents/BackendAgent                  |     100 |      100 |     100 |     100 |                     
+  BackendAgent.ts                     |     100 |      100 |     100 |     100 |                     
+  prompts.ts                          |     100 |      100 |     100 |     100 |                     
+  types.ts                            |     100 |      100 |     100 |     100 |                     
+ agents/DocsAgent                     |   83.33 |        0 |     100 |   83.33 |                     
+  DocsAgent.ts                        |   83.33 |        0 |     100 |   83.33 | 19                  
+ agents/GodelAgent                    |   83.33 |        0 |     100 |   83.33 |                     
+  GodelAgent.ts                       |   83.33 |        0 |     100 |   83.33 | 19                  
+ agents/JudgeAgent                    |   83.33 |        0 |     100 |   83.33 |                     
+  JudgeAgent.ts                       |   83.33 |        0 |     100 |   83.33 | 19                  
+ agents/RsiAgent                      |   83.33 |        0 |     100 |   83.33 |                     
+  RsiAgent.ts                         |   83.33 |        0 |     100 |   83.33 | 19                  
+ agents/SecurityAgent                 |   83.33 |        0 |     100 |   83.33 |                     
+  SecurityAgent.ts                    |   83.33 |        0 |     100 |   83.33 | 19                  
+ agents/SpecAgent                     |     100 |       50 |     100 |     100 |                     
+  SpecAgent.ts                        |     100 |       50 |     100 |     100 | 32                  
+  prompts.ts                          |     100 |      100 |     100 |     100 |                     
+  types.ts                            |     100 |      100 |     100 |     100 |                     
+ agents/TestAgent                     |   83.33 |        0 |     100 |   83.33 |                     
+  TestAgent.ts                        |   83.33 |        0 |     100 |   83.33 | 19                  
+ automation                           |     100 |      100 |     100 |     100 |                     
+  workflowManager.ts                  |     100 |      100 |     100 |     100 |                     
+ collaboration                        |   90.38 |       50 |   94.44 |   90.19 |                     
+  CollaborativeSessionManager.ts      |     100 |      100 |     100 |     100 |                     
+  agentPanel.ts                       |    90.9 |      100 |      80 |    90.9 | 30                  
+  pullRequestManager.ts               |       0 |      100 |     100 |       0 | 6-10                
+  votingSystem.ts                     |      90 |    33.33 |     100 |   89.47 | 35,45               
+ collaboration/rounds                 |     100 |      100 |     100 |     100 |                     
+  CollaborationRound.ts               |     100 |      100 |     100 |     100 |                     
+ collaboration/timing                 |     100 |      100 |     100 |     100 |                     
+  TimeManager.ts                      |     100 |      100 |     100 |     100 |                     
+ core                                 |     100 |      100 |     100 |     100 |                     
+  Agent.ts                            |     100 |      100 |     100 |     100 |                     
+ core/orchestration                   |     100 |    78.57 |     100 |     100 |                     
+  AgentRouter.ts                      |     100 |      100 |     100 |     100 |                     
+  LocalOrchestrationEngine.ts         |     100 |     62.5 |     100 |     100 | 21,58,70            
+  interAgentSync.ts                   |     100 |      100 |     100 |     100 |                     
+  llmRouter.ts                        |     100 |      100 |     100 |     100 |                     
+ core/storage                         |   94.54 |     87.5 |     100 |   97.67 |                     
+  LanceDBClient.ts                    |   94.54 |     87.5 |     100 |   97.67 | 62                  
+ db                                   |    92.9 |    72.22 |   94.44 |   95.31 |                     
+  metadataDB.ts                       |     100 |       75 |     100 |     100 | 13,48               
+  migrations.ts                       |   92.75 |       85 |   92.85 |   95.23 | 109-111             
+  vectorDB.ts                         |   85.29 |     37.5 |      90 |   90.32 | 26,31,39            
+ emergent-behavior                    |   93.33 |       50 |     100 |   92.85 |                     
+  EmergentBehaviorSystem.ts           |   93.33 |       50 |     100 |   92.85 | 16                  
+ emergent-behavior/amplifiers         |     100 |      100 |     100 |     100 |                     
+  BehaviorAmplifier.ts                |     100 |      100 |     100 |     100 |                     
+ emergent-behavior/analyzers          |     100 |      100 |     100 |     100 |                     
+  BehaviorAnalyzer.ts                 |     100 |      100 |     100 |     100 |                     
+ emergent-behavior/detectors          |     100 |      100 |     100 |     100 |                     
+  PatternDetector.ts                  |     100 |      100 |     100 |     100 |                     
+ git                                  |     100 |    66.66 |     100 |     100 |                     
+  gitManager.ts                       |     100 |    66.66 |     100 |     100 | 18-23               
+  pullRequestManager.ts               |     100 |      100 |     100 |     100 |                     
+ inter-agent-evolution                |     100 |      100 |     100 |     100 |                     
+  InterAgentEvolutionSystem.ts        |     100 |      100 |     100 |     100 |                     
+ inter-agent-evolution/knowledge      |     100 |      100 |     100 |     100 |                     
+  KnowledgeTransferSystem.ts          |     100 |      100 |     100 |     100 |                     
+ inter-agent-evolution/specialization |     100 |      100 |     100 |     100 |                     
+  AgentSpecializationSystem.ts        |     100 |      100 |     100 |     100 |                     
+ llm                                  |     100 |      100 |     100 |     100 |                     
+  llmManager.ts                       |     100 |      100 |     100 |     100 |                     
+ llm/providers                        |     100 |    83.33 |     100 |     100 |                     
+  AnthropicProvider.ts                |     100 |      100 |     100 |     100 |                     
+  GitHubProvider.ts                   |     100 |      100 |     100 |     100 |                     
+  OpenAICompatibleProvider.ts         |     100 |      100 |     100 |     100 |                     
+  baseProvider.ts                     |     100 |    83.33 |     100 |     100 | 21                  
+ meta-learning                        |     100 |      100 |     100 |     100 |                     
+  MetaLearningSystem.ts               |     100 |      100 |     100 |     100 |                     
+ meta-learning/insights               |     100 |      100 |     100 |     100 |                     
+  InsightsEngine.ts                   |     100 |      100 |     100 |     100 |                     
+ meta-learning/patterns               |     100 |      100 |     100 |     100 |                     
+  PatternAnalyzer.ts                  |     100 |      100 |     100 |     100 |                     
+ meta-learning/strategies             |     100 |      100 |     100 |     100 |                     
+  StrategyOptimizer.ts                |     100 |      100 |     100 |     100 |                     
+ providers                            |     100 |      100 |     100 |     100 |                     
+  projectIgnition.ts                  |     100 |      100 |     100 |     100 |                     
+  setupWizard.ts                      |     100 |      100 |     100 |     100 |                     
+ quantum-decision                     |   94.11 |      100 |     100 |   93.33 |                     
+  QuantumDecisionSystem.ts            |   94.11 |      100 |     100 |   93.33 | 37                  
+ quantum-decision/algorithms          |     100 |      100 |     100 |     100 |                     
+  QuantumAlgorithms.ts                |     100 |      100 |     100 |     100 |                     
+ quantum-decision/annealing           |     100 |      100 |     100 |     100 |                     
+  QuantumAnnealingSystem.ts           |     100 |      100 |     100 |     100 |                     
+ quantum-decision/networks            |     100 |      100 |     100 |     100 |                     
+  QuantumNeuralNetworks.ts            |     100 |      100 |     100 |     100 |                     
+ quantum-decision/optimization        |     100 |      100 |     100 |     100 |                     
+  QuantumOptimizationSystem.ts        |     100 |      100 |     100 |     100 |                     
+ self-modification                    |     100 |      100 |     100 |     100 |                     
+  SelfModificationSystem.ts           |     100 |      100 |     100 |     100 |                     
+ self-modification/analyzers          |     100 |      100 |     100 |     100 |                     
+  SelfAnalysisEngine.ts               |     100 |      100 |     100 |     100 |                     
+ self-modification/modifiers          |     100 |      100 |     100 |     100 |                     
+  CodeModificationSystem.ts           |     100 |      100 |     100 |     100 |                     
+ self-modification/safety             |     100 |      100 |     100 |     100 |                     
+  SafetyFramework.ts                  |     100 |      100 |     100 |     100 |                     
+ self-modification/validators         |     100 |      100 |     100 |     100 |                     
+  ValidationFramework.ts              |     100 |      100 |     100 |     100 |                     
+ spec-kit                             |     100 |      100 |     100 |     100 |                     
+  specKitManager.ts                   |     100 |      100 |     100 |     100 |                     
+ spec-kit/parser                      |     100 |      100 |     100 |     100 |                     
+  specAST.ts                          |     100 |      100 |     100 |     100 |                     
+  specParser.ts                       |     100 |      100 |     100 |     100 |                     
+ testing                              |     100 |    91.66 |   93.75 |     100 |                     
+  apiTester.ts                        |     100 |      100 |     100 |     100 |                     
+  apiTesterCLI.ts                     |     100 |      100 |      50 |     100 |                     
+  apiTesterCore.ts                    |     100 |      100 |     100 |     100 |                     
+  apiTesterProvider.ts                |     100 |      100 |     100 |     100 |                     
+  emergent.ts                         |     100 |      100 |     100 |     100 |                     
+  index.ts                            |     100 |      100 |     100 |     100 |                     
+  testLogger.ts                       |     100 |       80 |     100 |     100 | 36                  
+ utils                                |   96.42 |       80 |   89.47 |   97.36 |                     
+  envLoader.ts                        |     100 |      100 |     100 |     100 |                     
+  httpRetry.ts                        |   94.11 |      100 |   66.66 |     100 |                     
+  inputValidation.ts                  |     100 |      100 |     100 |     100 |                     
+  logger.ts                           |     100 |      100 |     100 |     100 |                     
+  pathUtils.ts                        |   96.42 |       60 |      80 |   95.83 | 6                   
+  retry.ts                            |   94.73 |    66.66 |     100 |   93.75 | 24                  
+  secureLogger.ts                     |     100 |      100 |     100 |     100 |                     
+  testEnv.ts                          |     100 |      100 |     100 |     100 |                     
+ vector-db                            |     100 |      100 |     100 |     100 |                     
+  VectorDB.ts                         |     100 |      100 |     100 |     100 |                     
+ workflow                             |    92.5 |    73.33 |     100 |    92.3 |                     
+  agentNexusBuildRunner.ts            |   90.47 |    71.42 |     100 |   90.32 | 76-77,84-85,111-112 
+  telemetryPipeline.ts                |     100 |      100 |     100 |     100 |                     
+  workflowArbitrator.ts               |     100 |      100 |     100 |     100 |                     
+  workflowManager.ts                  |     100 |      100 |     100 |     100 |                     
+  workflowOrchestrator.ts             |     100 |      100 |     100 |     100 |                     
+--------------------------------------|---------|----------|---------|---------|---------------------
+Jest: "global" coverage threshold for branches (90%) not met: 72.98%
+
+Test Suites: 77 passed, 77 total
+Tests:       252 passed, 252 total
+Snapshots:   0 total
+Time:        2.602 s
+Ran all test suites.

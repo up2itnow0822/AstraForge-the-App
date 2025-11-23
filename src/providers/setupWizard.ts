@@ -2,62 +2,42 @@ import * as vscode from 'vscode';
 
 export class SetupWizardProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'astraforge.setupWizard';
-  private _view?: vscode.Webview;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {
-    // Initialize setup wizard with extension URI
-    // _extensionUri is used in _getHtmlForWebview method
-  }
+  private _view?: vscode.WebviewView;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext,
+    context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
   ) {
-    // _context and _token are required by interface but not used in this implementation
-    this._view = webviewView.webview;
+    this._view = webviewView;
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      localResourceRoots: [this._extensionUri]
     };
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-
-    webviewView.webview.onDidReceiveMessage(async data => {
-      switch (data.type) {
-        case 'savePanel':
-          await vscode.workspace
-            .getConfiguration('astraforge')
-            .update('llmPanel', data.panel, true);
-          vscode.window.showInformationMessage('LLM Panel configured! Ready for ignition.');
-          break;
-      }
-    });
+    webviewView.webview.html = this._getHtmlForWebview();
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview) {
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'media', 'setup.js')
-    );
-    const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css')
-    );
-
-    // Basic HTML with form for 3/5 LLMs, providers dropdown (OpenAI, Anthropic, xAI, OpenRouter), API key inputs
-    return `<!DOCTYPE html>
+  private _getHtmlForWebview(): string {
+    return `
+      <!DOCTYPE html>
       <html lang="en">
-      <head><link href="${styleUri}" rel="stylesheet"></head>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AstraForge Setup</title>
+      </head>
       <body>
-        <h1>Setup LLM Panel</h1>
-        <select id="panelSize">
-          <option value="3">3 LLMs</option>
-          <option value="5">5 LLMs</option>
-        </select>
-        <div id="llmForms"></div>
-        <button onclick="savePanel()">Save Configuration</button>
-        <script src="${scriptUri}"></script>
+        <h1>AstraForge Setup Wizard</h1>
+        <div id="app">
+          <button>Complete Setup</button>
+        </div>
       </body>
-      </html>`;
+      </html>
+    `;
   }
 }

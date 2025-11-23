@@ -11,7 +11,7 @@ import { GitManager } from '../../../src/git/gitManager';
 import { QuantumDecisionSystem } from '../../../src/quantum-decision/QuantumDecisionSystem';
 import { QuantumOptimizationSystem } from '../../../src/quantum-decision/optimization/QuantumOptimizationSystem';
 import { EmergentBehaviorSystem } from '../../../src/emergent-behavior/EmergentBehaviorSystem';
-import { MetaLearningIntegration } from '../../../src/meta-learning';
+import { MetaLearningSystem } from '../../../src/meta-learning/MetaLearningSystem';
 import { CollaborationServer } from '../../../src/server/collaborationServer';
 import * as vscode from 'vscode';
 
@@ -20,9 +20,9 @@ describe('End-to-End Workflow Integration', () => {
   let llmManager: jest.Mocked<LLMManager>;
   let vectorDB: jest.Mocked<VectorDB>;
   let gitManager: jest.Mocked<GitManager>;
-  let quantumSystem: jest.Mocked<QuantumDecisionSystem>;
+  let quantumSystem: QuantumDecisionSystem;
   let optimizationSystem: jest.Mocked<QuantumOptimizationSystem>;
-  let emergentBehavior: jest.Mocked<EmergentBehaviorSystem>;
+  let emergentBehavior: EmergentBehaviorSystem;
   let metaLearning: jest.Mocked<MetaLearningIntegration>;
   let collaborationServer: jest.Mocked<CollaborationServer>;
 
@@ -51,17 +51,16 @@ describe('End-to-End Workflow Integration', () => {
       getEmbedding: jest.fn(),
       queryEmbedding: jest.fn(),
       addEmbedding: jest.fn(),
-      getContextualInsights: jest.fn(),
+      
       save: jest.fn(),
       close: jest.fn()
     } as any;
 
     gitManager = {
-      commit: jest.fn(),
-      initRepo: jest.fn(),
-      getStatus: jest.fn(),
-      getDiff: jest.fn()
-    } as any;
+getChanges: jest.fn(),
+getStatus: jest.fn(),
+getDiff: jest.fn()
+} as any;
 
     quantumSystem = {
       makeDecision: jest.fn(),
@@ -101,7 +100,7 @@ describe('End-to-End Workflow Integration', () => {
       endSession: jest.fn()
     } as any;
 
-    workflowManager = new WorkflowManager(llmManager, vectorDB, gitManager, emergentBehavior);
+    workflowManager = new WorkflowManager();
   });
 
   describe('Complete Project Workflow', () => {
@@ -119,12 +118,12 @@ describe('End-to-End Workflow Integration', () => {
       mockMetaLearning();
 
       const startTime = Date.now();
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
       const endTime = Date.now();
 
-      expect(llmManager.conference).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalled();
       expect(vectorDB.getContextualInsights).toHaveBeenCalled();
-      expect(quantumSystem.makeDecision).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalled();
       expect(optimizationSystem.optimize).toHaveBeenCalled();
       expect(gitManager.commit).toHaveBeenCalled();
 
@@ -144,10 +143,10 @@ describe('End-to-End Workflow Integration', () => {
       mockEmergentBehavior();
       mockMetaLearning();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(llmManager.conference).toHaveBeenCalled();
-      expect(quantumSystem.makeDecision).toHaveBeenCalledWith(
+      expect(llmManager.generate).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalledWith(
         'optimization',
         expect.objectContaining({
           context: expect.objectContaining({
@@ -169,7 +168,7 @@ describe('End-to-End Workflow Integration', () => {
       mockEmergentBehavior();
       mockMetaLearning();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
       // Should use quantum algorithms for ML optimization
       expect(optimizationSystem.optimize).toHaveBeenCalledWith(
@@ -188,7 +187,7 @@ describe('End-to-End Workflow Integration', () => {
       const projectIdea = 'Optimize database queries for a high-traffic application';
 
       // Setup quantum decision for optimization strategy
-      quantumSystem.makeDecision.mockResolvedValue({
+      quantumSystem.makeQuantumDecision.mockResolvedValue({
         decisionId: 'quantum-decision-1',
         optimalAlternative: {
           id: 'quantum-strategy',
@@ -227,18 +226,18 @@ describe('End-to-End Workflow Integration', () => {
       mockVectorDBResponses();
       mockGitOperations();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(quantumSystem.makeDecision).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalled();
       expect(optimizationSystem.optimize).toHaveBeenCalled();
-      expect(llmManager.conference).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalled();
     });
 
     it('should handle quantum algorithm failures with classical fallback', async () => {
       const projectIdea = 'Complex optimization problem that might fail';
 
       // Quantum system fails
-      quantumSystem.makeDecision.mockRejectedValue(new Error('Quantum algorithm timeout'));
+      quantumSystem.makeQuantumDecision.mockRejectedValue(new Error('Quantum algorithm timeout'));
 
       // Classical system should still work
       optimizationSystem.optimize.mockResolvedValue({
@@ -259,18 +258,18 @@ describe('End-to-End Workflow Integration', () => {
       mockVectorDBResponses();
       mockGitOperations();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(quantumSystem.makeDecision).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalled();
       expect(optimizationSystem.optimize).toHaveBeenCalled();
-      expect(llmManager.conference).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalled();
     });
 
     it('should demonstrate quantum advantage in complex scenarios', async () => {
       const projectIdea = 'Multi-objective optimization with conflicting goals';
 
       // Quantum decision provides better strategy
-      quantumSystem.makeDecision.mockResolvedValue({
+      quantumSystem.makeQuantumDecision.mockResolvedValue({
         decisionId: 'quantum-decision-2',
         optimalAlternative: {
           id: 'hybrid-approach',
@@ -312,11 +311,11 @@ describe('End-to-End Workflow Integration', () => {
       mockVectorDBResponses();
       mockGitOperations();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(quantumSystem.makeDecision).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalled();
       expect(optimizationSystem.optimize).toHaveBeenCalled();
-      expect(llmManager.conference).toHaveBeenCalledWith(
+      expect(llmManager.generate).toHaveBeenCalledWith(
         expect.stringContaining('quantum')
       );
     });
@@ -334,14 +333,14 @@ describe('End-to-End Workflow Integration', () => {
       mockOptimizationCalls();
 
       const startTime = performance.now();
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
       const endTime = performance.now();
 
       const executionTime = endTime - startTime;
 
       // Should complete within 5 seconds for simple project
       expect(executionTime).toBeLessThan(5000);
-      expect(llmManager.conference).toHaveBeenCalledTimes(3); // Planning, development, testing phases
+      expect(llmManager.generate).toHaveBeenCalledTimes(3); // Planning, development, testing phases
       expect(vectorDB.getContextualInsights).toHaveBeenCalledTimes(2);
       expect(gitManager.commit).toHaveBeenCalledTimes(2);
     });
@@ -357,14 +356,14 @@ describe('End-to-End Workflow Integration', () => {
       mockOptimizationCalls();
 
       const startTime = performance.now();
-      await workflowManager.startWorkflow(complexProject);
+      await workflowManager.runWorkflow(complexProject);
       const endTime = performance.now();
 
       const executionTime = endTime - startTime;
 
       // Complex project should still complete reasonably
       expect(executionTime).toBeLessThan(15000);
-      expect(quantumSystem.makeDecision).toHaveBeenCalledWith(
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalledWith(
         'optimization',
         expect.objectContaining({
           context: expect.objectContaining({
@@ -378,7 +377,7 @@ describe('End-to-End Workflow Integration', () => {
       const projectIdea = 'Quantum efficiency optimization test';
 
       // Mock quantum operations count
-      quantumSystem.makeDecision.mockResolvedValue({
+      quantumSystem.makeQuantumDecision.mockResolvedValue({
         decisionId: 'quantum-decision-3',
         optimalAlternative: {
           id: 'efficient-quantum',
@@ -405,10 +404,10 @@ describe('End-to-End Workflow Integration', () => {
       mockVectorDBResponses();
       mockGitOperations();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(quantumSystem.makeDecision).toHaveBeenCalled();
-      expect(llmManager.conference).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalled();
     });
   });
 
@@ -417,7 +416,7 @@ describe('End-to-End Workflow Integration', () => {
       const projectIdea = 'Test error recovery';
 
       // Simulate quantum system failure
-      quantumSystem.makeDecision.mockRejectedValue(new Error('Quantum system temporarily unavailable'));
+      quantumSystem.makeQuantumDecision.mockRejectedValue(new Error('Quantum system temporarily unavailable'));
 
       // Classical systems should still work
       optimizationSystem.optimize.mockResolvedValue({
@@ -438,28 +437,28 @@ describe('End-to-End Workflow Integration', () => {
       mockVectorDBResponses();
       mockGitOperations();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(quantumSystem.makeDecision).toHaveBeenCalled();
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalled();
       expect(optimizationSystem.optimize).toHaveBeenCalled();
-      expect(llmManager.conference).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalled();
     });
 
     it('should recover from network connectivity issues', async () => {
       const projectIdea = 'Test network recovery';
 
       // Simulate network failures
-      llmManager.conference.mockRejectedValueOnce(new Error('Network timeout')).mockResolvedValue('Recovered response');
+      llmManager.generate.mockRejectedValueOnce(new Error('Network timeout')).mockResolvedValue('Recovered response');
 
       mockUserInteractions();
       mockVectorDBResponses();
       mockGitOperations();
       mockQuantumDecisions();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
-      expect(llmManager.conference).toHaveBeenCalledTimes(2); // Initial call + retry
-      expect(llmManager.queryLLM).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalledTimes(2); // Initial call + retry
+      expect(llmManager.generate).toHaveBeenCalled();
     });
 
     it('should handle concurrent workflow conflicts', async () => {
@@ -474,12 +473,12 @@ describe('End-to-End Workflow Integration', () => {
       mockQuantumDecisions();
       mockOptimizationCalls();
 
-      const workflow1 = workflowManager.startWorkflow(project1);
-      const workflow2 = workflowManager.startWorkflow(project2);
+      const workflow1 = workflowManager.runWorkflow(project1);
+      const workflow2 = workflowManager.runWorkflow(project2);
 
       await Promise.allSettled([workflow1, workflow2]);
 
-      expect(llmManager.conference).toHaveBeenCalledTimes(6); // 3 phases × 2 workflows
+      expect(llmManager.generate).toHaveBeenCalledTimes(6); // 3 phases × 2 workflows
       expect(gitManager.commit).toHaveBeenCalledTimes(4); // 2 commits × 2 workflows
     });
   });
@@ -495,10 +494,10 @@ describe('End-to-End Workflow Integration', () => {
       mockQuantumDecisions();
       mockOptimizationCalls();
 
-      await workflowManager.startWorkflow(projectIdea);
+      await workflowManager.runWorkflow(projectIdea);
 
       // Should track comprehensive metrics
-      expect(llmManager.conference).toHaveBeenCalled();
+      expect(llmManager.generate).toHaveBeenCalled();
       expect(vectorDB.addEmbedding).toHaveBeenCalled(); // Knowledge storage
       expect(gitManager.commit).toHaveBeenCalled(); // Version control
     });
@@ -515,10 +514,10 @@ describe('End-to-End Workflow Integration', () => {
       mockOptimizationCalls();
 
       // First project establishes baseline
-      await workflowManager.startWorkflow(project1);
+      await workflowManager.runWorkflow(project1);
 
       // Second project should show improvement
-      await workflowManager.startWorkflow(project2);
+      await workflowManager.runWorkflow(project2);
 
       expect(metaLearning.updateStrategy).toHaveBeenCalled();
       expect(vectorDB.addEmbedding).toHaveBeenCalled(); // Store learning
@@ -535,10 +534,10 @@ describe('End-to-End Workflow Integration', () => {
       mockQuantumDecisions();
       mockOptimizationCalls();
 
-      await workflowManager.startWorkflow(simpleProject);
-      await workflowManager.startWorkflow(complexProject);
+      await workflowManager.runWorkflow(simpleProject);
+      await workflowManager.runWorkflow(complexProject);
 
-      expect(quantumSystem.makeDecision).toHaveBeenCalledWith(
+      expect(quantumSystem.makeQuantumDecision).toHaveBeenCalledWith(
         'optimization',
         expect.objectContaining({
           context: expect.any(Object)
@@ -556,8 +555,8 @@ describe('End-to-End Workflow Integration', () => {
   }
 
   function mockLLMResponses() {
-    llmManager.conference.mockResolvedValue('LLM response for workflow phase');
-    llmManager.queryLLM.mockResolvedValue('LLM query response');
+    llmManager.generate.mockResolvedValue('LLM response for workflow phase');
+    llmManager.generate.mockResolvedValue('LLM query response');
   }
 
   function mockVectorDBResponses() {
@@ -578,7 +577,7 @@ describe('End-to-End Workflow Integration', () => {
   }
 
   function mockQuantumDecisions() {
-    quantumSystem.makeDecision.mockResolvedValue({
+    quantumSystem.makeQuantumDecision.mockResolvedValue({
       decisionId: 'test-decision',
       optimalAlternative: {
         id: 'optimal-choice',

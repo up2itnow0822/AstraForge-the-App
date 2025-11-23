@@ -6,6 +6,8 @@
 import fc from 'fast-check';
 import { QuantumAlgorithmsLibrary } from '../../src/quantum-decision/algorithms/QuantumAlgorithms';
 import { QuantumDecisionSystem } from '../../src/quantum-decision/QuantumDecisionSystem';
+import { MetaLearningSystem } from '../../src/meta-learning/MetaLearningSystem';
+import { EmergentBehaviorSystem } from '../../src/emergent-behavior/EmergentBehaviorSystem';
 import { QuantumOptimizationSystem } from '../../src/quantum-decision/optimization/QuantumOptimizationSystem';
 
 describe('Quantum Functions Property-Based Tests', () => {
@@ -15,7 +17,9 @@ describe('Quantum Functions Property-Based Tests', () => {
 
   beforeEach(() => {
     quantumLibrary = new QuantumAlgorithmsLibrary();
-    quantumSystem = new QuantumDecisionSystem();
+    const emergentBehavior = new EmergentBehaviorSystem();
+    const metaLearning = new MetaLearningSystem();
+    quantumSystem = new QuantumDecisionSystem(metaLearning, emergentBehavior);
     optimizationSystem = new QuantumOptimizationSystem();
   });
 

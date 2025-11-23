@@ -180,7 +180,7 @@ describe('Complex Input Generative Tests', () => {
           async (input: any) => {
             // System should handle edge cases gracefully without crashing
             try {
-              const result = await workflowManager.startWorkflow(input as any);
+              const result = await workflowManager.runWorkflow(input as any);
               expect(result).toBeDefined();
             } catch (error) {
               // Error handling is also acceptable for malformed inputs
@@ -200,7 +200,7 @@ describe('Complex Input Generative Tests', () => {
             const largeInput = 'a'.repeat(inputSize);
 
             const startTime = performance.now();
-            const result = await workflowManager.startWorkflow(largeInput);
+            const result = await workflowManager.runWorkflow(largeInput);
             const endTime = performance.now();
 
             const executionTime = endTime - startTime;
@@ -294,7 +294,7 @@ describe('Complex Input Generative Tests', () => {
             expect(config.optimizationConfig).toBeDefined();
 
             // Should be able to process without errors
-            const result = await workflowManager.startWorkflow('Test with complex config');
+            const result = await workflowManager.runWorkflow('Test with complex config');
             expect(result).toBeDefined();
           }
         ),
@@ -315,7 +315,7 @@ describe('Complex Input Generative Tests', () => {
           async (invalidConfig: any) => {
             // System should validate and handle invalid configurations gracefully
             try {
-              const result = await workflowManager.startWorkflow('Test with invalid config');
+              const result = await workflowManager.runWorkflow('Test with invalid config');
               expect(result).toBeDefined();
             } catch (error) {
               // Should provide meaningful error messages for invalid configs
@@ -368,7 +368,7 @@ describe('Complex Input Generative Tests', () => {
             expect(mixedArray).toBeDefined();
             expect(mixedArray.length).toBeGreaterThan(0);
 
-            const result = await workflowManager.startWorkflow('Test with mixed array');
+            const result = await workflowManager.runWorkflow('Test with mixed array');
             expect(result).toBeDefined();
           }
         ),
@@ -387,7 +387,7 @@ describe('Complex Input Generative Tests', () => {
             circularObj.self = circularObj; // Create circular reference
 
             try {
-              const result = await workflowManager.startWorkflow('Test with circular reference');
+              const result = await workflowManager.runWorkflow('Test with circular reference');
               expect(result).toBeDefined();
             } catch (error) {
               // Should handle circular references without infinite loops
@@ -412,7 +412,7 @@ describe('Complex Input Generative Tests', () => {
               mixed: [binaryData, specialChars]
             };
 
-            const result = await workflowManager.startWorkflow('Test with binary and special data');
+            const result = await workflowManager.runWorkflow('Test with binary and special data');
             expect(result).toBeDefined();
           }
         ),
@@ -443,7 +443,7 @@ describe('Complex Input Generative Tests', () => {
             };
 
             try {
-              const result = await workflowManager.startWorkflow('Test with extreme values');
+              const result = await workflowManager.runWorkflow('Test with extreme values');
               expect(result).toBeDefined();
             } catch (error) {
               // Should handle extreme values without crashing
@@ -468,7 +468,7 @@ describe('Complex Input Generative Tests', () => {
               controlChars: /[\x00-\x1F\x7F]/.test(unicodeString)
             };
 
-            const result = await workflowManager.startWorkflow('Test with unicode edge cases');
+            const result = await workflowManager.runWorkflow('Test with unicode edge cases');
             expect(result).toBeDefined();
           }
         ),
@@ -488,7 +488,7 @@ describe('Complex Input Generative Tests', () => {
             };
 
             const startTime = performance.now();
-            const result = await workflowManager.startWorkflow('Test with memory-intensive input');
+            const result = await workflowManager.runWorkflow('Test with memory-intensive input');
             const endTime = performance.now();
 
             // Should complete within reasonable time
@@ -512,7 +512,7 @@ describe('Complex Input Generative Tests', () => {
             }));
 
             const promises = concurrentInputs.map(input =>
-              workflowManager.startWorkflow(`Concurrent test ${input.id}`)
+              workflowManager.runWorkflow(`Concurrent test ${input.id}`)
             );
 
             const results = await Promise.allSettled(promises);
@@ -538,7 +538,7 @@ describe('Complex Input Generative Tests', () => {
             const corruptedObject = corruptObject(baseObject, corruptionFactor);
 
             try {
-              const result = await workflowManager.startWorkflow('Test with corrupted data');
+              const result = await workflowManager.runWorkflow('Test with corrupted data');
               expect(result).toBeDefined();
             } catch (error) {
               // Should handle corrupted data gracefully
@@ -574,7 +574,7 @@ describe('Complex Input Generative Tests', () => {
               }
             };
 
-            const result = await workflowManager.startWorkflow('Test with inconsistent state');
+            const result = await workflowManager.runWorkflow('Test with inconsistent state');
             expect(result).toBeDefined();
           }
         ),
@@ -591,7 +591,7 @@ describe('Complex Input Generative Tests', () => {
             const shuffledUpdates = [...partialUpdates].sort(() => Math.random() - 0.5);
 
             try {
-              const result = await workflowManager.startWorkflow('Test with partial updates');
+              const result = await workflowManager.runWorkflow('Test with partial updates');
               expect(result).toBeDefined();
             } catch (error) {
               // Should handle partial updates gracefully

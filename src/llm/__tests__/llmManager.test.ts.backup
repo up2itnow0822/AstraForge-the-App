@@ -1,0 +1,302 @@
+import * as crypto from 'node:crypto';
+import * as math from 'mathjs';
+import fc from 'fast-check';
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+
+jest.mock('node:crypto');
+jest.mock('mathjs');
+
+// Mock process.env
+(process as any).env = {
+  OPENAI_API_KEY: 'mock_openai',
+  ANTHROPIC_API_KEY: 'mock_anthro',
+  XAI_API_KEY: 'mock_xai',
+  OPENROUTER_API_KEY: 'mock_router',
+  GITHUB_TOKEN: 'mock_github',
+};
+
+describe('LLMManager', () => {
+  let manager: any;
+  let mockOpenAICreate: jest.Mock;
+  let mockAnthroCreate: jest.Mock;
+  let mockGitHubCreate: jest.Mock;
+  let mockLoadSecrets: jest.Mock;
+  let mockHash: jest.Mock;
+  let mockMD5: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    manager = new LLMManager();
+    mockOpenAICreate = OpenAICompatibleProvider.createForOne as jest.Mock;
+    mockOpenAICreate.mockReturnValue({
+      generate: jest.fn(),
+      embed: jest.fn(),
+    });
+    const mockOpenAI3 = OpenAICompatibleProvider.createForThree as jest.Mock;
+    mockOpenAI3.mockReturnValue({
+      generate: jest.fn(),
+      embed: jest.fn(),
+    });
+    const mockOpenAI4 = OpenAICompatibleProvider.createForFour as jest.Mock;
+    mockOpenAI4.mockReturnValue({
+      generate: jest.fn(),
+      embed: jest.fn(),
+    });
+    mockAnthroCreate = AnthropicProvider.createForTwo as jest.Mock;
+    mockAnthroCreate.mockReturnValue({
+      generate: jest.fn(),
+      embed: jest.fn(),
+    });
+    mockGitHubCreate = GitHubProvider.createForFive as jest.Mock;
+    mockGitHubCreate.mockReturnValue({
+      generate: jest.fn(),
+      embed: jest.fn(),
+    });
+    mockLoadSecrets = EnvLoader.loadSecrets as jest.Mock;
+    mockLoadSecrets.mockResolvedValue(undefined);
+    mockHash = crypto.createHash as jest.Mock;
+    mockMD5 = jest.fn(() => ({ digest: jest.fn(() => 'mock_key') }));
+    mockHash.mockReturnValue(mockMD5);
+  });
+
+  describe('init', () => {
+    it('should initialize with 5 providers without error', async () => {
+      await manager.init();
+      expect(mockLoadSecrets).toHaveBeenCalled();
+      expect(mockOpenAICreate).toHaveBeenCalledWith('mock_openai');
+      expect(mockAnthroCreate).toHaveBeenCalledWith('mock_anthro');
+      expect(OpenAICompatibleProvider.createForThree).toHaveBeenCalledWith('mock_xai');
+      expect(OpenAICompatibleProvider.createForFour).toHaveBeenCalledWith('mock_router');
+      expect(mockGitHubCreate).toHaveBeenCalledWith('mock_github');
+      expect(manager.providers.length).toBe(5);
+    });
+
+    it('should throw if missing env key', async () => {
+      (process as any).env.OPENAI_API_KEY = '';
+      await expect(manager.init()).rejects.toThrow('Missing required API keys');
+    });
+  });
+
+  describe('consensusGenerate', () => {
+    beforeEach(() => {
+      manager.providers = [
+        { name: 'OpenAI', generate: jest.fn(), embed: jest.fn() },
+        { name: 'Anthropic', generate: jest.fn(), embed: jest.fn() },
+        { name: 'xAI', generate: jest.fn(), embed: jest.fn() },
+        { name: 'OpenRouter', generate: jest.fn(), embed: jest.fn() },
+        { name: 'GitHub', generate: jest.fn(), embed: jest.fn() },
+      ];
+    });
+
+    it('should return cache hit if available', async () => {
+      const mockResult = { text: 'cached', confidence: 0.8, sources: [], aggregateVote: 0.8 };
+      const mockCache = { has: jest.fn(() => true), get: jest.fn(() => mockResult) };
+      manager.cache = mockCache as any;
+      const result = await manager.consensusGenerate('test');
+      expect(mockCache.has).toHaveBeenCalledWith('mock_key');
+      expect(result).toBe(mockResult);
+      expect(manager.providers[0].generate).not.toHaveBeenCalled();
+    });
+
+    it('should perform consensus with high similarity and return aggregated result', async () => {
+      manager.providers[0].generate.mockResolvedValue({ text: 'yes', confidence: 0.8 });
+      manager.providers[1].generate.mockResolvedValue({ text: 'yes', confidence: 0.9 });
+      manager.providers[2].generate.mockResolvedValue({ text: 'yes', confidence: 0.7 });
+      manager.providers[3].generate.mockResolvedValue({ text: 'no', confidence: 0.6 });
+      manager.providers[4].generate.mockResolvedValue({ text: 'maybe', confidence: 1.0 });
+      manager.providers[0].embed
+      (math.dot as jest.Mock).mockImplementation((a, b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
+      (math.norm as jest.Mock).mockImplementation((v, _) => Math.sqrt(v.reduce((s, x) => s + x*x, 0)) || 1);
+
+      const result = await manager.consensusGenerate('consensus prompt');
+      expect(result.text).toBe('yes');
+      expect(result.sources).toEqual(['OpenAI', 'Anthropic', 'xAI', 'OpenRouter']);
+      expect(result.aggregateVote).toBeCloseTo(0.85);
+      expect(result.fallbackUsed).toBeUndefined();
+      expect(manager.providers[0].generate).toHaveBeenCalledTimes(1);
+      expect(manager.providers[0].embed).toHaveBeenCalledTimes(4);
+    });
+
+    it('should use fallback if low similarity (<0.7)', async () => {
+      manager.providers[0].generate.mockResolvedValue({ text: 'yes', confidence: 0.8 });
+      manager.providers[1].generate.mockResolvedValue({ text: 'no', confidence: 0.9 });
+      manager.providers[2].generate.mockResolvedValue({ text: 'yes', confidence: 0.7 });
+      manager.providers[0].embed
+      (math.dot as jest.Mock).mockReturnValue(0);
+      (math.norm as jest.Mock).mockReturnValue(1);
+      // Fallback mocks
+      manager.providers[0].generate.mockResolvedValueOnce({ text: 'fallback yes', confidence: 0.8 });
+
+      const result = await manager.consensusGenerate('low sim prompt');
+      expect(result.text).toBe('fallback yes');
+      expect(result.confidence).toBe(0.75);
+      expect(result.sources).toEqual(['OpenAI']);
+      expect(result.fallbackUsed).toBe(true);
+    });
+
+    it('should use fallback if <3 successful', async () => {
+      manager.providers[0].generate.mockResolvedValue({ text: 'yes', confidence: 0.8 });
+      manager.providers[1].generate.mockRejectedValue(new Error('fail'));
+      manager.providers[2].generate.mockRejectedValue(new Error('fail'));
+      manager.providers[3].generate.mockResolvedValue({ text: 'no', confidence: 0.6 });
+      manager.providers[4].generate.mockRejectedValue(new Error('fail'));
+      // Fallback
+      manager.providers[0].generate.mockResolvedValueOnce({ text: 'fallback', confidence: 0.75 });
+
+      const result = await manager.consensusGenerate('low success');
+      expect(result.text).toBe('fallback');
+      expect(result.sources).toEqual(['OpenAI']);
+      expect(result.fallbackUsed).toBe(true);
+    });
+
+    it('should throw if all fallback providers fail', async () => {
+      manager.providers.slice(0,4).forEach(p => p.generate.mockRejectedValue(new Error('fail')));
+      await expect(manager.consensusGenerate('all fail')).rejects.toThrow('All fallback providers failed');
+    });
+
+    it('should cache result on miss and set', async () => {
+      const mockResult = { text: 'result', confidence: 0.8, sources: [], aggregateVote: 0.8, timestamp: expect.any(Number) };
+      manager.cache.has.mockReturnValue(false);
+      manager.cache.set = jest.fn();
+      manager.providers[0].generate.mockResolvedValue({ text: 'result', confidence: 0.8 });
+      // Assume 3 successful, high sim, set agg
+      await manager.consensusGenerate('cache miss');
+      expect(manager.cache.set).toHaveBeenCalledWith('mock_key', expect.objectContaining({ text: 'result', fallbackUsed: undefined }));
+    });
+
+    it('should evict TTL expired entries', () => {
+      const mockCache = { entries: jest.fn(() => new Map([['key', { timestamp: Date.now() - 31*60*1000 }]])), delete: jest.fn() };
+      manager.cache = mockCache as any;
+      (manager.cache as any).evictTTL(30*60*1000);
+      expect(mockCache.delete).toHaveBeenCalledWith('key');
+    });
+
+    describe('circuit breaker', () => {
+      it('should throw if circuit open', async () => {
+        manager.circuitOpen = true;
+        await expect(manager.consensusGenerate('circuit open')).rejects.toThrow('Circuit breaker is open');
+      });
+
+      it('should open circuit after >3 failures and reset after 5s', async () => {
+        // Simulate failures in consensus
+        manager.providers.forEach(p => p.generate.mockRejectedValue(new Error('fail')));
+        }
+        expect(manager.circuitOpen).toBe(true);
+        // Note: setTimeout in class is fire-and-forget, mock or test indirectly
+        // For test, manually reset after wait or mock timer
+        manager.failedCount = 4;
+        manager.circuitOpen = true;
+        jest.advanceTimersByTime(5000);
+        expect(manager.circuitOpen).toBe(false);
+        expect(manager.failedCount).toBe(0);
+      }, 10000);
+    });
+
+    describe('20 code review consensus prompts', () => {
+      const codeReviewPrompts = [
+        'Review this function for bugs',
+        'Optimize this algorithm',
+        // ... add 18 more similar prompts
+        'Test edge cases in PR',
+        'Refactor for SOLID',
+      ].concat(Array(15).fill('Code review prompt').map((p, i) => p + i));
+
+      codeReviewPrompts.forEach(async (prompt, idx) => {
+        it(`should reach consensus on code review prompt ${idx + 1}`, async () => {
+          manager.providers.slice(0,3).forEach((p, i) => {
+            p.generate.mockResolvedValue({ text: 'Approved', confidence: 0.8 + i * 0.05 });
+          });
+          (math.dot as jest.Mock).mockReturnValue(0.8 * 1536);
+          (math.norm as jest.Mock).mockReturnValue(Math.sqrt(0.8 * 1536));
+          const result = await manager.consensusGenerate(prompt);
+          expect(result.aggregateVote).toBeGreaterThan(0.7);
+          expect(result.text).toBe('Approved');
+        });
+      });
+    });
+  });
+
+    it('should generate for any non-empty string prompt', () => {
+      fc.assert(
+        fc.property(fc.string({ minLength: 1, maxLength: 1000 }), async (prompt) => {
+          // Mock success for all
+          manager.providers.forEach(p => p.generate.mockResolvedValue({ text: 'response', confidence: 0.8 }));
+          const result = await manager.consensusGenerate(prompt);
+          expect(result).toHaveProperty('text');
+          expect(result.confidence).toBeGreaterThan(0);
+        }),
+        { numRuns: 50 }
+      );
+    });
+  });
+
+  describe('extension and webview integration', () => {
+    it('should register llmPanel command in activate', () => {
+      const mockRegisterCommand = vscode.commands.registerCommand as jest.Mock;
+      mockRegisterCommand.mockReturnValue({ dispose: jest.fn() });
+      activate(mockContext);
+      expect(mockRegisterCommand).toHaveBeenCalledWith('astraforge.llmPanel', expect.any(Function));
+      expect(EnvLoader.loadSecrets).toHaveBeenCalled();
+    });
+
+    it('should create webview panel and handle generate message', async () => {
+      const mockPanel = {
+        webview: {
+          html: '',
+          postMessage: jest.fn(),
+          onDidReceiveMessage: jest.fn(() => ({ dispose: jest.fn() })),
+        },
+        reveal: jest.fn(),
+        onDidDispose: jest.fn(() => ({ dispose: jest.fn() })),
+      };
+      const mockCreateWebviewPanel = vscode.window.createWebviewPanel as jest.Mock;
+      mockCreateWebviewPanel.mockReturnValue(mockPanel as any);
+      const mockReadFileSync = fs.readFileSync as jest.Mock;
+      const mockExistsSync = fs.existsSync as jest.Mock;
+      mockExistsSync.mockReturnValue(true);
+
+        mockRegisterCommand.mock.calls[0][1];
+      await commandFn();
+
+      expect(mockCreateWebviewPanel).toHaveBeenCalledWith(
+        'astraforge.llmPanel',
+        'LLM Consensus Panel',
+        expect.any(Object),
+        { enableScripts: true, retainContextWhenHidden: true }
+      );
+
+      // Test message handling
+      const mockOnDidReceive = mockPanel.webview.onDidReceiveMessage;
+      const mockListener = jest.fn();
+      mockOnDidReceive.mockReturnValue(mockListener);
+      LLMManager.consensusGenerate.mockResolvedValue({ text: 'result', confidence: 0.8, sources: [], aggregateVote: 0.8 });
+      const msg = { command: 'generate', prompt: 'test prompt' };
+      await mockListener(msg);
+      expect(LLMManager.consensusGenerate).toHaveBeenCalledWith('test prompt');
+      expect(mockPanel.webview.postMessage).toHaveBeenCalledWith({
+        command: 'result',
+        result: { text: 'result', confidence: 0.8, sources: [], aggregateVote: 0.8 },
+      });
+    });
+
+    it('should handle error in generate', async () => {
+      // Similar setup
+      const mockPanel = { webview: { postMessage: jest.fn() } } as any;
+      LLMManager.consensusGenerate.mockRejectedValue(new Error('API error'));
+      const msg = { command: 'generate', prompt: 'fail' };
+      await mockListener(msg);
+      expect(mockPanel.webview.postMessage).toHaveBeenCalledWith({
+        command: 'error',
+        error: 'API error',
+      });
+    });
+
+    it('should reuse existing panel', () => {
+      // Mock panel exists
+      const commandFn = mockRegisterCommand.mock.calls[0][1];
+      await commandFn();
+      expect(vscode.window.createWebviewPanel).not.toHaveBeenCalled();
+    });
+  });

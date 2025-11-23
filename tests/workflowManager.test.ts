@@ -94,7 +94,7 @@ describe('WorkflowManager', () => {
     it('should start workflow with project idea', async () => {
       const testIdea = 'Build a todo app';
 
-      await workflowManager.startWorkflow(testIdea);
+      await workflowManager.runWorkflow(testIdea);
 
       expect(mockLLM.conference).toHaveBeenCalled();
       expect(mockVector.addEmbedding).toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe('WorkflowManager', () => {
     it('should handle "letPanelDecide" option', async () => {
       const testIdea = 'Build a todo app';
 
-      await workflowManager.startWorkflow(testIdea, 'letPanelDecide');
+      await workflowManager.runWorkflow(testIdea, 'letPanelDecide');
 
       // Should call conference to refine the idea
       expect(mockLLM.conference).toHaveBeenCalledWith(
@@ -125,7 +125,7 @@ describe('WorkflowManager', () => {
       jest.spyOn(workflowManager as any, 'identifyBehaviorPatterns').mockReturnValue([]);
       jest.spyOn(workflowManager as any, 'categorizeProjectType').mockReturnValue('web');
 
-      await workflowManager.startWorkflow(testIdea);
+      await workflowManager.runWorkflow(testIdea);
       workflowManager.proceedToNextPhase();
 
       expect(mockVector.getContextualInsights).toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe('WorkflowManager', () => {
     });
 
     it('should retrieve relevant context from vector DB', async () => {
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(mockVector.getEmbedding).toHaveBeenCalledWith(
         expect.stringContaining('Planning for Test project')
@@ -155,7 +155,7 @@ describe('WorkflowManager', () => {
     });
 
     it('should generate enhanced prompts with context', async () => {
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(mockLLM.conference).toHaveBeenCalledWith(
         expect.stringContaining('Discuss project')
@@ -163,7 +163,7 @@ describe('WorkflowManager', () => {
     });
 
     it('should write phase output to organized files', async () => {
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       // These may not be called if workflow doesn't complete phases
       // expect(vscode.workspace.fs.createDirectory).toHaveBeenCalled();
@@ -176,13 +176,13 @@ describe('WorkflowManager', () => {
     });
 
     it('should commit changes with detailed messages', async () => {
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(mockGit.commit).toHaveBeenCalledWith(expect.stringContaining('Planning complete'));
     });
 
     it('should store phase context in vector DB', async () => {
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(mockVector.addEmbedding).toHaveBeenCalledWith(
         expect.stringContaining('phase_'),
@@ -206,7 +206,7 @@ describe('WorkflowManager', () => {
     it('should handle "Apply suggestions" user choice', async () => {
       (vscode.window.showQuickPick as jest.Mock).mockResolvedValue('Apply suggestions');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(mockLLM.conference).toHaveBeenCalledWith(
         expect.stringContaining('Apply these suggestions')
@@ -217,7 +217,7 @@ describe('WorkflowManager', () => {
       (vscode.window.showQuickPick as jest.Mock).mockResolvedValue('Request modifications');
       (vscode.window.showInputBox as jest.Mock).mockResolvedValue('Make it better');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(vscode.window.showInputBox).toHaveBeenCalled();
       expect(mockLLM.conference).toHaveBeenCalledWith(
@@ -228,7 +228,7 @@ describe('WorkflowManager', () => {
     it('should handle "Get more details" user choice', async () => {
       (vscode.window.showQuickPick as jest.Mock).mockResolvedValue('Get more details');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(mockLLM.queryLLM).toHaveBeenCalledWith(
         0,
@@ -242,7 +242,7 @@ describe('WorkflowManager', () => {
       mockLLM.conference.mockRejectedValue(new Error('LLM Error'));
       (vscode.window.showErrorMessage as jest.Mock).mockResolvedValue('Retry phase');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
         expect.stringContaining('Planning encountered an error'),
@@ -256,7 +256,7 @@ describe('WorkflowManager', () => {
       mockLLM.conference.mockRejectedValue(new Error('LLM Error'));
       (vscode.window.showErrorMessage as jest.Mock).mockResolvedValue('Skip phase');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       // Should proceed to next phase
       expect(vscode.window.showErrorMessage).toHaveBeenCalled();
@@ -266,7 +266,7 @@ describe('WorkflowManager', () => {
       mockLLM.conference.mockRejectedValue(new Error('LLM Error'));
       (vscode.window.showErrorMessage as jest.Mock).mockResolvedValue('Abort workflow');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(vscode.window.showErrorMessage).toHaveBeenCalledWith('Workflow aborted by user');
     });
@@ -338,7 +338,7 @@ describe('WorkflowManager', () => {
           .mockReturnValue({ totalStates: 5, totalActions: 10, explorationRate: 0.05 }),
       };
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(manager.workflowRL.getBestAction).toHaveBeenCalled();
     });
@@ -356,7 +356,7 @@ describe('WorkflowManager', () => {
 
       (vscode.window.showQuickPick as jest.Mock).mockResolvedValue('Proceed as planned');
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(manager.workflowRL.updateQValue).toHaveBeenCalled();
       expect(manager.workflowRL.calculateReward).toHaveBeenCalled();
@@ -370,7 +370,7 @@ describe('WorkflowManager', () => {
         broadcastToWorkspace: jest.fn(),
       };
 
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       expect(manager.collaborationServer.broadcastToWorkspace).toHaveBeenCalledWith(
         expect.any(String),
@@ -404,7 +404,7 @@ describe('WorkflowManager', () => {
 
   describe('Metrics Tracking', () => {
     it('should track workflow metrics accurately', async () => {
-      await workflowManager.startWorkflow('Test project');
+      await workflowManager.runWorkflow('Test project');
 
       const manager = workflowManager as any;
       expect(manager.metrics.startTime).toBeDefined();
