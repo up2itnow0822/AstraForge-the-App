@@ -47,7 +47,7 @@ export class LocalOrchestrationEngine extends EventEmitter {
          return this.runDebateTask(task);
       }
       // ... normal execution logic fallback ...
-      return this.runStandardTask(task);
+      const res = await this.runStandardTask(task); this.results.push({ taskId: task.id, agentId: res.agentId, status: "completed", result: res });
     });
 
     await Promise.allSettled(promises);
