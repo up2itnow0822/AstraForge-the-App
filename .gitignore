@@ -54,3 +54,4 @@ dist/
 release/
 dist/
 node_modules/
+astra_data/
