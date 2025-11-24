@@ -123,3 +123,39 @@ To rebuild the application from source:
 npm install
 npm run dist
 ```
+
+## 🐳 Docker Support
+
+AstraForge can run in a headless Docker environment using the Web Adaptor.
+
+### Build & Run
+```bash
+docker build -t astraforge-web .
+docker run -p 3000:3000 -e OPENAI_API_KEY=your_key_here astraforge-web
+```
+Open specific in browser: `http://localhost:3000`
+
+## ⚙️ Settings & Configuration
+*   **Desktop:** Click the Settings (Gear) icon in the sidebar to manage API Keys.
+*   **Docker:** Pass keys as ENV variables or configure via the UI (stored in ephemeral session).
+
+## Credits
+This architectural pattern of multi-agent orchestration and providing a direct settings UI is inspired by the **agent-zero** framework.
+
+## 🐳 Docker Support
+
+AstraForge can be run in a containerized web-server mode using Docker. This allows for headless deployment or cloud hosting.
+
+### Build & Run
+```bash
+# Build the image
+docker build -t astraforge-ide .
+
+# Run the container (Access at http://localhost:3000)
+docker run -p 3000:3000 -e OPENAI_API_KEY="your-key" astraforge-ide
+```
+
+## ⚖️ Credits & Attribution
+
+*   **Agent Architecture**: Inspired by the Multi-Agent framework patterns.
+*   **Settings UI**: The settings interface and structural concepts are adapted from the **[agent-zero](https://github.com/agent0ai/agent-zero)** project. We acknowledge their innovation in agentic UI design.

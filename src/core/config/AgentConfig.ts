@@ -1,3 +1,7 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+
 export interface AgentDefinition {
   id: string;
   name: string;
@@ -37,3 +41,34 @@ export const AGENT_ROSTER: AgentDefinition[] = [
     systemPrompt: 'You are Cipher, a Principal SDE. Obsess over clean code, types, and performance. Be brief.'
   }
 ];
+
+export class AgentConfig {
+  private static configPath = path.join(process.cwd(), '.env');
+
+  static initializeTokens() {
+    dotenv.config();
+  }
+
+  static getAgents(): AgentDefinition[] {
+    return AGENT_ROSTER;
+  }
+
+  static getApiKey(provider: string): string | undefined {
+    const key = provider.toUpperCase() + '_API_KEY';
+    return process.env[key];
+  }
+
+  static setApiKey(provider: string, value: string) {
+    const key = provider.toUpperCase() + '_API_KEY';
+    process.env[key] = value;
+    
+    // In a real app, we would write this to a secure file.
+    // Here we will just append to .env for persistence in local dev.
+    const envLine = `\n${key}=${value}`;
+    try {
+        fs.appendFileSync(this.configPath, envLine);
+    } catch (e) {
+        // Silent fail in browser env
+    }
+  }
+}
