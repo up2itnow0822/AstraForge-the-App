@@ -15,4 +15,12 @@ RUN npm ci --only=production
 
 EXPOSE 3000
 ENV PORT=3000
+
+# SECURITY: Set this token in production!
+# If not set, the server will rely strictly on network-level access control with no token auth.
+ENV ASTRA_SERVER_TOKEN=""
+
+# Default CORS policy: strict same-origin. Override for cross-domain access.
+ENV CORS_ORIGIN=""
+
 CMD ["node", "dist/server/main/server/index.js"]
