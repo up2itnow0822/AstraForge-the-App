@@ -13,6 +13,11 @@ export interface DecisionAlternative {
 export class QuantumDecisionSystem {
     private logger: Logger;
 
+    /**
+     *
+     * @param metaLearning
+     * @param emergentBehavior
+     */
     constructor(
         private metaLearning: MetaLearningSystem,
         private emergentBehavior: EmergentBehaviorSystem
@@ -20,12 +25,21 @@ export class QuantumDecisionSystem {
         this.logger = new Logger('QuantumDecisionSystem');
     }
 
+    /**
+     *
+     * @param options
+     * @param context
+     */
     public async makeDecision(options: string[], context: any): Promise<string> {
         this.logger.info(`Making quantum decision from ${options.length} options`);
         const idx = Math.floor(Math.random() * options.length);
         return options[idx];
     }
 
+    /**
+     *
+     * @param probabilities
+     */
     public async collapseState(probabilities: number[]): Promise<number> {
         this.logger.info('Collapsing quantum state');
         let sum = 0;

@@ -21,10 +21,17 @@ export interface WorkflowExecution {
 export class WorkflowManager extends EventEmitter {
     private workflows: Map<string, Workflow> = new Map();
 
+    /**
+     *
+     */
     constructor() {
         super();
     }
 
+    /**
+     *
+     * @param id
+     */
     async executeWorkflow(id: string): Promise<void> {
         const workflow = this.workflows.get(id);
         if (!workflow) {
@@ -37,11 +44,19 @@ export class WorkflowManager extends EventEmitter {
         this.emit('workflowCompleted', id);
     }
     
+    /**
+     *
+     * @param spec
+     */
     async runWorkflow(spec: string): Promise<void> {
         // implementation for runWorkflow if needed by other tests
          this.emit('workflowStarted', spec);
     }
 
+    /**
+     *
+     * @param workflow
+     */
     registerWorkflow(workflow: Workflow): void {
         this.workflows.set(workflow.id, workflow);
     }

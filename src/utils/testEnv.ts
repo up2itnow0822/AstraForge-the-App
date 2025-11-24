@@ -5,6 +5,9 @@ export const testEnv = {
   coverageThreshold: 85
 };
 
+/**
+ *
+ */
 export function setupTestEnvironment(): void {
   process.env.NODE_ENV = 'test';
   process.env.ENABLE_MOCKS = 'true';

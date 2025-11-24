@@ -17,6 +17,10 @@ export interface TestLoggerConfig {
 export class TestLogger extends EventEmitter {
     private logFile: string;
 
+    /**
+     *
+     * @param config
+     */
     constructor(private config: TestLoggerConfig) {
         super();
         if (!existsSync(config.logDir)) {
@@ -25,6 +29,12 @@ export class TestLogger extends EventEmitter {
         this.logFile = join(config.logDir, 'test.log');
     }
 
+    /**
+     *
+     * @param message
+     * @param level
+     * @param context
+     */
     log(message: string, level: 'INFO' | 'WARN' | 'ERROR' = 'INFO', context?: any): void {
         const entry: LogEntry = {
             timestamp: new Date(),

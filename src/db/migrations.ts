@@ -19,12 +19,24 @@ export class MigrationManager {
     lastApplied: 0
   };
 
+  /**
+   *
+   * @param dbPath
+   */
   constructor(private dbPath: string = './migrations') {}
 
+  /**
+   *
+   * @param migration
+   */
   registerMigration(migration: Migration): void {
     this.migrations.set(migration.version, migration);
   }
 
+  /**
+   *
+   * @param targetVersion
+   */
   async migrate(targetVersion?: string): Promise<{ success: boolean; applied: string[]; errors: string[] }> {
     const target = targetVersion || this.getLatestVersion();
     const toApply = this.getMigrationsToApply(target);
@@ -52,12 +64,19 @@ export class MigrationManager {
     return result;
   }
 
+  /**
+   *
+   */
   private getLatestVersion(): string {
     const versions = Array.from(this.migrations.keys());
     if (versions.length === 0) return '0.0.0';
     return versions.sort().pop() || '0.0.0';
   }
 
+  /**
+   *
+   * @param target
+   */
   private getMigrationsToApply(target: string): Migration[] {
     const applied = new Set(this.state.appliedMigrations);
     const available = Array.from(this.migrations.values())
@@ -68,6 +87,11 @@ export class MigrationManager {
     return available;
   }
 
+  /**
+   *
+   * @param a
+   * @param b
+   */
   private versionCompare(a: string, b: string): number {
     const aParts = a.split('.').map(Number);
     const bParts = b.split('.').map(Number);
@@ -83,12 +107,20 @@ export class MigrationManager {
     return 0;
   }
 
+  /**
+   *
+   * @param version
+   */
   private markApplied(version: string): void {
     this.state.appliedMigrations.push(version);
     this.state.currentVersion = version;
     this.state.lastApplied = Date.now();
   }
 
+  /**
+   *
+   * @param targetVersion
+   */
   async rollback(targetVersion: string): Promise<{ success: boolean; rolledBack: string[]; errors: string[] }> {
     const toRollback = this.getMigrationsToRollback(targetVersion);
 
@@ -115,6 +147,10 @@ export class MigrationManager {
     return result;
   }
 
+  /**
+   *
+   * @param target
+   */
   private getMigrationsToRollback(target: string): Migration[] {
     const applied = [...this.state.appliedMigrations].reverse();
     const toRollback: Migration[] = [];
@@ -131,6 +167,10 @@ export class MigrationManager {
     return toRollback;
   }
 
+  /**
+   *
+   * @param version
+   */
   private markRolledBack(version: string): void {
     const index = this.state.appliedMigrations.indexOf(version);
     if (index > -1) {

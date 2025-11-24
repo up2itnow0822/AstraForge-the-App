@@ -24,12 +24,20 @@ export class VotingSystem extends EventEmitter {
     private proposals: Map<string, VotingProposal> = new Map();
     private votes: Map<string, Vote[]> = new Map();
 
+    /**
+     *
+     * @param proposal
+     */
     async propose(proposal: VotingProposal): Promise<void> {
         this.proposals.set(proposal.id, proposal);
         this.votes.set(proposal.id, []);
         this.emit('proposalCreated', proposal);
     }
 
+    /**
+     *
+     * @param vote
+     */
     async vote(vote: Vote): Promise<void> {
         if (!this.proposals.has(vote.proposalId)) {
             throw new Error('Proposal not found');
@@ -40,6 +48,10 @@ export class VotingSystem extends EventEmitter {
         this.emit('voteCast', vote);
     }
 
+    /**
+     *
+     * @param proposalId
+     */
     async getResult(proposalId: string): Promise<VotingResult> {
         if (!this.proposals.has(proposalId)) {
             throw new Error('Proposal not found');

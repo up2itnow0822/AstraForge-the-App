@@ -426,6 +426,11 @@ describe('Quantum Functions Property-Based Tests', () => {
   });
 
   // Helper functions for property testing
+  /**
+   *
+   * @param state1
+   * @param state2
+   */
   function calculateFidelity(state1: any, state2: any): number {
     if (state1.amplitudes.length !== state2.amplitudes.length) return 0;
 
@@ -437,6 +442,10 @@ describe('Quantum Functions Property-Based Tests', () => {
     return Math.abs(fidelity);
   }
 
+  /**
+   *
+   * @param matrix
+   */
   function checkUnitarity(matrix: number[][]): boolean {
     const n = matrix.length;
     if (n !== matrix[0].length) return false;
@@ -456,6 +465,11 @@ describe('Quantum Functions Property-Based Tests', () => {
     return true;
   }
 
+  /**
+   *
+   * @param matrix
+   * @param vector
+   */
   function applyMatrix(matrix: number[][], vector: number[]): number[] {
     const result = new Array(vector.length).fill(0);
 

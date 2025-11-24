@@ -677,6 +677,11 @@ describe('Advanced Quantum Testing Suite', () => {
   });
 
   // Helper functions for advanced quantum testing
+  /**
+   *
+   * @param problemType
+   * @param problemSize
+   */
   function simulateClassicalApproach(problemType: string, problemSize: number): number {
     switch (problemType) {
       case 'optimization':
@@ -692,6 +697,11 @@ describe('Advanced Quantum Testing Suite', () => {
     }
   }
 
+  /**
+   *
+   * @param amplitudes
+   * @param noiseLevel
+   */
   function addNoiseToState(amplitudes: number[], noiseLevel: number): any {
     const noisyAmplitudes = amplitudes.map(amp =>
       amp + (Math.random() - 0.5) * 2 * noiseLevel
@@ -705,6 +715,10 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   * @param state
+   */
   function applyErrorCorrection(state: any): any {
     // Simple error correction simulation
     const correctedAmplitudes = state.amplitudes.map(amp =>
@@ -719,11 +733,19 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   * @param amplitudes
+   */
   function calculateStateFidelity(amplitudes: number[]): number {
     const norm = Math.sqrt(amplitudes.reduce((sum, amp) => sum + amp * amp, 0));
     return Math.min(1, norm);
   }
 
+  /**
+   *
+   * @param count
+   */
   function generateErrorScenarios(count: number): any[] {
     const scenarios = [];
 
@@ -738,6 +760,10 @@ describe('Advanced Quantum Testing Suite', () => {
     return scenarios;
   }
 
+  /**
+   *
+   * @param stressLevel
+   */
   function generateStressScenarios(stressLevel: number): any[] {
     const scenarios = [];
 
@@ -760,6 +786,10 @@ describe('Advanced Quantum Testing Suite', () => {
     return scenarios;
   }
 
+  /**
+   *
+   * @param amplitudes
+   */
   function createQuantumState(amplitudes: number[]): any {
     return {
       amplitudes,
@@ -769,6 +799,11 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   * @param state
+   * @param angle
+   */
   function evolveQuantumState(state: any, angle: number): any {
     const evolvedAmplitudes = state.amplitudes.map((amp: number, i: number) =>
       amp * Math.cos(angle + i * 0.1)
@@ -782,6 +817,10 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   * @param state
+   */
   function verifyQuantumStateConsistency(state: any): any {
     const issues: string[] = [];
 
@@ -810,6 +849,9 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   */
   function createInitialQuantumState(): any {
     return {
       amplitudes: [0.6, 0.8],
@@ -819,6 +861,9 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   */
   function generateQuantumTransition(): any {
     return {
       type: ['rotation', 'phase-shift', 'entanglement-gate', 'measurement'][Math.floor(Math.random() * 4)],
@@ -827,6 +872,11 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   * @param state
+   * @param transition
+   */
   function applyQuantumTransition(state: any, transition: any): any {
     const newAmplitudes = state.amplitudes.map((amp: number, i: number) => {
       if (i === transition.target) {
@@ -852,6 +902,12 @@ describe('Advanced Quantum Testing Suite', () => {
     };
   }
 
+  /**
+   *
+   * @param fromState
+   * @param toState
+   * @param transition
+   */
   function validateQuantumTransition(fromState: any, toState: any, transition: any): any {
     const preservedProperties: string[] = [];
 

@@ -19,6 +19,10 @@ export class LLMManager {
   private cacheEnabled: boolean = false;
   private consensusThreshold: number = 0.7;
 
+  /**
+   *
+   * @param config
+   */
   constructor(config: LLMManagerConfig) {
     if (config.providers) {
       config.providers.forEach(provider => {
@@ -29,18 +33,33 @@ export class LLMManager {
     this.consensusThreshold = config.consensusThreshold || 0.7;
   }
 
+  /**
+   *
+   * @param provider
+   */
   addProvider(provider: BaseLLMProvider): void {
     this.providers.set(provider.name, provider);
   }
 
+  /**
+   *
+   * @param name
+   */
   removeProvider(name: string): void {
     this.providers.delete(name);
   }
 
+  /**
+   *
+   */
   getProviderCount(): number {
     return this.providers.size;
   }
 
+  /**
+   *
+   * @param prompt
+   */
   async generateConsensus(prompt: string): Promise<ConsensusResult> {
     const providerArray = Array.from(this.providers.values());
     if (providerArray.length === 0) {

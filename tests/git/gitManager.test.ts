@@ -137,7 +137,6 @@ describe('GitManager', () => {
       const operations = [
         gitManager.getStatus(),
         gitManager.getDiff(),
-        gitManager./* REMOVED: non-existent method */.('Concurrent test')
       ];
 
       // Should not throw errors

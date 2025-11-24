@@ -15,8 +15,16 @@ export interface TestResult {
 }
 
 export class APITester {
+    /**
+     *
+     * @param lanceDB
+     */
     constructor(private lanceDB: LanceDBClient) {}
 
+    /**
+     *
+     * @param config
+     */
     async testEndpoint(config: EndpointConfig): Promise<TestResult> {
         // Simulation of endpoint testing
         const success = true;
@@ -28,10 +36,18 @@ export class APITester {
         };
     }
 
+    /**
+     *
+     * @param response
+     */
     validateResponse(response: any): boolean {
         return response !== null && response !== undefined;
     }
 
+    /**
+     *
+     * @param result
+     */
     async trackPerformance(result: TestResult): Promise<void> {
         await this.lanceDB.insert([result]);
     }

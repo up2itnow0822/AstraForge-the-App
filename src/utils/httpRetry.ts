@@ -16,6 +16,11 @@ const defaultOptions: HttpRetryOptions = {
   timeout: 10000
 };
 
+/**
+ *
+ * @param url
+ * @param options
+ */
 export async function fetchWithRetry(
   url: string,
   options: RequestInit & { retries?: HttpRetryOptions } = {}

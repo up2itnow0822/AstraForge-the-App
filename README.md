@@ -99,3 +99,27 @@ code --install-extension astraforge-1.0.0.vsix
 - **Sidebar Integration**: Use AstraForge panel for ongoing prompts like "Optimize this for security".
 - **Monitoring**: `AstraForge: View KPIs` to see session metrics.
 For advanced configuration, see [./docs/](./docs/). Contributions welcome – see [CONTRIBUTING.md](./CONTRIBUTING.md).
+## 📦 installation & Release
+
+### Build Artifacts
+The application has been packaged for production. You can find the installers in the `release/` directory.
+
+### How to Install
+
+**Linux**
+1. Locate `release/AstraForge IDE-0.5.0-arm64.AppImage`
+2. Make it executable: `chmod +x AstraForge\ IDE-0.5.0-arm64.AppImage`
+3. Run: `./AstraForge\ IDE-0.5.0-arm64.AppImage`
+
+**Windows (NSIS)**
+* Run the `Setup.exe` generated in the release folder.
+
+**macOS (DMG)**
+* Open the `.dmg` file and drag the application to your generic Applications folder.
+
+### Development Build
+To rebuild the application from source:
+```bash
+npm install
+npm run dist
+```

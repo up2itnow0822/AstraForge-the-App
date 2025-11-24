@@ -1,40 +1,46 @@
-import { Agent, AgentConfig, AgentTask, AgentResult } from '../Agent';
+import { Agent, AgentTask, AgentResult, Vote } from '../Agent';
 
-class ConcreteAgent extends Agent {
-    async executeTask(task: AgentTask): Promise<AgentResult> {
-         const result: AgentResult = { agentId: this.id, status: 'completed', output: task.input };
-         await this.storeResult(result);
-         return result;
-    }
+class ConcreteAgent implements Agent {
+  constructor(public id: string, public name: string, public role: string) {}
+
+  async executeTask(task: AgentTask): Promise<AgentResult> {
+    const result: AgentResult = { agentId: this.id, status: 'completed', output: task.input };
+    return result;
+  }
+
+  async processMessage(message: string): Promise<string> {
+     return 'ack';
+  }
+
+  async castVote(proposal: string): Promise<Vote> {
+     return {
+         agentId: this.id,
+         proposalId: 'test',
+         verdict: 'approve',
+         reasoning: 'test',
+         weight: 1
+     };
+  }
 }
 
 describe('Agent', () => {
-    it('should initialize properties', () => {
-        const config: AgentConfig = {
-            id: 'a1',
-            name: 'A1',
-            llmProvider: {} as any,
-            lanceDB: { insert: jest.fn() } as any
-        };
-        const agent = new ConcreteAgent(config);
-        expect(agent.id).toBe('a1');
-        expect(agent.name).toBe('A1');
-    });
+  it('should initialize correctly', () => {
+    const agent = new ConcreteAgent('a1', 'A1', 'Worker');
+    expect(agent.id).toBe('a1');
+    expect(agent.name).toBe('A1');
+  });
 
-    it('should store result using storeResult', async () => {
-        const insertMock = jest.fn().mockResolvedValue(undefined);
-        const config: AgentConfig = {
-            id: 'a1',
-            name: 'A1',
-            llmProvider: {} as any,
-            lanceDB: { insert: insertMock } as any
-        };
-        const agent = new ConcreteAgent(config);
-        
-        const task: AgentTask = { id: 't1', type: 'test', input: 'data' };
-        await agent.executeTask(task);
-        
-        expect(insertMock).toHaveBeenCalled();
-        expect(insertMock.mock.calls[0][0][0].agentId).toBe('a1');
-    });
+  it('should execute task', async () => {
+    const agent = new ConcreteAgent('a1', 'A1', 'Worker');
+    const task: AgentTask = {
+        id: 't1',
+        type: 'test',
+        description: 'desc',
+        priority: 1,
+        input: 'data'
+    };
+    const result = await agent.executeTask(task);
+    expect(result.status).toBe('completed');
+    expect(result.output).toBe('data');
+  });
 });

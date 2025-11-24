@@ -10,13 +10,25 @@ export class MetadataDB {
   private metadata: Map<string, MetadataRecord> = new Map();
   private schemaVersion = '1.0.0';
 
+  /**
+   *
+   * @param dbPath
+   */
   constructor(private dbPath: string = './metadata') {}
 
+  /**
+   *
+   */
   async init(): Promise<void> {
     // Real implementation would load from disk/db
     console.log(`Initializing metadata database at ${this.dbPath}`);
   }
 
+  /**
+   *
+   * @param id
+   * @param data
+   */
   async insert(id: string, data: any): Promise<boolean> {
     const existing = this.metadata.get(id);
     if (existing) return false;
@@ -33,6 +45,11 @@ export class MetadataDB {
     return true;
   }
 
+  /**
+   *
+   * @param id
+   * @param data
+   */
   async update(id: string, data: any): Promise<boolean> {
     const existing = this.metadata.get(id);
     if (!existing) return false;
@@ -43,15 +60,27 @@ export class MetadataDB {
     return true;
   }
 
+  /**
+   *
+   * @param id
+   */
   async get(id: string): Promise<MetadataRecord | undefined> {
     const record = this.metadata.get(id);
     return record ? this.cloneData(record) : undefined;
   }
 
+  /**
+   *
+   * @param id
+   */
   async delete(id: string): Promise<boolean> {
     return this.metadata.delete(id);
   }
 
+  /**
+   *
+   * @param criteria
+   */
   async query(criteria: any): Promise<MetadataRecord[]> {
     const results: MetadataRecord[] = [];
 
@@ -64,6 +93,10 @@ export class MetadataDB {
     return results;
   }
 
+  /**
+   *
+   * @param records
+   */
   async batchInsert(records: Array<{ id: string; data: any }>): Promise<number> {
     let inserted = 0;
 
@@ -75,6 +108,11 @@ export class MetadataDB {
     return inserted;
   }
 
+  /**
+   *
+   * @param record
+   * @param criteria
+   */
   private matchesCriteria(record: MetadataRecord, criteria: any): boolean {
     for (const [key, value] of Object.entries(criteria)) {
       if (record.data[key] !== value) return false;
@@ -82,14 +120,25 @@ export class MetadataDB {
     return true;
   }
 
+  /**
+   *
+   * @param data
+   */
   private cloneData(data: any): any {
     return JSON.parse(JSON.stringify(data));
   }
 
+  /**
+   *
+   */
   getCount(): number {
     return this.metadata.size;
   }
 
+  /**
+   *
+   * @param id
+   */
   exists(id: string): boolean {
     return this.metadata.has(id);
   }

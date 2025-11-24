@@ -6,6 +6,11 @@ import { EmergentBehaviorSystem } from '../emergent-behavior/EmergentBehaviorSys
 export class InterAgentEvolutionSystem {
     private logger: Logger;
 
+    /**
+     *
+     * @param metaLearning
+     * @param emergentBehavior
+     */
     constructor(
         private metaLearning: MetaLearningSystem,
         private emergentBehavior: EmergentBehaviorSystem
@@ -13,6 +18,11 @@ export class InterAgentEvolutionSystem {
         this.logger = new Logger('InterAgentEvolutionSystem');
     }
 
+    /**
+     *
+     * @param agentId
+     * @param performanceScore
+     */
     public async evolveAgent(agentId: string, performanceScore: number): Promise<void> {
         this.logger.info(`Evolving agent ${agentId} with score ${performanceScore}`);
         if (performanceScore > 0.8) {
@@ -20,10 +30,19 @@ export class InterAgentEvolutionSystem {
         }
     }
 
+    /**
+     *
+     * @param agentId
+     */
     public async mutate(agentId: string): Promise<void> {
         this.logger.info(`Mutating agent ${agentId}`);
     }
 
+    /**
+     *
+     * @param agentA
+     * @param agentB
+     */
     public async crossOver(agentA: string, agentB: string): Promise<string> {
         this.logger.info(`Crossover between ${agentA} and ${agentB}`);
         return `offspring_${agentA}_${agentB}`;

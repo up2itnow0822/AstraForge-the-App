@@ -18,10 +18,19 @@ class ValidationContextImpl implements ValidationContext {
   errors: string[] = [];
   checked: Map<string, string[]> = new Map();
 
+  /**
+   *
+   * @param message
+   */
   addError(message: string): void {
     this.errors.push(message);
   }
 
+  /**
+   *
+   * @param type
+   * @param path
+   */
   setChecked(type: string, path: string): void {
     if (!this.checked.has(type)) {
       this.checked.set(type, []);
@@ -30,6 +39,10 @@ class ValidationContextImpl implements ValidationContext {
   }
 }
 
+/**
+ *
+ * @param filePath
+ */
 function readFileContent(filePath: string): string {
   try {
     return fs.readFileSync(filePath, 'utf-8');
@@ -38,12 +51,21 @@ function readFileContent(filePath: string): string {
   }
 }
 
+/**
+ *
+ * @param content
+ */
 function filterOutChecklistLines(content: string): string {
   const lines = content.split('\n');
   const filteredLines = lines.filter(line => !/^\s*-\s*\[[x\s]\]/.test(line));
   return filteredLines.join('\n');
 }
 
+/**
+ *
+ * @param ctx
+ * @param specPath
+ */
 function validateSpecFile(ctx: ValidationContextImpl, specPath: string): void {
   if (!fs.existsSync(specPath)) {
     ctx.addError(`specification files missing: ${specPath}`);
@@ -79,6 +101,11 @@ function validateSpecFile(ctx: ValidationContextImpl, specPath: string): void {
   }
 }
 
+/**
+ *
+ * @param ctx
+ * @param planPath
+ */
 function validateBuildPlan(ctx: ValidationContextImpl, planPath: string): void {
   if (!fs.existsSync(planPath)) {
     ctx.addError(`build plan files missing: ${planPath}`);
@@ -114,6 +141,10 @@ function validateBuildPlan(ctx: ValidationContextImpl, planPath: string): void {
   }
 }
 
+/**
+ *
+ * @param workspaceRoot
+ */
 export async function agentNexusBuildRunner(workspaceRoot?: string): Promise<AgentNexusBuildResult> {
   const rootDir = workspaceRoot || path.join(process.cwd(), 'specs');
 

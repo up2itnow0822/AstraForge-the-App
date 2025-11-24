@@ -1,44 +1,31 @@
-import { LanceDBClient } from './storage/LanceDBClient';
-import { LLMProvider } from '../llm/interfaces';
-
-export interface AgentConfig {
-  id: string;
-  name: string;
-  llmProvider: LLMProvider;
-  lanceDB: LanceDBClient;
-}
-
 export interface AgentTask {
   id: string;
   type: string;
+  description: string;
+  priority: number;
   input: any;
-  metadata?: Record<string, any>;
 }
 
 export interface AgentResult {
-  agentId: string;
-  status: 'completed' | 'failed' | 'pending';
-  output: any;
+  status: 'completed' | 'failed';
   error?: string;
+  agentId: string;
+  output: any;
 }
 
-export abstract class Agent {
-  public readonly id: string;
-  public readonly name: string;
-  protected llmProvider: LLMProvider;
-  protected lanceDB: LanceDBClient;
+export interface Vote {
+  agentId: string;
+  proposalId: string;
+  verdict: 'approve' | 'reject' | 'abstain';
+  reasoning: string;
+  weight: number;
+}
 
-  constructor(config: AgentConfig) {
-    this.id = config.id;
-    this.name = config.name;
-    this.llmProvider = config.llmProvider;
-    this.lanceDB = config.lanceDB;
-  }
-
-  abstract executeTask(task: AgentTask): Promise<AgentResult>;
-
-  protected async storeResult(result: AgentResult): Promise<void> {
-    // Store in LanceDB
-    await this.lanceDB.insert([result]);
-  }
+export interface Agent {
+  id: string;
+  name: string;
+  role: string;
+  executeTask(task: AgentTask): Promise<AgentResult>;
+  processMessage(message: string): Promise<string>; // For debate dialogue
+  castVote(proposal: string): Promise<Vote>;        // For consensus
 }

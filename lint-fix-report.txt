@@ -1,0 +1,1012 @@
+
+> astraforge-ide@0.5.0 lint
+> eslint src/**/*.ts tests/**/*.ts --fix
+
+
+/root/AstraForge_Real/src/agents/types.ts
+  6:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/src/automation/workflowManager.ts
+   7:36  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  11:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+  11:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+  12:1   warning  Missing JSDoc @param "workflow" description  jsdoc/require-param-description
+  12:1   warning  Missing JSDoc @param "workflow" type         jsdoc/require-param-type
+  14:44  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  18:5   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  20:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+  20:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+  22:30  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  26:5   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  28:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+  28:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+
+/root/AstraForge_Real/src/collaboration/CollaborativeSessionManager.ts
+  10:9   warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  20:37  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  32:1   warning  Missing JSDoc @param "sessionId" description      jsdoc/require-param-description
+  32:1   warning  Missing JSDoc @param "sessionId" type             jsdoc/require-param-type
+  33:1   warning  Missing JSDoc @param "config" description         jsdoc/require-param-description
+  33:1   warning  Missing JSDoc @param "config" type                jsdoc/require-param-type
+  50:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+  57:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+  59:1   warning  Missing JSDoc @param "message" description        jsdoc/require-param-description
+  59:1   warning  Missing JSDoc @param "message" type               jsdoc/require-param-type
+  61:26  warning  'message' is defined but never used               @typescript-eslint/no-unused-vars
+  71:1   warning  Missing JSDoc @param "participantId" description  jsdoc/require-param-description
+  71:1   warning  Missing JSDoc @param "participantId" type         jsdoc/require-param-type
+  72:1   warning  Missing JSDoc @param "config" description         jsdoc/require-param-description
+  72:1   warning  Missing JSDoc @param "config" type                jsdoc/require-param-type
+  80:1   warning  Missing JSDoc @param "participantId" description  jsdoc/require-param-description
+  80:1   warning  Missing JSDoc @param "participantId" type         jsdoc/require-param-type
+  86:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+
+/root/AstraForge_Real/src/collaboration/agentPanel.ts
+  14:1  warning  Missing JSDoc @param "agent" description    jsdoc/require-param-description
+  14:1  warning  Missing JSDoc @param "agent" type           jsdoc/require-param-type
+  23:1  warning  Missing JSDoc @param "agentId" description  jsdoc/require-param-description
+  23:1  warning  Missing JSDoc @param "agentId" type         jsdoc/require-param-type
+  24:1  warning  Missing JSDoc @param "status" description   jsdoc/require-param-description
+  24:1  warning  Missing JSDoc @param "status" type          jsdoc/require-param-type
+  34:5  warning  Missing JSDoc @returns declaration          jsdoc/require-returns
+  36:1  warning  Missing JSDoc @param "agentId" description  jsdoc/require-param-description
+  36:1  warning  Missing JSDoc @param "agentId" type         jsdoc/require-param-type
+  42:5  warning  Missing JSDoc @returns declaration          jsdoc/require-returns
+
+/root/AstraForge_Real/src/collaboration/types.ts
+   3:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/src/collaboration/vector-db-types.ts
+  1:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/src/collaboration/votingSystem.ts
+  29:1  warning  Missing JSDoc @param "proposal" description    jsdoc/require-param-description
+  29:1  warning  Missing JSDoc @param "proposal" type           jsdoc/require-param-type
+  39:1  warning  Missing JSDoc @param "vote" description        jsdoc/require-param-description
+  39:1  warning  Missing JSDoc @param "vote" type               jsdoc/require-param-type
+  51:5  warning  Missing JSDoc @returns declaration             jsdoc/require-returns
+  53:1  warning  Missing JSDoc @param "proposalId" description  jsdoc/require-param-description
+  53:1  warning  Missing JSDoc @param "proposalId" type         jsdoc/require-param-type
+
+/root/AstraForge_Real/src/core/Agent.ts
+  14:10  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  15:29  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  21:11  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  33:1   warning  Missing JSDoc @param "config" description  jsdoc/require-param-description
+  33:1   warning  Missing JSDoc @param "config" type         jsdoc/require-param-type
+  46:1   warning  Missing JSDoc @param "result" description  jsdoc/require-param-description
+  46:1   warning  Missing JSDoc @param "result" type         jsdoc/require-param-type
+
+/root/AstraForge_Real/src/db/metadataDB.ts
+    3:9   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   15:1   warning  Missing JSDoc @param "dbPath" description    jsdoc/require-param-description
+   15:1   warning  Missing JSDoc @param "dbPath" type           jsdoc/require-param-type
+   24:5   warning  Unexpected console statement                 no-console
+   27:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+   29:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+   29:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+   30:1   warning  Missing JSDoc @param "data" description      jsdoc/require-param-description
+   30:1   warning  Missing JSDoc @param "data" type             jsdoc/require-param-type
+   32:34  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   48:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+   50:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+   50:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+   51:1   warning  Missing JSDoc @param "data" description      jsdoc/require-param-description
+   51:1   warning  Missing JSDoc @param "data" type             jsdoc/require-param-type
+   53:34  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   63:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+   65:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+   65:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+   72:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+   74:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+   74:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+   80:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+   82:1   warning  Missing JSDoc @param "criteria" description  jsdoc/require-param-description
+   82:1   warning  Missing JSDoc @param "criteria" type         jsdoc/require-param-type
+   84:25  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   96:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+   98:1   warning  Missing JSDoc @param "records" description   jsdoc/require-param-description
+   98:1   warning  Missing JSDoc @param "records" type          jsdoc/require-param-type
+  100:56  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  111:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  113:1   warning  Missing JSDoc @param "record" description    jsdoc/require-param-description
+  113:1   warning  Missing JSDoc @param "record" type           jsdoc/require-param-type
+  114:1   warning  Missing JSDoc @param "criteria" description  jsdoc/require-param-description
+  114:1   warning  Missing JSDoc @param "criteria" type         jsdoc/require-param-type
+  116:61  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  123:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  125:1   warning  Missing JSDoc @param "data" description      jsdoc/require-param-description
+  125:1   warning  Missing JSDoc @param "data" type             jsdoc/require-param-type
+  127:27  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  127:33  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  131:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  138:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  140:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+  140:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+
+/root/AstraForge_Real/src/db/migrations.ts
+   24:1   warning  Missing JSDoc @param "dbPath" description         jsdoc/require-param-description
+   24:1   warning  Missing JSDoc @param "dbPath" type                jsdoc/require-param-type
+   30:1   warning  Missing JSDoc @param "migration" description      jsdoc/require-param-description
+   30:1   warning  Missing JSDoc @param "migration" type             jsdoc/require-param-type
+   36:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+   38:1   warning  Missing JSDoc @param "targetVersion" description  jsdoc/require-param-description
+   38:1   warning  Missing JSDoc @param "targetVersion" type         jsdoc/require-param-type
+   57:23  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+   67:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+   76:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+   78:1   warning  Missing JSDoc @param "target" description         jsdoc/require-param-description
+   78:1   warning  Missing JSDoc @param "target" type                jsdoc/require-param-type
+   90:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+   92:1   warning  Missing JSDoc @param "a" description              jsdoc/require-param-description
+   92:1   warning  Missing JSDoc @param "a" type                     jsdoc/require-param-type
+   93:1   warning  Missing JSDoc @param "b" description              jsdoc/require-param-description
+   93:1   warning  Missing JSDoc @param "b" type                     jsdoc/require-param-type
+  112:1   warning  Missing JSDoc @param "version" description        jsdoc/require-param-description
+  112:1   warning  Missing JSDoc @param "version" type               jsdoc/require-param-type
+  120:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+  122:1   warning  Missing JSDoc @param "targetVersion" description  jsdoc/require-param-description
+  122:1   warning  Missing JSDoc @param "targetVersion" type         jsdoc/require-param-type
+  140:23  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  150:3   warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+  152:1   warning  Missing JSDoc @param "target" description         jsdoc/require-param-description
+  152:1   warning  Missing JSDoc @param "target" type                jsdoc/require-param-type
+  172:1   warning  Missing JSDoc @param "version" description        jsdoc/require-param-description
+  172:1   warning  Missing JSDoc @param "version" type               jsdoc/require-param-type
+
+/root/AstraForge_Real/src/db/vectorDB.ts
+    5:27  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   15:1   warning  Missing JSDoc @param "storagePath" description  jsdoc/require-param-description
+   15:1   warning  Missing JSDoc @param "storagePath" type         jsdoc/require-param-type
+   41:1   warning  Missing JSDoc @param "document" description     jsdoc/require-param-description
+   41:1   warning  Missing JSDoc @param "document" type            jsdoc/require-param-type
+   51:1   warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+   53:1   warning  Missing JSDoc @param "embedding" description    jsdoc/require-param-description
+   53:1   warning  Missing JSDoc @param "embedding" type           jsdoc/require-param-type
+   54:1   warning  Missing JSDoc @param "limit" description        jsdoc/require-param-description
+   54:1   warning  Missing JSDoc @param "limit" type               jsdoc/require-param-type
+   73:1   warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+   75:1   warning  Missing JSDoc @param "a" description            jsdoc/require-param-description
+   75:1   warning  Missing JSDoc @param "a" type                   jsdoc/require-param-type
+   76:1   warning  Missing JSDoc @param "b" description            jsdoc/require-param-description
+   76:1   warning  Missing JSDoc @param "b" type                   jsdoc/require-param-type
+  102:1   warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  109:1   warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+
+/root/AstraForge_Real/src/emergent-behavior/EmergentBehaviorSystem.ts
+   1:13  warning  'vscode' is defined but never used               @typescript-eslint/no-unused-vars
+   7:35  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  11:1   warning  Missing JSDoc @param "metaLearning" description  jsdoc/require-param-description
+  11:1   warning  Missing JSDoc @param "metaLearning" type         jsdoc/require-param-type
+  19:1   warning  Missing JSDoc @param "agentId" description       jsdoc/require-param-description
+  19:1   warning  Missing JSDoc @param "agentId" type              jsdoc/require-param-type
+  20:1   warning  Missing JSDoc @param "actions" description       jsdoc/require-param-description
+  20:1   warning  Missing JSDoc @param "actions" type              jsdoc/require-param-type
+  22:60  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  31:1   warning  Missing JSDoc @param "history" description       jsdoc/require-param-description
+  31:1   warning  Missing JSDoc @param "history" type              jsdoc/require-param-type
+  33:42  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  44:1   warning  Missing JSDoc @param "patternName" description   jsdoc/require-param-description
+  44:1   warning  Missing JSDoc @param "patternName" type          jsdoc/require-param-type
+
+/root/AstraForge_Real/src/git/gitManager.ts
+   8:1   warning  Missing JSDoc @param "repoPath" description  jsdoc/require-param-description
+   8:1   warning  Missing JSDoc @param "repoPath" type         jsdoc/require-param-type
+  14:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  16:1   warning  Missing JSDoc @param "message" description   jsdoc/require-param-description
+  16:1   warning  Missing JSDoc @param "message" type          jsdoc/require-param-type
+  24:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  27:48  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  32:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  40:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  42:1   warning  Missing JSDoc @param "branch" description    jsdoc/require-param-description
+  42:1   warning  Missing JSDoc @param "branch" type           jsdoc/require-param-type
+  53:3   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  55:1   warning  Missing JSDoc @param "branch" description    jsdoc/require-param-description
+  55:1   warning  Missing JSDoc @param "branch" type           jsdoc/require-param-type
+
+/root/AstraForge_Real/src/git/pullRequestManager.ts
+  11:5  warning  Missing JSDoc @returns declaration        jsdoc/require-returns
+  13:1  warning  Missing JSDoc @param "title" description  jsdoc/require-param-description
+  13:1  warning  Missing JSDoc @param "title" type         jsdoc/require-param-type
+  14:1  warning  Missing JSDoc @param "body" description   jsdoc/require-param-description
+  14:1  warning  Missing JSDoc @param "body" type          jsdoc/require-param-type
+  15:1  warning  Missing JSDoc @param "head" description   jsdoc/require-param-description
+  15:1  warning  Missing JSDoc @param "head" type          jsdoc/require-param-type
+  16:1  warning  Missing JSDoc @param "base" description   jsdoc/require-param-description
+  16:1  warning  Missing JSDoc @param "base" type          jsdoc/require-param-type
+  30:5  warning  Missing JSDoc @returns declaration        jsdoc/require-returns
+  32:1  warning  Missing JSDoc @param "id" description     jsdoc/require-param-description
+  32:1  warning  Missing JSDoc @param "id" type            jsdoc/require-param-type
+
+/root/AstraForge_Real/src/inter-agent-evolution/InterAgentEvolutionSystem.ts
+   1:13  warning  'vscode' is defined but never used                   @typescript-eslint/no-unused-vars
+  11:1   warning  Missing JSDoc @param "metaLearning" description      jsdoc/require-param-description
+  11:1   warning  Missing JSDoc @param "metaLearning" type             jsdoc/require-param-type
+  12:1   warning  Missing JSDoc @param "emergentBehavior" description  jsdoc/require-param-description
+  12:1   warning  Missing JSDoc @param "emergentBehavior" type         jsdoc/require-param-type
+  23:1   warning  Missing JSDoc @param "agentId" description           jsdoc/require-param-description
+  23:1   warning  Missing JSDoc @param "agentId" type                  jsdoc/require-param-type
+  24:1   warning  Missing JSDoc @param "performanceScore" description  jsdoc/require-param-description
+  24:1   warning  Missing JSDoc @param "performanceScore" type         jsdoc/require-param-type
+  35:1   warning  Missing JSDoc @param "agentId" description           jsdoc/require-param-description
+  35:1   warning  Missing JSDoc @param "agentId" type                  jsdoc/require-param-type
+  41:5   warning  Missing JSDoc @returns declaration                   jsdoc/require-returns
+  43:1   warning  Missing JSDoc @param "agentA" description            jsdoc/require-param-description
+  43:1   warning  Missing JSDoc @param "agentA" type                   jsdoc/require-param-type
+  44:1   warning  Missing JSDoc @param "agentB" description            jsdoc/require-param-description
+  44:1   warning  Missing JSDoc @param "agentB" type                   jsdoc/require-param-type
+
+/root/AstraForge_Real/src/llm/interfaces.ts
+  2:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/src/llm/llmManager.ts
+  24:1  warning  Missing JSDoc @param "config" description    jsdoc/require-param-description
+  24:1  warning  Missing JSDoc @param "config" type           jsdoc/require-param-type
+  38:1  warning  Missing JSDoc @param "provider" description  jsdoc/require-param-description
+  38:1  warning  Missing JSDoc @param "provider" type         jsdoc/require-param-type
+  46:1  warning  Missing JSDoc @param "name" description      jsdoc/require-param-description
+  46:1  warning  Missing JSDoc @param "name" type             jsdoc/require-param-type
+  52:3  warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  59:3  warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  61:1  warning  Missing JSDoc @param "prompt" description    jsdoc/require-param-description
+  61:1  warning  Missing JSDoc @param "prompt" type           jsdoc/require-param-type
+
+/root/AstraForge_Real/src/meta-learning/MetaLearningSystem.ts
+   4:37  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   8:1   warning  Missing JSDoc @param "strategyId" description  jsdoc/require-param-description
+   8:1   warning  Missing JSDoc @param "strategyId" type         jsdoc/require-param-type
+   9:1   warning  Missing JSDoc @param "success" description     jsdoc/require-param-description
+   9:1   warning  Missing JSDoc @param "success" type            jsdoc/require-param-type
+  17:1   warning  Missing JSDoc @param "strategyId" description  jsdoc/require-param-description
+  17:1   warning  Missing JSDoc @param "strategyId" type         jsdoc/require-param-type
+
+/root/AstraForge_Real/src/providers/projectIgnition.ts
+   1:13  warning  'vscode' is defined but never used         @typescript-eslint/no-unused-vars
+  14:5   warning  Missing JSDoc @returns declaration         jsdoc/require-returns
+  16:1   warning  Missing JSDoc @param "config" description  jsdoc/require-param-description
+  16:1   warning  Missing JSDoc @param "config" type         jsdoc/require-param-type
+  18:33  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  25:1   warning  Missing JSDoc @param "type" description    jsdoc/require-param-description
+  25:1   warning  Missing JSDoc @param "type" type           jsdoc/require-param-type
+
+/root/AstraForge_Real/src/providers/setupWizard.ts
+  10:1  warning  Missing JSDoc @param "_extensionUri" description  jsdoc/require-param-description
+  10:1  warning  Missing JSDoc @param "_extensionUri" type         jsdoc/require-param-type
+  16:1  warning  Missing JSDoc @param "webviewView" description    jsdoc/require-param-description
+  16:1  warning  Missing JSDoc @param "webviewView" type           jsdoc/require-param-type
+  17:1  warning  Missing JSDoc @param "context" description        jsdoc/require-param-description
+  17:1  warning  Missing JSDoc @param "context" type               jsdoc/require-param-type
+  18:1  warning  Missing JSDoc @param "_token" description         jsdoc/require-param-description
+  18:1  warning  Missing JSDoc @param "_token" type                jsdoc/require-param-type
+  22:5  warning  'context' is defined but never used               @typescript-eslint/no-unused-vars
+  23:5  warning  '_token' is defined but never used                @typescript-eslint/no-unused-vars
+  35:3  warning  Missing JSDoc @returns declaration                jsdoc/require-returns
+
+/root/AstraForge_Real/src/quantum-decision/QuantumDecisionSystem.ts
+   1:13  warning  'vscode' is defined but never used                   @typescript-eslint/no-unused-vars
+  18:1   warning  Missing JSDoc @param "metaLearning" description      jsdoc/require-param-description
+  18:1   warning  Missing JSDoc @param "metaLearning" type             jsdoc/require-param-type
+  19:1   warning  Missing JSDoc @param "emergentBehavior" description  jsdoc/require-param-description
+  19:1   warning  Missing JSDoc @param "emergentBehavior" type         jsdoc/require-param-type
+  28:5   warning  Missing JSDoc @returns declaration                   jsdoc/require-returns
+  30:1   warning  Missing JSDoc @param "options" description           jsdoc/require-param-description
+  30:1   warning  Missing JSDoc @param "options" type                  jsdoc/require-param-type
+  31:1   warning  Missing JSDoc @param "context" description           jsdoc/require-param-description
+  31:1   warning  Missing JSDoc @param "context" type                  jsdoc/require-param-type
+  33:50  warning  'context' is defined but never used                  @typescript-eslint/no-unused-vars
+  33:59  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  39:5   warning  Missing JSDoc @returns declaration                   jsdoc/require-returns
+  41:1   warning  Missing JSDoc @param "probabilities" description     jsdoc/require-param-description
+  41:1   warning  Missing JSDoc @param "probabilities" type            jsdoc/require-param-type
+
+/root/AstraForge_Real/src/self-modification/SelfModificationSystem.ts
+   1:13  warning  'vscode' is defined but never used                   @typescript-eslint/no-unused-vars
+   2:13  warning  'fs' is defined but never used                       @typescript-eslint/no-unused-vars
+   3:13  warning  'path' is defined but never used                     @typescript-eslint/no-unused-vars
+  13:1   warning  Missing JSDoc @param "metaLearning" description      jsdoc/require-param-description
+  13:1   warning  Missing JSDoc @param "metaLearning" type             jsdoc/require-param-type
+  14:1   warning  Missing JSDoc @param "emergentBehavior" description  jsdoc/require-param-description
+  14:1   warning  Missing JSDoc @param "emergentBehavior" type         jsdoc/require-param-type
+  23:5   warning  Missing JSDoc @returns declaration                   jsdoc/require-returns
+  25:1   warning  Missing JSDoc @param "dirPath" description           jsdoc/require-param-description
+  25:1   warning  Missing JSDoc @param "dirPath" type                  jsdoc/require-param-type
+  27:60  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  32:5   warning  Missing JSDoc @returns declaration                   jsdoc/require-returns
+  34:1   warning  Missing JSDoc @param "analysis" description          jsdoc/require-param-description
+  34:1   warning  Missing JSDoc @param "analysis" type                 jsdoc/require-param-type
+  36:43  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  36:57  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  44:5   warning  Missing JSDoc @returns declaration                   jsdoc/require-returns
+  46:1   warning  Missing JSDoc @param "changes" description           jsdoc/require-param-description
+  46:1   warning  Missing JSDoc @param "changes" type                  jsdoc/require-param-type
+  48:40  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/src/spec-kit/specKitManager.ts
+   2:10  warning  'LanceDBClient' is defined but never used                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   4:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+   7:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  10:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  13:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  16:11  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  16:11  warning  'SpecKitConfig' is defined but never used                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+
+/root/AstraForge_Real/src/spec-kit/types.ts
+  1:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+/root/AstraForge_Real/src/testing/apiTester.ts
+  1:10  warning  'spawn' is defined but never used                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  1:17  warning  'SpawnOptions' is defined but never used                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  4:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  7:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/src/testing/apiTesterCLI.ts
+  7:3  warning  Unexpected console statement  no-console
+
+/root/AstraForge_Real/src/testing/apiTesterCore.ts
+   7:12  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  20:1   warning  Missing JSDoc @param "lanceDB" description   jsdoc/require-param-description
+  20:1   warning  Missing JSDoc @param "lanceDB" type          jsdoc/require-param-type
+  24:5   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  26:1   warning  Missing JSDoc @param "config" description    jsdoc/require-param-description
+  26:1   warning  Missing JSDoc @param "config" type           jsdoc/require-param-type
+  28:24  warning  'config' is defined but never used           @typescript-eslint/no-unused-vars
+  39:5   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  41:1   warning  Missing JSDoc @param "response" description  jsdoc/require-param-description
+  41:1   warning  Missing JSDoc @param "response" type         jsdoc/require-param-type
+  43:32  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  49:1   warning  Missing JSDoc @param "result" description    jsdoc/require-param-description
+  49:1   warning  Missing JSDoc @param "result" type           jsdoc/require-param-type
+
+/root/AstraForge_Real/src/testing/apiTesterProvider.ts
+   1:10  warning  'TestingTypes' is defined but never used     @typescript-eslint/no-unused-vars
+  10:1   warning  Missing JSDoc @param "dbClient" description  jsdoc/require-param-description
+  10:1   warning  Missing JSDoc @param "dbClient" type         jsdoc/require-param-type
+  14:5   warning  Missing JSDoc @returns declaration           jsdoc/require-returns
+  16:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+  16:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+
+/root/AstraForge_Real/src/testing/emergent.ts
+   2:5   warning  Missing JSDoc @returns declaration               jsdoc/require-returns
+   4:1   warning  Missing JSDoc @param "patterns" description      jsdoc/require-param-description
+   4:1   warning  Missing JSDoc @param "patterns" type             jsdoc/require-param-type
+   6:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   6:30  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  11:5   warning  Missing JSDoc @returns declaration               jsdoc/require-returns
+  13:1   warning  Missing JSDoc @param "interactions" description  jsdoc/require-param-description
+  13:1   warning  Missing JSDoc @param "interactions" type         jsdoc/require-param-type
+  15:27  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  15:35  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/src/testing/testLogger.ts
+   1:10  warning  'writeFileSync' is defined but never used   @typescript-eslint/no-unused-vars
+   9:15  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  22:1   warning  Missing JSDoc @param "config" description   jsdoc/require-param-description
+  22:1   warning  Missing JSDoc @param "config" type          jsdoc/require-param-type
+  34:1   warning  Missing JSDoc @param "message" description  jsdoc/require-param-description
+  34:1   warning  Missing JSDoc @param "message" type         jsdoc/require-param-type
+  35:1   warning  Missing JSDoc @param "level" description    jsdoc/require-param-description
+  35:1   warning  Missing JSDoc @param "level" type           jsdoc/require-param-type
+  36:1   warning  Missing JSDoc @param "context" description  jsdoc/require-param-description
+  36:1   warning  Missing JSDoc @param "context" type         jsdoc/require-param-type
+  38:79  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  50:13  warning  Unexpected console statement                no-console
+
+/root/AstraForge_Real/src/testing/types.ts
+  1:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  4:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/src/types/AgentTypes.ts
+   4:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  10:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  16:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  22:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/src/types/index.ts
+   1:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+   4:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+   7:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  10:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  13:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  16:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  19:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  22:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  25:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  28:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  31:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  34:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  37:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  40:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  43:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  46:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/src/utils/envLoader.ts
+  16:1  warning  Missing JSDoc @returns declaration               jsdoc/require-returns
+  18:1  warning  Missing JSDoc @param "name" description          jsdoc/require-param-description
+  18:1  warning  Missing JSDoc @param "name" type                 jsdoc/require-param-type
+  19:1  warning  Missing JSDoc @param "defaultValue" description  jsdoc/require-param-description
+  19:1  warning  Missing JSDoc @param "defaultValue" type         jsdoc/require-param-type
+
+/root/AstraForge_Real/src/utils/httpRetry.ts
+  19:1  warning  Missing JSDoc @returns declaration          jsdoc/require-returns
+  21:1  warning  Missing JSDoc @param "url" description      jsdoc/require-param-description
+  21:1  warning  Missing JSDoc @param "url" type             jsdoc/require-param-type
+  22:1  warning  Missing JSDoc @param "options" description  jsdoc/require-param-description
+  22:1  warning  Missing JSDoc @param "options" type         jsdoc/require-param-type
+
+/root/AstraForge_Real/src/utils/inputValidation.ts
+  1:13  warning  'crypto' is defined but never used                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  2:13  warning  'fs' is defined but never used                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  3:13  warning  'path' is defined but never used                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  5:11  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  5:11  warning  'ValidationResult' is defined but never used                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+
+/root/AstraForge_Real/src/utils/logger.ts
+   1:13  warning  'vscode' is defined but never used          @typescript-eslint/no-unused-vars
+   8:1   warning  Missing JSDoc @param "name" description     jsdoc/require-param-description
+   8:1   warning  Missing JSDoc @param "name" type            jsdoc/require-param-type
+  16:1   warning  Missing JSDoc @param "message" description  jsdoc/require-param-description
+  16:1   warning  Missing JSDoc @param "message" type         jsdoc/require-param-type
+  19:9   warning  Unexpected console statement                no-console
+  24:1   warning  Missing JSDoc @param "message" description  jsdoc/require-param-description
+  24:1   warning  Missing JSDoc @param "message" type         jsdoc/require-param-type
+  27:9   warning  Unexpected console statement                no-console
+  32:1   warning  Missing JSDoc @param "message" description  jsdoc/require-param-description
+  32:1   warning  Missing JSDoc @param "message" type         jsdoc/require-param-type
+  35:9   warning  Unexpected console statement                no-console
+  40:1   warning  Missing JSDoc @param "message" description  jsdoc/require-param-description
+  40:1   warning  Missing JSDoc @param "message" type         jsdoc/require-param-type
+  43:9   warning  Unexpected console statement                no-console
+
+/root/AstraForge_Real/src/utils/pathUtils.ts
+  5:7  warning  'ensureTrailingSeparator' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/root/AstraForge_Real/src/utils/retry.ts
+   7:1  warning  Missing JSDoc @returns declaration          jsdoc/require-returns
+   9:1  warning  Missing JSDoc @param "fn" description       jsdoc/require-param-description
+   9:1  warning  Missing JSDoc @param "fn" type              jsdoc/require-param-type
+  10:1  warning  Missing JSDoc @param "options" description  jsdoc/require-param-description
+  10:1  warning  Missing JSDoc @param "options" type         jsdoc/require-param-type
+  41:1  warning  Missing JSDoc @returns declaration          jsdoc/require-returns
+  43:1  warning  Missing JSDoc @param "ms" description       jsdoc/require-param-description
+  43:1  warning  Missing JSDoc @param "ms" type              jsdoc/require-param-type
+
+/root/AstraForge_Real/src/vector-db/VectorDB.ts
+   2:38  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   3:15  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   7:20  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   9:5   warning  Missing JSDoc @returns declaration         jsdoc/require-returns
+  11:1   warning  Missing JSDoc @param "vector" description  jsdoc/require-param-description
+  11:1   warning  Missing JSDoc @param "vector" type         jsdoc/require-param-type
+  13:17  warning  'vector' is defined but never used         @typescript-eslint/no-unused-vars
+  13:44  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  19:1   warning  Missing JSDoc @param "data" description    jsdoc/require-param-description
+  19:1   warning  Missing JSDoc @param "data" type           jsdoc/require-param-type
+  21:21  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/src/workflow/agentNexusBuildRunner.ts
+   23:1   warning  Missing JSDoc @param "message" description             jsdoc/require-param-description
+   23:1   warning  Missing JSDoc @param "message" type                    jsdoc/require-param-type
+   31:1   warning  Missing JSDoc @param "type" description                jsdoc/require-param-description
+   31:1   warning  Missing JSDoc @param "type" type                       jsdoc/require-param-type
+   32:1   warning  Missing JSDoc @param "path" description                jsdoc/require-param-description
+   32:1   warning  Missing JSDoc @param "path" type                       jsdoc/require-param-type
+   42:1   warning  Missing JSDoc @returns declaration                     jsdoc/require-returns
+   44:1   warning  Missing JSDoc @param "filePath" description            jsdoc/require-param-description
+   44:1   warning  Missing JSDoc @param "filePath" type                   jsdoc/require-param-type
+   49:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+   54:1   warning  Missing JSDoc @returns declaration                     jsdoc/require-returns
+   56:1   warning  Missing JSDoc @param "content" description             jsdoc/require-param-description
+   56:1   warning  Missing JSDoc @param "content" type                    jsdoc/require-param-type
+   66:1   warning  Missing JSDoc @param "ctx" description                 jsdoc/require-param-description
+   66:1   warning  Missing JSDoc @param "ctx" type                        jsdoc/require-param-type
+   67:1   warning  Missing JSDoc @param "specPath" description            jsdoc/require-param-description
+   67:1   warning  Missing JSDoc @param "specPath" type                   jsdoc/require-param-type
+   98:7   warning  'foundPlaceholder' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  106:1   warning  Missing JSDoc @param "ctx" description                 jsdoc/require-param-description
+  106:1   warning  Missing JSDoc @param "ctx" type                        jsdoc/require-param-type
+  107:1   warning  Missing JSDoc @param "planPath" description            jsdoc/require-param-description
+  107:1   warning  Missing JSDoc @param "planPath" type                   jsdoc/require-param-type
+  138:7   warning  'foundPlaceholder' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  144:1   warning  Missing JSDoc @returns declaration                     jsdoc/require-returns
+  146:1   warning  Missing JSDoc @param "workspaceRoot" description       jsdoc/require-param-description
+  146:1   warning  Missing JSDoc @param "workspaceRoot" type              jsdoc/require-param-type
+
+/root/AstraForge_Real/src/workflow/telemetryPipeline.ts
+  1:10  warning  'Logger' is defined but never used  @typescript-eslint/no-unused-vars
+
+/root/AstraForge_Real/src/workflow/types.ts
+  1:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  4:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  7:18  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/src/workflow/workflowArbitrator.ts
+  1:10  warning  'TelemetryPipeline' is defined but never used  @typescript-eslint/no-unused-vars
+  2:10  warning  'WorkflowTypes' is defined but never used      @typescript-eslint/no-unused-vars
+
+/root/AstraForge_Real/src/workflow/workflowManager.ts
+   2:16  warning  'uuidv4' is defined but never used           @typescript-eslint/no-unused-vars
+   3:10  warning  'LLMManager' is defined but never used       @typescript-eslint/no-unused-vars
+  33:1   warning  Missing JSDoc @param "id" description        jsdoc/require-param-description
+  33:1   warning  Missing JSDoc @param "id" type               jsdoc/require-param-type
+  49:1   warning  Missing JSDoc @param "spec" description      jsdoc/require-param-description
+  49:1   warning  Missing JSDoc @param "spec" type             jsdoc/require-param-type
+  58:1   warning  Missing JSDoc @param "workflow" description  jsdoc/require-param-description
+  58:1   warning  Missing JSDoc @param "workflow" type         jsdoc/require-param-type
+
+/root/AstraForge_Real/src/workflow/workflowOrchestrator.ts
+  2:10  warning  'WorkflowManager' is defined but never used                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  2:27  warning  'Workflow' is defined but never used                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  2:37  warning  'WorkflowStep' is defined but never used                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  3:10  warning  'LocalOrchestrationEngine' is defined but never used                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  5:18  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+/root/AstraForge_Real/tests/advanced-quantum/advanced-quantum-testing.test.ts
+   10:10  warning  'MetaLearningSystem' is defined but never used                   @typescript-eslint/no-unused-vars
+   11:10  warning  'EmergentBehaviorSystem' is defined but never used               @typescript-eslint/no-unused-vars
+   13:44  warning  Arrow function has too many lines (926). Maximum allowed is 100  max-lines-per-function
+   15:7   warning  'quantumSystem' is assigned a value but never used               @typescript-eslint/no-unused-vars
+   16:7   warning  'optimizationSystem' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   20:67  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   20:96  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   24:55  warning  Arrow function has too many lines (219). Maximum allowed is 100  max-lines-per-function
+   38:33  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   38:51  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   43:32  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   79:28  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   81:28  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  135:31  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  137:39  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  148:37  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  161:24  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  196:27  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  198:28  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  244:60  warning  Arrow function has too many lines (140). Maximum allowed is 100  max-lines-per-function
+  255:31  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  255:49  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  260:30  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  293:31  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  322:28  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  324:33  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  362:29  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  385:48  warning  Arrow function has too many lines (127). Maximum allowed is 100  max-lines-per-function
+  391:29  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  391:51  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  416:37  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  416:54  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  421:19  warning  'originalFidelity' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  442:30  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  444:36  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  489:31  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  495:39  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  513:54  warning  Arrow function has too many lines (165). Maximum allowed is 100  max-lines-per-function
+  519:37  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  519:57  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  527:33  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  545:19  warning  'entanglementTrend' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  563:30  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  563:51  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  593:32  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  617:30  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  617:51  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  646:34  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  647:37  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  680:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  682:1   warning  Missing JSDoc @param "problemType" description                   jsdoc/require-param-description
+  682:1   warning  Missing JSDoc @param "problemType" type                          jsdoc/require-param-type
+  683:1   warning  Missing JSDoc @param "problemSize" description                   jsdoc/require-param-description
+  683:1   warning  Missing JSDoc @param "problemSize" type                          jsdoc/require-param-type
+  700:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  702:1   warning  Missing JSDoc @param "amplitudes" description                    jsdoc/require-param-description
+  702:1   warning  Missing JSDoc @param "amplitudes" type                           jsdoc/require-param-type
+  703:1   warning  Missing JSDoc @param "noiseLevel" description                    jsdoc/require-param-description
+  703:1   warning  Missing JSDoc @param "noiseLevel" type                           jsdoc/require-param-type
+  705:71  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  718:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  720:1   warning  Missing JSDoc @param "state" description                         jsdoc/require-param-description
+  720:1   warning  Missing JSDoc @param "state" type                                jsdoc/require-param-type
+  722:40  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  722:46  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  736:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  738:1   warning  Missing JSDoc @param "amplitudes" description                    jsdoc/require-param-description
+  738:1   warning  Missing JSDoc @param "amplitudes" type                           jsdoc/require-param-type
+  745:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  747:1   warning  Missing JSDoc @param "count" description                         jsdoc/require-param-description
+  747:1   warning  Missing JSDoc @param "count" type                                jsdoc/require-param-type
+  749:51  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  763:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  765:1   warning  Missing JSDoc @param "stressLevel" description                   jsdoc/require-param-description
+  765:1   warning  Missing JSDoc @param "stressLevel" type                          jsdoc/require-param-type
+  767:58  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  789:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  791:1   warning  Missing JSDoc @param "amplitudes" description                    jsdoc/require-param-description
+  791:1   warning  Missing JSDoc @param "amplitudes" type                           jsdoc/require-param-type
+  793:54  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  802:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  804:1   warning  Missing JSDoc @param "state" description                         jsdoc/require-param-description
+  804:1   warning  Missing JSDoc @param "state" type                                jsdoc/require-param-type
+  805:1   warning  Missing JSDoc @param "angle" description                         jsdoc/require-param-description
+  805:1   warning  Missing JSDoc @param "angle" type                                jsdoc/require-param-type
+  807:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  807:59  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  820:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  822:1   warning  Missing JSDoc @param "state" description                         jsdoc/require-param-description
+  822:1   warning  Missing JSDoc @param "state" type                                jsdoc/require-param-type
+  824:49  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  824:55  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  852:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  855:41  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  864:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  867:41  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  875:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  877:1   warning  Missing JSDoc @param "state" description                         jsdoc/require-param-description
+  877:1   warning  Missing JSDoc @param "state" type                                jsdoc/require-param-type
+  878:1   warning  Missing JSDoc @param "transition" description                    jsdoc/require-param-description
+  878:1   warning  Missing JSDoc @param "transition" type                           jsdoc/require-param-type
+  880:42  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  880:59  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  880:65  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  905:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  907:1   warning  Missing JSDoc @param "fromState" description                     jsdoc/require-param-description
+  907:1   warning  Missing JSDoc @param "fromState" type                            jsdoc/require-param-type
+  908:1   warning  Missing JSDoc @param "toState" description                       jsdoc/require-param-description
+  908:1   warning  Missing JSDoc @param "toState" type                              jsdoc/require-param-type
+  909:1   warning  Missing JSDoc @param "transition" description                    jsdoc/require-param-description
+  909:1   warning  Missing JSDoc @param "transition" type                           jsdoc/require-param-type
+  911:49  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  911:63  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  911:80  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  911:86  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/codacy/codacyComprehensiveTest.test.ts
+  10:45  warning  Arrow function has too many lines (149). Maximum allowed is 100  max-lines-per-function
+
+/root/AstraForge_Real/tests/codacy/codacyComprehensiveTest.ts
+   14:10  warning  'readFileSync' is defined but never used                                         @typescript-eslint/no-unused-vars
+   14:24  warning  'existsSync' is defined but never used                                           @typescript-eslint/no-unused-vars
+   46:3   warning  Missing JSDoc @returns declaration                                               jsdoc/require-returns
+   50:5   warning  Unexpected console statement                                                     no-console
+   76:5   warning  Unexpected console statement                                                     no-console
+   98:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  123:5   warning  Unexpected console statement                                                     no-console
+  127:13  warning  'complexityTestFile' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  128:13  warning  'complexCode' is assigned a value but never used                                 @typescript-eslint/no-unused-vars
+  198:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  221:3   warning  Async method 'runSemgrepTests' has too many lines (171). Maximum allowed is 100  max-lines-per-function
+  222:5   warning  Unexpected console statement                                                     no-console
+  226:13  warning  'securityTestFile' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  227:13  warning  'securityCode' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+  373:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  397:5   warning  Unexpected console statement                                                     no-console
+  421:14  warning  'error' is defined but never used                                                @typescript-eslint/no-unused-vars
+  421:21  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  442:3   warning  Missing JSDoc @returns declaration                                               jsdoc/require-returns
+  444:1   warning  Missing JSDoc @param "output" description                                        jsdoc/require-param-description
+  444:1   warning  Missing JSDoc @param "output" type                                               jsdoc/require-param-type
+  467:3   warning  Missing JSDoc @returns declaration                                               jsdoc/require-returns
+  469:1   warning  Missing JSDoc @param "auditData" description                                     jsdoc/require-param-description
+  469:1   warning  Missing JSDoc @param "auditData" type                                            jsdoc/require-param-type
+  471:39  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  487:3   warning  Missing JSDoc @returns declaration                                               jsdoc/require-returns
+  512:1   warning  Missing JSDoc @param "results" description                                       jsdoc/require-param-description
+  512:1   warning  Missing JSDoc @param "results" type                                              jsdoc/require-param-type
+  515:5   warning  Unexpected console statement                                                     no-console
+  521:9   warning  Unexpected console statement                                                     no-console
+  522:9   warning  Unexpected console statement                                                     no-console
+  523:9   warning  Unexpected console statement                                                     no-console
+  524:9   warning  Unexpected console statement                                                     no-console
+  527:11  warning  Unexpected console statement                                                     no-console
+  529:13  warning  Unexpected console statement                                                     no-console
+  530:39  warning  Unexpected console statement                                                     no-console
+  535:11  warning  Unexpected console statement                                                     no-console
+  537:13  warning  Unexpected console statement                                                     no-console
+  544:5   warning  Unexpected console statement                                                     no-console
+  545:5   warning  Unexpected console statement                                                     no-console
+  546:5   warning  Unexpected console statement                                                     no-console
+  549:7   warning  Unexpected console statement                                                     no-console
+  550:7   warning  Unexpected console statement                                                     no-console
+  551:7   warning  Unexpected console statement                                                     no-console
+  552:7   warning  Unexpected console statement                                                     no-console
+  553:7   warning  Unexpected console statement                                                     no-console
+  554:7   warning  Unexpected console statement                                                     no-console
+  556:7   warning  Unexpected console statement                                                     no-console
+  560:3   warning  Missing JSDoc @returns declaration                                               jsdoc/require-returns
+  562:1   warning  Missing JSDoc @param "tool" description                                          jsdoc/require-param-description
+  562:1   warning  Missing JSDoc @param "tool" type                                                 jsdoc/require-param-type
+
+/root/AstraForge_Real/tests/collaboration/collaborationServer.test.ts
+   12:33  warning  Arrow function has too many lines (190). Maximum allowed is 100  max-lines-per-function
+   14:19  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   31:10  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   34:30  error    A `require()` style import is forbidden                          @typescript-eslint/no-require-imports
+   50:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   65:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   82:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  105:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  106:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  110:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  140:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  186:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  193:34  error    A `require()` style import is forbidden                          @typescript-eslint/no-require-imports
+  198:45  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/generative/complex-input-generative-tests.test.ts
+  420:6  error  Parsing error: Declaration or statement expected
+
+/root/AstraForge_Real/tests/git/gitManager.test.ts
+  140:53  error  Parsing error: Identifier expected
+
+/root/AstraForge_Real/tests/integration/coreWorkflow.integration.test.ts
+  99:16  error  Parsing error: ';' expected
+
+/root/AstraForge_Real/tests/integration/extension.integration.test.ts
+  112:55  error  Parsing error: Identifier expected
+
+/root/AstraForge_Real/tests/property-based/quantum-property-tests.test.ts
+   13:52  warning  Arrow function has too many lines (472). Maximum allowed is 100  max-lines-per-function
+   26:57  warning  Arrow function has too many lines (130). Maximum allowed is 100  max-lines-per-function
+   32:30  warning  'phase' is defined but never used                                @typescript-eslint/no-unused-vars
+  163:26  warning  'input2' is defined but never used                               @typescript-eslint/no-unused-vars
+  222:19  warning  'classicalTime' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  429:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  431:1   warning  Missing JSDoc @param "state1" description                        jsdoc/require-param-description
+  431:1   warning  Missing JSDoc @param "state1" type                               jsdoc/require-param-type
+  432:1   warning  Missing JSDoc @param "state2" description                        jsdoc/require-param-description
+  432:1   warning  Missing JSDoc @param "state2" type                               jsdoc/require-param-type
+  434:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  434:51  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  445:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  447:1   warning  Missing JSDoc @param "matrix" description                        jsdoc/require-param-description
+  447:1   warning  Missing JSDoc @param "matrix" type                               jsdoc/require-param-type
+  468:3   warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  470:1   warning  Missing JSDoc @param "matrix" description                        jsdoc/require-param-description
+  470:1   warning  Missing JSDoc @param "matrix" type                               jsdoc/require-param-type
+  471:1   warning  Missing JSDoc @param "vector" description                        jsdoc/require-param-description
+  471:1   warning  Missing JSDoc @param "vector" type                               jsdoc/require-param-type
+
+/root/AstraForge_Real/tests/quantum-decision/QuantumAlgorithms.test.ts
+    6:36  warning  'QuantumAlgorithm' is defined but never used                     @typescript-eslint/no-unused-vars
+    8:38  warning  Arrow function has too many lines (369). Maximum allowed is 100  max-lines-per-function
+  321:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/quantum-decision/QuantumDecisionSystem.test.ts
+  10:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/quantum-decision/QuantumOptimizationSystem.test.ts
+    6:58  warning  'OptimizationAlgorithm' is defined but never used                @typescript-eslint/no-unused-vars
+    6:81  warning  'OptimizationResult' is defined but never used                   @typescript-eslint/no-unused-vars
+    8:39  warning  Arrow function has too many lines (547). Maximum allowed is 100  max-lines-per-function
+   21:49  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   27:55  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   34:45  warning  Arrow function has too many lines (102). Maximum allowed is 100  max-lines-per-function
+  137:47  warning  Arrow function has too many lines (155). Maximum allowed is 100  max-lines-per-function
+  398:25  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  453:71  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  467:12  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/rl/adaptiveWorkflow.test.ts
+    8:32  warning  Arrow function has too many lines (557). Maximum allowed is 100  max-lines-per-function
+   26:29  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   35:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   36:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   37:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   38:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   39:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   43:35  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   51:36  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  101:35  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  169:39  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  183:39  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  196:41  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  227:35  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  256:35  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  263:40  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  276:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  279:61  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  288:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  291:28  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  292:28  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  348:27  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  438:12  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  450:14  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  467:13  warning  'rl' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  480:38  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  481:61  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  555:37  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/storage/LanceDBClient.test.ts
+    1:25  warning  'VectorDocument' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+   20:27  warning  Arrow function has too many lines (311). Maximum allowed is 100                                                      max-lines-per-function
+  302:9   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+/root/AstraForge_Real/tests/system-wide/comprehensive-system-tests.test.ts
+   13:10   warning  'MetaLearningSystem' is defined but never used                   @typescript-eslint/no-unused-vars
+   16:13   warning  'vscode' is defined but never used                               @typescript-eslint/no-unused-vars
+   18:47   warning  Arrow function has too many lines (884). Maximum allowed is 100  max-lines-per-function
+   19:23   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   20:5    warning  'mockEmergentBehavior' is assigned a value but never used        @typescript-eslint/no-unused-vars
+   20:27   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   23:5    warning  'vectorDB' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+   25:5    warning  'quantumSystem' is assigned a value but never used               @typescript-eslint/no-unused-vars
+   26:5    warning  'optimizationSystem' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   27:5    warning  'evolutionSystem' is assigned a value but never used             @typescript-eslint/no-unused-vars
+   28:5    warning  'rlSystem' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+   35:42   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   36:111  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   37:6    warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   46:6    warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   53:6    warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   63:6    warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   70:6    warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   76:6    warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   85:51   warning  Arrow function has too many lines (104). Maximum allowed is 100  max-lines-per-function
+   92:33   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  131:16   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  161:30   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  190:48   warning  Arrow function has too many lines (125). Maximum allowed is 100  max-lines-per-function
+  196:7    warning  'memoryIntensiveData' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  287:27   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  316:53   warning  Arrow function has too many lines (138). Maximum allowed is 100  max-lines-per-function
+  455:58   warning  Arrow function has too many lines (144). Maximum allowed is 100  max-lines-per-function
+  644:22   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  663:7    warning  'minDuration' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  679:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  681:1    warning  Missing JSDoc @param "promises" description                      jsdoc/require-param-description
+  681:1    warning  Missing JSDoc @param "promises" type                             jsdoc/require-param-type
+  682:1    warning  Missing JSDoc @param "concurrency" description                   jsdoc/require-param-description
+  682:1    warning  Missing JSDoc @param "concurrency" type                          jsdoc/require-param-type
+  714:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  716:1    warning  Missing JSDoc @param "size" description                          jsdoc/require-param-description
+  716:1    warning  Missing JSDoc @param "size" type                                 jsdoc/require-param-type
+  718:53   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  719:13   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  739:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  741:1    warning  Missing JSDoc @param "input" description                         jsdoc/require-param-description
+  741:1    warning  Missing JSDoc @param "input" type                                jsdoc/require-param-type
+  752:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  754:1    warning  Missing JSDoc @param "state" description                         jsdoc/require-param-description
+  754:1    warning  Missing JSDoc @param "state" type                                jsdoc/require-param-type
+  756:38   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  777:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  779:1    warning  Missing JSDoc @param "request" description                       jsdoc/require-param-description
+  779:1    warning  Missing JSDoc @param "request" type                              jsdoc/require-param-type
+  781:38   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  815:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  817:1    warning  Missing JSDoc @param "vectors" description                       jsdoc/require-param-description
+  817:1    warning  Missing JSDoc @param "vectors" type                              jsdoc/require-param-type
+  819:43   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  832:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  834:1    warning  Missing JSDoc @param "count" description                         jsdoc/require-param-description
+  834:1    warning  Missing JSDoc @param "count" type                                jsdoc/require-param-type
+  836:52   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  854:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  856:1    warning  Missing JSDoc @param "color1" description                        jsdoc/require-param-description
+  856:1    warning  Missing JSDoc @param "color1" type                               jsdoc/require-param-type
+  857:1    warning  Missing JSDoc @param "color2" description                        jsdoc/require-param-description
+  857:1    warning  Missing JSDoc @param "color2" type                               jsdoc/require-param-type
+  886:1    warning  Missing JSDoc @returns declaration                               jsdoc/require-returns
+  888:1    warning  Missing JSDoc @param "metrics" description                       jsdoc/require-param-description
+  888:1    warning  Missing JSDoc @param "metrics" type                              jsdoc/require-param-type
+  890:40   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/root/AstraForge_Real/tests/workflow/tieredMemoryOrchestrator.test.ts
+   9:1   warning  Missing JSDoc @param "key" description       jsdoc/require-param-description
+   9:1   warning  Missing JSDoc @param "key" type              jsdoc/require-param-type
+  10:1   warning  Missing JSDoc @param "content" description   jsdoc/require-param-description
+  10:1   warning  Missing JSDoc @param "content" type          jsdoc/require-param-type
+  11:1   warning  Missing JSDoc @param "metadata" description  jsdoc/require-param-description
+  11:1   warning  Missing JSDoc @param "metadata" type         jsdoc/require-param-type
+  22:67  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  37:67  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+✖ 776 problems (42 errors, 734 warnings)
+

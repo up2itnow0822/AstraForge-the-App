@@ -4,6 +4,11 @@ export interface RetryOptions {
   backoff: 'none' | 'linear' | 'exponential';
 }
 
+/**
+ *
+ * @param fn
+ * @param options
+ */
 export async function retryAsync<T>(
   fn: () => Promise<T>,
   options: RetryOptions
@@ -33,6 +38,10 @@ export async function retryAsync<T>(
   throw lastError || new Error('Retry failed');
 }
 
+/**
+ *
+ * @param ms
+ */
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -8,6 +8,13 @@ export interface PullRequest {
 }
 
 export class PullRequestManager {
+    /**
+     *
+     * @param title
+     * @param body
+     * @param head
+     * @param base
+     */
     async createPullRequest(title: string, body: string, head: string, base: string): Promise<PullRequest> {
         // Stub implementation
         return {
@@ -20,6 +27,10 @@ export class PullRequestManager {
         };
     }
 
+    /**
+     *
+     * @param id
+     */
     async getPullRequest(id: number): Promise<PullRequest | null> {
         // Stub implementation
         return {

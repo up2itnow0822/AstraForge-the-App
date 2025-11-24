@@ -441,6 +441,7 @@ export class CodacyTestSuite {
 
   /**
    * Parse ESLint output for issues
+   * @param output
    */
   private parseESLintOutput(output: string): Array<{file: string; line?: number; message: string; severity: 'error' | 'warning' | 'info'}> {
     const issues: Array<{file: string; line?: number; message: string; severity: 'error' | 'warning' | 'info'}> = [];
@@ -465,6 +466,7 @@ export class CodacyTestSuite {
 
   /**
    * Parse Trivy output for vulnerabilities
+   * @param auditData
    */
   private parseTrivyOutput(auditData: any): Array<{file: string; line?: number; message: string; severity: 'error' | 'warning' | 'info'}> {
     const issues: Array<{file: string; line?: number; message: string; severity: 'error' | 'warning' | 'info'}> = [];
@@ -507,6 +509,7 @@ export class CodacyTestSuite {
 
   /**
    * Display comprehensive test results
+   * @param results
    */
   private displayResults(results: CodacyScanResults): void {
     console.log('\n📊 === CODACY COMPREHENSIVE TEST RESULTS ===\n');
@@ -554,6 +557,10 @@ export class CodacyTestSuite {
     }
   }
 
+  /**
+   *
+   * @param tool
+   */
   private getToolIcon(tool: string): string {
     switch (tool) {
       case 'eslint': return '🔍';

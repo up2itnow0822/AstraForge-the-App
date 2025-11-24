@@ -5,8 +5,18 @@ export class SetupWizardProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
+  /**
+   *
+   * @param _extensionUri
+   */
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
+  /**
+   *
+   * @param webviewView
+   * @param context
+   * @param _token
+   */
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
@@ -22,6 +32,9 @@ export class SetupWizardProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview();
   }
 
+  /**
+   *
+   */
   private _getHtmlForWebview(): string {
     return `
       <!DOCTYPE html>

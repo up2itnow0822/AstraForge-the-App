@@ -4,6 +4,12 @@ import { TieredMemoryOrchestrator } from '../../src/workflow/tieredMemoryOrchest
 class FakeVectorDB {
   public readonly stored: Array<{ key: string; content: string; metadata: Record<string, unknown> }> = [];
 
+  /**
+   *
+   * @param key
+   * @param content
+   * @param metadata
+   */
   async addDocument(key: string, content: string, metadata: Record<string, unknown>) {
     this.stored.push({ key, content, metadata });
   }

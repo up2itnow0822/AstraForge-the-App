@@ -8,6 +8,11 @@ import { EmergentBehaviorSystem } from '../emergent-behavior/EmergentBehaviorSys
 export class SelfModificationSystem {
     private logger: Logger;
 
+    /**
+     *
+     * @param metaLearning
+     * @param emergentBehavior
+     */
     constructor(
         private metaLearning: MetaLearningSystem,
         private emergentBehavior: EmergentBehaviorSystem
@@ -15,11 +20,19 @@ export class SelfModificationSystem {
         this.logger = new Logger('SelfModificationSystem');
     }
 
+    /**
+     *
+     * @param dirPath
+     */
     public async analyzeCodebase(dirPath: string): Promise<any> {
         this.logger.info(`Analyzing codebase at ${dirPath}`);
         return { complexity: 'high', improvements: [] };
     }
 
+    /**
+     *
+     * @param analysis
+     */
     public async proposeChanges(analysis: any): Promise<any[]> {
         this.logger.info('Proposing changes based on analysis');
         if (analysis.complexity === 'high') {
@@ -28,6 +41,10 @@ export class SelfModificationSystem {
         return [];
     }
 
+    /**
+     *
+     * @param changes
+     */
     public async applyChanges(changes: any[]): Promise<boolean> {
         this.logger.info(`Applying ${changes.length} changes`);
         return true;

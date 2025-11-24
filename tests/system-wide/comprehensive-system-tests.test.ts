@@ -676,6 +676,11 @@ expect(healthScore).toBeGreaterThan(0.7); // 70% health score minimum
 });
 
 // Helper functions for comprehensive testing
+/**
+ *
+ * @param promises
+ * @param concurrency
+ */
 async function executeWithConcurrency<T>(promises: Promise<T>[], concurrency: number): Promise<PromiseSettledResult<T>[]> {
 const results: PromiseSettledResult<T>[] = [];
 const executing: Promise<T>[] = [];
@@ -706,6 +711,10 @@ results.push({ status: 'rejected', reason: error });
 return results;
 }
 
+/**
+ *
+ * @param size
+ */
 function generateMemoryIntensiveData(size: number): any {
 const data: any = {};
 
@@ -727,6 +736,10 @@ tags: Array.from({ length: 5 }, () => Math.random().toString(36))
 return data;
 }
 
+/**
+ *
+ * @param input
+ */
 function sanitizeInput(input: string): string {
 return input
 .replace(/<script[^>]*>.*?<\/script>/gi, '')
@@ -736,6 +749,10 @@ return input
 .replace(/[-]/g, '');
 }
 
+/**
+ *
+ * @param state
+ */
 function validateQuantumState(state: any): { isValid: boolean; errors: string[] } {
 const errors: string[] = [];
 
@@ -757,6 +774,10 @@ errors
 };
 }
 
+/**
+ *
+ * @param request
+ */
 function checkAccessControl(request: any): boolean {
 const { userRole, operation, resourceLevel } = request;
 
@@ -791,6 +812,10 @@ const sensitivity = resourceSensitivity[resourceLevel as keyof typeof resourceSe
 return userLevel >= Math.max(requiredLevel, sensitivity);
 }
 
+/**
+ *
+ * @param vectors
+ */
 function detectSideChannelAttack(vectors: any): { detected: boolean; confidence: number } {
 let detectionScore = 0;
 
@@ -804,6 +829,10 @@ confidence: Math.min(detectionScore, 1.0)
 };
 }
 
+/**
+ *
+ * @param count
+ */
 function generateKeyboardShortcuts(count: number): any[] {
 const shortcuts = [];
 const keys = ['ctrl', 'alt', 'cmd', 'shift'];
@@ -822,6 +851,11 @@ title: `Command ${i}`
 return shortcuts;
 }
 
+/**
+ *
+ * @param color1
+ * @param color2
+ */
 function calculateContrastRatio(color1: string, color2: string): number {
 const getLuminance = (hex: string): number => {
 const rgb = parseInt(hex.slice(1), 16);
@@ -849,6 +883,10 @@ const darkest = Math.min(lum1, lum2);
 return (brightest + 0.05) / (darkest + 0.05);
 }
 
+/**
+ *
+ * @param metrics
+ */
 function calculateHealthScore(metrics: any[]): number {
 const durations = metrics.map(m => m.duration);
 const avgDuration = durations.reduce((sum, d) => sum + d, 0) / durations.length;

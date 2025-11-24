@@ -92,17 +92,17 @@ describe('AstraForge Core Workflow Integration', () => {
           {
             id: 'context-1',
             content: 'Previous project used React with TypeScript',
-            similarity: 0.8,
-            metadata: { domain: 'web', complexity: 0.7 }
-          }
-        ],
-        insights: {
-          dominantBehaviorType: 'collaborative',
-          averageInnovationIndex: 0.7,
-          complexityDistribution: { 'web': 0.6, 'backend': 0.4 },
-          recommendedPatterns: ['MVC', 'REST'],
-          emergentOpportunities: ['microservices', 'containerization']
-        }
+//            similarity: 0.8,
+//            metadata: { domain: 'web', complexity: 0.7 }
+//          }
+//        ],
+//        insights: {
+//          dominantBehaviorType: 'collaborative',
+//          averageInnovationIndex: 0.7,
+//          complexityDistribution: { 'web': 0.6, 'backend': 0.4 },
+//          recommendedPatterns: ['MVC', 'REST'],
+//          emergentOpportunities: ['microservices', 'containerization']
+//        }
       });
 
         'Based on the context, I recommend using React with TypeScript for this web application. ' +

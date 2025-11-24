@@ -417,7 +417,6 @@ describe('Complex Input Generative Tests', () => {
           }
         ),
         { numRuns: 20 }
-      );
     });
   });
 
