@@ -33,27 +33,44 @@ function createWindow() {
 app.whenReady().then(() => {
   // Initialize Config (ENV loading)
   AgentConfig.initializeTokens();
-  
+
   // Increase engine capacity
   engine = new LocalOrchestrationEngine(10);
 
-  // Try to load keys from Config first, then Env/Secrets
-  // Note: For packaging, secrets are baked in if we rely on placeholders, 
-  // but Settings UI allows runtime override.
+  // Determine AI Provider
+  // Priority: Ollama Config > Secret Keys > Mock
+  const ollamaEndpoint = AgentConfig.getApiKey('ollama_endpoint');
+  const ollamaModel = AgentConfig.getApiKey('ollama_model');
+  
   const openAiKey = AgentConfig.getApiKey('openai') || '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';
-  const model = 'x-ai/grok-4';
+  const openAiModel = 'x-ai/grok-4';
+  
+  const useOllama = !!ollamaEndpoint;
+  console.log(`AI Configuration: ${useOllama ? 'Local (Ollama)' : 'Cloud (OpenAI)'}`);
 
   // Initialize Agents from Roster
   AGENT_ROSTER.forEach(def => {
     if (USE_REAL_LLM) {
-      engine.registerAgent(new LLMAgent(
-        def.id,
-        def.name,
-        def.role,
-        def.systemPrompt,
-        openAiKey,
-        model,
-      ));
+      if (useOllama) {
+         engine.registerAgent(new LLMAgent(
+           def.id,
+           def.name,
+           def.role,
+           def.systemPrompt,
+           'ollama', // apiKey flag
+           ollamaModel || 'llama3',
+           ollamaEndpoint
+         ));
+      } else {
+         engine.registerAgent(new LLMAgent(
+           def.id,
+           def.name,
+           def.role,
+           def.systemPrompt,
+           openAiKey,
+           openAiModel,
+         ));
+      }
     } else {
       engine.registerAgent(new MockAgent(def.id, def.name, def.role));
     }
