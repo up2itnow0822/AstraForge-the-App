@@ -1,0 +1,13 @@
+# AstraForge v1.0.0 - Sovereign AI Edition
+
+## Features
+- **Consensus-Composer**: Multi-file editing with 5-Agent safety consensus.
+- **Sovereign AI**: Privacy-first, local-first architecture.
+- **Docker Support**: Full containerization for enterprise deployment.
+
+## Docker Image
+(Artifacts will be available here after build)
+
+## Installation
+See README.md for setup instructions.
+
