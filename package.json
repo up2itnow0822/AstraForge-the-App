@@ -293,6 +293,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
     "fast-check": "3.13.0",
+    "framer-motion": "^12.23.24",
     "helmet": "^8.1.0",
     "langchain": "^1.0.4",
     "lru-cache": "^10.0.0",
