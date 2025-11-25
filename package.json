@@ -1,9 +1,8 @@
 {
   "name": "astraforge-ide",
   "displayName": "AstraForge IDE",
-  "description": "Advanced AI-powered VS Code extension for quantum-enhanced development",
+  "description": "The Sovereign AI IDE with Multi-Agent Consensus",
   "version": "1.0.0",
-  "publisher": "up2itnow",
   "type": "module",
   "main": "dist/main/main/main.js",
   "icon": "media/icon.png",
@@ -17,188 +16,6 @@
   "categories": [
     "Other"
   ],
-  "keywords": [
-    "AI",
-    "quantum",
-    "development"
-  ],
-  "activationEvents": [
-    "onStartupFinished",
-    "onCommand:astraforge.projectIgnition",
-    "onCommand:astraforge.setupWizard",
-    "onCommand:astraforge.apiTester",
-    "onCommand:astraforge.health",
-    "onCommand:astraforge.monitor",
-    "onCommand:astraforge.collaborateSession",
-    "onCommand:astraforge.gitSync",
-    "onCommand:astraforge.llmConsensus",
-    "onCommand:astraforge.emergentDetect",
-    "onCommand:astraforge.quantumSim",
-    "onCommand:astraforge.rbacManage",
-    "onCommand:astraforge.scalingConfig",
-    "onCommand:astraforge.securityAudit",
-    "onCommand:astraforge.perfOptimize"
-  ],
-  "contributes": {
-    "commands": [
-      {
-        "command": "astraforge.projectIgnition",
-        "title": "Project Ignition",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.setupWizard",
-        "title": "Setup Wizard",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.apiTester",
-        "title": "API Tester",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.health",
-        "title": "Health Check",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.monitor",
-        "title": "Monitor KPIs",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.collaborateSession",
-        "title": "Start Collaboration Session",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.gitSync",
-        "title": "Git Sync",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.llmConsensus",
-        "title": "LLM Consensus Query",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.emergentDetect",
-        "title": "Detect Emergent Behavior",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.quantumSim",
-        "title": "Run Quantum Simulation",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.rbacManage",
-        "title": "Manage RBAC",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.scalingConfig",
-        "title": "Configure Scaling",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.securityAudit",
-        "title": "Run Security Audit",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.perfOptimize",
-        "title": "Optimize Performance",
-        "category": "AstraForge"
-      },
-      {
-        "command": "astraforge.telemetryView",
-        "title": "Open Telemetry Panel",
-        "category": "AstraForge"
-      }
-    ],
-    "menus": {
-      "explorer/context": [
-        {
-          "command": "astraforge.projectIgnition",
-          "group": "navigation",
-          "when": "resourceExtname == .ts || resourceExtname == .js"
-        },
-        {
-          "command": "astraforge.gitSync",
-          "group": "1_modification",
-          "when": "explorerResourceIsFolder"
-        },
-        {
-          "command": "astraforge.apiTester",
-          "group": "z_commands"
-        },
-        {
-          "command": "astraforge.llmConsensus",
-          "group": "z_commands"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "astraforge.projectIgnition"
-        },
-        {
-          "command": "astraforge.monitor"
-        }
-      ]
-    },
-    "keybindings": [
-      {
-        "command": "astraforge.projectIgnition",
-        "key": "ctrl+shift+i",
-        "mac": "cmd+shift+i",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "astraforge.health",
-        "key": "ctrl+shift+h",
-        "mac": "cmd+shift+h",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "astraforge.monitor",
-        "key": "ctrl+shift+m",
-        "mac": "cmd+shift+m",
-        "when": "editorTextFocus"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "astraforge-sidebar",
-          "title": "AstraForge",
-          "icon": "media/icon.png"
-        }
-      ]
-    },
-    "views": {
-      "astraforge-sidebar": [
-        {
-          "id": "astraforge.telemetry",
-          "name": "Telemetry",
-          "type": "webview",
-          "icon": "$(graph)"
-        },
-        {
-          "id": "astraforge.llmPanel",
-          "name": "Multi-LLM Panel",
-          "type": "webview",
-          "icon": "$(bot)"
-        },
-        {
-          "id": "astraforge.monitorView",
-          "name": "KPIs Monitor",
-          "type": "webview",
-          "icon": "$(dashboard)"
-        }
-      ]
-    }
-  },
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -331,5 +148,6 @@
       "target": "AppImage",
       "category": "Development"
     }
-  }
+  },
+  "productName": "AstraForge"
 }
