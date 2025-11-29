@@ -12,6 +12,12 @@
   },
   "include": [
     "src/main/server/**/*",
-    "src/core/**/*"
+    "src/core/**/*",
+    "src/llm/**/*"
+  ],
+  "exclude": [
+    "src/**/__tests__/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts"
   ]
 }

@@ -11,5 +11,7 @@ contextBridge.exposeInMainWorld('astraAPI', {
     ipcRenderer.removeAllListeners('agent:update');
   },
   saveApiKey: (provider: string, key: string) => ipcRenderer.invoke('config:save-key', provider, key),
-  getApiKey: (provider: string) => ipcRenderer.invoke('config:get-key', provider)
+  getApiKey: (provider: string) => ipcRenderer.invoke('config:get-key', provider),
+  saveAgentConfig: (agentId: string, config: any) => ipcRenderer.invoke('config:save-agent-config', agentId, config),
+  getAgentConfig: (agentId: string) => ipcRenderer.invoke('config:get-agent-config', agentId)
 });

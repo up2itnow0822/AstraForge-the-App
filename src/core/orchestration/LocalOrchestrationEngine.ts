@@ -62,6 +62,7 @@ export class LocalOrchestrationEngine extends EventEmitter {
     this.debateManager.on('log', (msg) => this.emit('log', msg));
     this.debateManager.on('agent-speaking', (data) => this.emit('agent-thinking', data));
     this.debateManager.on('state-change', (data) => this.emit('state-change', data));
+    this.debateManager.on('file_changes', (data) => this.emit('file_changes', data));
 
     const success = await this.debateManager.startDebate(task.description);
     
@@ -97,5 +98,17 @@ export class LocalOrchestrationEngine extends EventEmitter {
 
   getQueueSize(): number {
     return this.taskQueue.length;
+  }
+
+  approveProposal(): void {
+    if (this.debateManager) {
+      this.debateManager.approveProposal();
+    }
+  }
+
+  requestRefinement(feedback: string): void {
+    if (this.debateManager) {
+      this.debateManager.requestRefinement(feedback);
+    }
   }
 }

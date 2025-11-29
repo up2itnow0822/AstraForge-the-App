@@ -38,39 +38,86 @@ app.whenReady().then(() => {
   engine = new LocalOrchestrationEngine(10);
 
   // Determine AI Provider
-  // Priority: Ollama Config > Secret Keys > Mock
+  // Priority: Agent Specific > Ollama Config > Secret Keys > Mock
   const ollamaEndpoint = AgentConfig.getApiKey('ollama_endpoint');
   const ollamaModel = AgentConfig.getApiKey('ollama_model');
   
-  const openAiKey = AgentConfig.getApiKey('openai') || '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';
-  const openAiModel = 'x-ai/grok-4';
-  
+  const openAiKey = AgentConfig.getApiKey('openai');
+  const openRouterKey = AgentConfig.getApiKey('openrouter');
+  const anthropicKey = AgentConfig.getApiKey('anthropic');
+  const grokKey = AgentConfig.getApiKey('grok');
+  const lmStudioBase = AgentConfig.getApiKey('lmstudio'); // Assuming URL or Key if we want to support auth there
+
   const useOllama = !!ollamaEndpoint;
-  console.log(`AI Configuration: ${useOllama ? 'Local (Ollama)' : 'Cloud (OpenAI)'}`);
+  console.log(`AI Configuration: ${useOllama ? 'Local (Ollama)' : 'Cloud'} (Defaults)`);
 
   // Initialize Agents from Roster
   AGENT_ROSTER.forEach(def => {
     if (USE_REAL_LLM) {
-      if (useOllama) {
-         engine.registerAgent(new LLMAgent(
-           def.id,
-           def.name,
-           def.role,
-           def.systemPrompt,
-           'ollama', // apiKey flag
-           ollamaModel || 'llama3',
-           ollamaEndpoint
-         ));
+      // Check for Agent Specific Config
+      const agentConfig = AgentConfig.getAgentConfig(def.id);
+      
+      let provider = 'Ollama';
+      let model = ollamaModel || 'llama3';
+      let apiKey = '';
+      let endpoint = ollamaEndpoint;
+
+      if (agentConfig) {
+          provider = agentConfig.provider;
+          model = agentConfig.model;
+          if (agentConfig.apiKey) apiKey = agentConfig.apiKey;
       } else {
-         engine.registerAgent(new LLMAgent(
-           def.id,
-           def.name,
-           def.role,
-           def.systemPrompt,
-           openAiKey,
-           openAiModel,
-         ));
+          // Fallbacks if no specific config
+          if (openRouterKey) {
+              provider = 'OpenRouter';
+              apiKey = openRouterKey;
+              model = 'openai/gpt-3.5-turbo'; // Default fallback
+          } else if (openAiKey) {
+              provider = 'OpenAI';
+              apiKey = openAiKey;
+              model = 'gpt-4o-mini';
+          } else if (anthropicKey) {
+              provider = 'Anthropic';
+              apiKey = anthropicKey;
+              model = 'claude-3-opus-20240229';
+          } else if (grokKey) {
+              provider = 'Grok';
+              apiKey = grokKey;
+              model = 'grok-beta';
+          } else if (lmStudioBase) {
+              provider = 'LM-Studio';
+              endpoint = lmStudioBase;
+              model = 'local-model';
+          }
       }
+
+      // Resolve API Key if not explicitly set in agent config but provider matches global
+      if (!apiKey) {
+          if (provider.toLowerCase() === 'openai') apiKey = openAiKey || '';
+          if (provider.toLowerCase() === 'anthropic') apiKey = anthropicKey || '';
+          if (provider.toLowerCase() === 'openrouter') apiKey = openRouterKey || '';
+          if (provider.toLowerCase() === 'grok') apiKey = grokKey || '';
+      }
+      
+      // Resolve Endpoint for LM Studio if not set
+      if (provider.toLowerCase() === 'lm-studio' || provider.toLowerCase() === 'lmstudio') {
+          if (!endpoint) endpoint = lmStudioBase;
+      }
+
+      console.log(`Initializing Agent ${def.id} (${def.name}) with ${provider} : ${model}`);
+
+      engine.registerAgent(new LLMAgent(
+        def.id,
+        def.name,
+        def.role,
+        def.systemPrompt,
+        {
+            provider,
+            model,
+            apiKey,
+            endpoint
+        }
+      ));
     } else {
       engine.registerAgent(new MockAgent(def.id, def.name, def.role));
     }
@@ -116,6 +163,16 @@ app.whenReady().then(() => {
     console.log(`Saving key for ${provider}`);
     AgentConfig.setApiKey(provider, key);
     return true;
+  });
+
+  ipcMain.handle('config:save-agent-config', async (event, agentId, config) => {
+    console.log(`Saving config for agent ${agentId}`);
+    AgentConfig.setAgentConfig(agentId, config);
+    return true;
+  });
+
+  ipcMain.handle('config:get-agent-config', async (event, agentId) => {
+    return AgentConfig.getAgentConfig(agentId);
   });
 
   ipcMain.handle('config:get-key', async (event, provider) => {

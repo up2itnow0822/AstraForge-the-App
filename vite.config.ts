@@ -8,10 +8,18 @@ export default defineConfig({
   root: join(__dirname, 'src/renderer'),
   publicDir: 'public',
   build: {
-    outDir: join(__dirname, 'dist'),
+    outDir: join(__dirname, 'dist/renderer'),
     emptyOutDir: true,
   },
   server: {
     port: 5173,
+    proxy: {
+      // Proxy socket.io to the backend server
+      '/socket.io': {
+        target: 'http://localhost:3000',
+        ws: true,
+        changeOrigin: true
+      }
+    }
   },
 });

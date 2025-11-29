@@ -60,7 +60,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ agents }) => {
       const radian = (angle * Math.PI) / 180;
 
       const x = CENTER_X + RADIUS * Math.cos(radian);
-      const y = START_Y + 150 + RADIUS * Math.sin(radian) * 0.8;
+      const y = START_Y + 200 + RADIUS * Math.sin(radian) * 0.5;
 
       graphNodes.push({
         id: agent.id,
@@ -108,7 +108,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ agents }) => {
   }, [agents]);
 
   return (
-    <div className="w-full h-full bg-gray-900 border-l border-gray-700">
+    <div className="w-full h-full bg-gray-900">
       <ReactFlow
         nodes={nodes}
         edges={edges}

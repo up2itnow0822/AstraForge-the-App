@@ -1,50 +1,106 @@
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { Agent, AgentTask, AgentResult, Vote } from '../Agent';
 import { OllamaProvider } from '../../llm/providers/OllamaProvider';
 import { BaseLLMProvider } from '../../llm/providers/baseProvider';
+import { localLLMQueue } from '../utils/RequestQueue';
+
+export interface AgentConfigOptions {
+    provider: string;
+    model: string;
+    apiKey?: string;
+    endpoint?: string;
+}
 
 export class LLMAgent implements Agent {
-  private provider: BaseLLMProvider | OpenAI;
+  private provider: BaseLLMProvider | OpenAI | Anthropic;
   private isLocal: boolean = false;
+  private isAnthropic: boolean = false;
+  private config: AgentConfigOptions;
 
   constructor(
     public id: string,
     public name: string,
     public role: string,
     private systemPrompt: string,
-    private apiKey: string,
-    private model: string = 'gpt-4o-mini',
-    private endpoint?: string
+    config: AgentConfigOptions
   ) {
-    // Detection Logic: If endpoint is provided, assume Ollama/Local
-    // Or if apiKey is explicitly 'ollama'
-    if (this.endpoint || this.apiKey === 'ollama') {
+    this.config = config;
+    const { provider, model, apiKey, endpoint } = config;
+
+    // Normalize provider string
+    const providerKey = provider.toLowerCase();
+
+    if (providerKey === 'ollama') {
         this.isLocal = true;
         this.provider = new OllamaProvider({
             apiKey: 'ollama',
-            model: this.model,
-            endpoint: this.endpoint || 'http://127.0.0.1:11434',
+            model: model,
+            endpoint: endpoint || 'http://127.0.0.1:11434',
             name: 'ollama'
         });
+    } else if (providerKey === 'lm-studio' || providerKey === 'lmstudio') {
+        // LM Studio mimics OpenAI API
+        this.provider = new OpenAI({
+            baseURL: endpoint || 'http://localhost:1234/v1',
+            apiKey: apiKey || 'lm-studio',
+            dangerouslyAllowBrowser: true
+        });
+    } else if (providerKey === 'openrouter') {
+        this.provider = new OpenAI({
+            baseURL: 'https://openrouter.ai/api/v1',
+            apiKey: apiKey,
+            defaultHeaders: {
+                "HTTP-Referer": "https://astraforge.app", 
+                "X-Title": "AstraForge"
+            }
+        });
+    } else if (providerKey === 'grok') {
+        // xAI (Grok) is OpenAI compatible
+        this.provider = new OpenAI({
+            baseURL: 'https://api.x.ai/v1',
+            apiKey: apiKey
+        });
+    } else if (providerKey === 'anthropic') {
+        // Native Anthropic SDK support
+        this.isAnthropic = true;
+        this.provider = new Anthropic({
+            apiKey: apiKey
+        });
     } else {
-        this.provider = new OpenAI({ apiKey: this.apiKey });
+        // Default to OpenAI
+        this.provider = new OpenAI({ apiKey: apiKey });
     }
   }
 
   async executeTask(task: AgentTask): Promise<AgentResult> {
     try {
       let content = '';
-      const prompt = `System: ${this.systemPrompt}\nTask: ${task.type}\nDescription: ${task.description}\nInput: ${JSON.stringify(task.input)}`;
+      const promptContent = `Task: ${task.type}\nDescription: ${task.description}\nInput: ${JSON.stringify(task.input)}`;
 
       if (this.isLocal) {
-         const response = await (this.provider as OllamaProvider).generate(prompt);
+         const prompt = `System: ${this.systemPrompt}\n${promptContent}`;
+         const response = await localLLMQueue.enqueue(() => (this.provider as OllamaProvider).generate(prompt));
          content = response.content || 'No output';
+      } else if (this.isAnthropic) {
+         // Anthropic Claude API
+         const response = await (this.provider as Anthropic).messages.create({
+            model: this.config.model,
+            max_tokens: 4096,
+            system: this.systemPrompt,
+            messages: [
+              { role: 'user', content: promptContent }
+            ]
+         });
+         const textBlock = response.content.find(block => block.type === 'text');
+         content = textBlock && 'text' in textBlock ? textBlock.text : 'No output';
       } else {
+         // OpenAI Compatible (OpenAI, OpenRouter, LM-Studio, Grok)
          const response = await (this.provider as OpenAI).chat.completions.create({
-            model: this.model,
+            model: this.config.model,
             messages: [
             { role: 'system', content: this.systemPrompt },
-            { role: 'user', content: `Execute this task: ${task.type}. Description: ${task.description}. Input: ${JSON.stringify(task.input)}` }
+            { role: 'user', content: promptContent }
             ]
          });
          content = response.choices[0].message.content || 'No output';
@@ -67,16 +123,29 @@ export class LLMAgent implements Agent {
 
   async processMessage(message: string): Promise<string> {
     try {
-      const prompt = `System: You are ${this.name}, a ${this.role}. ${this.systemPrompt}. Keep responses concise and professional.\nUser: ${message}`;
-
+      const systemContent = `You are ${this.name}, a ${this.role}. ${this.systemPrompt}. Keep responses concise and professional.`;
+      
       if (this.isLocal) {
-          const response = await (this.provider as OllamaProvider).generate(prompt);
+          const prompt = `System: ${systemContent}\nUser: ${message}`;
+          const response = await localLLMQueue.enqueue(() => (this.provider as OllamaProvider).generate(prompt));
           return response.content || '...';
+      } else if (this.isAnthropic) {
+          // Anthropic Claude API
+          const response = await (this.provider as Anthropic).messages.create({
+            model: this.config.model,
+            max_tokens: 4096,
+            system: systemContent,
+            messages: [
+              { role: 'user', content: message }
+            ]
+          });
+          const textBlock = response.content.find(block => block.type === 'text');
+          return textBlock && 'text' in textBlock ? textBlock.text : '...';
       } else {
           const response = await (this.provider as OpenAI).chat.completions.create({
-            model: this.model,
+            model: this.config.model,
             messages: [
-            { role: 'system', content: `You are ${this.name}, a ${this.role}. ${this.systemPrompt}. Keep responses concise and professional.` },
+            { role: 'system', content: systemContent },
             { role: 'user', content: message }
             ]
           });
@@ -106,13 +175,24 @@ Response MUST be valid JSON in this format:
       let content = '';
 
       if (this.isLocal) {
-          // Ollama often needs strong prompting for JSON if format enforcement isn't available
           const prompt = `${systemInfo}\n\n${userPrompt}\n\nIMPORTANT: Output ONLY JSON.`;
-          const response = await (this.provider as OllamaProvider).generate(prompt, { temperature: 0.2 });
+          const response = await localLLMQueue.enqueue(() => (this.provider as OllamaProvider).generate(prompt, { temperature: 0.2 }));
           content = response.content || '';
+      } else if (this.isAnthropic) {
+          // Anthropic Claude API
+          const response = await (this.provider as Anthropic).messages.create({
+            model: this.config.model,
+            max_tokens: 1024,
+            system: systemInfo,
+            messages: [
+              { role: 'user', content: userPrompt + '\n\nIMPORTANT: Output ONLY valid JSON, no other text.' }
+            ]
+          });
+          const textBlock = response.content.find(block => block.type === 'text');
+          content = textBlock && 'text' in textBlock ? textBlock.text : '';
       } else {
           const response = await (this.provider as OpenAI).chat.completions.create({
-            model: this.model,
+            model: this.config.model,
             response_format: { type: 'json_object' },
             messages: [
             { role: 'system', content: systemInfo },
@@ -124,7 +204,6 @@ Response MUST be valid JSON in this format:
 
       if (!content) throw new Error("Empty voting response");
       
-      // Basic aggressive JSON cleanup for local models
       const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(jsonStr);
 

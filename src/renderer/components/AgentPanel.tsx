@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Network, List } from 'lucide-react';
 import AgentFlow from './AgentFlow';
 
@@ -30,12 +30,52 @@ const AgentCard: React.FC<AgentState> = ({ name, role, status }) => (
 );
 
 const AgentPanel: React.FC<AgentPanelProps> = ({ agents }) => {
-  const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'graph'>('graph');
+  const [width, setWidth] = useState(384); // Default 384px (w-96)
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const startResizing = (e: React.MouseEvent) => {
+    setIsResizing(true);
+    e.preventDefault();
+  };
+
+  const stopResizing = () => {
+    setIsResizing(false);
+  };
+
+  const resize = (mouseMoveEvent: MouseEvent) => {
+    if (isResizing) {
+      const newWidth = window.innerWidth - mouseMoveEvent.clientX;
+      if (newWidth > 200 && newWidth < 800) { // Min/Max constraints
+        setWidth(newWidth);
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [isResizing]);
 
   return (
-    <div className="bg-gray-900 border-l border-gray-700 flex flex-col h-full w-full">
+    <div 
+        ref={sidebarRef}
+        className="bg-gray-900 border-l border-gray-700 flex flex-col h-full shrink-0 relative"
+        style={{ width: width }}
+    >
+      {/* Drag Handle */}
+      <div 
+        className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-astra-blue z-50 transition-colors active:bg-astra-blue"
+        onMouseDown={startResizing}
+      />
+
       {/* Header with Toggle */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900/50 backdrop-blur">
+      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900/50 backdrop-blur shrink-0">
         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Agent Sync</h2>
         <div className="flex bg-gray-800 rounded-md p-0.5 border border-gray-700">
           <button 
@@ -58,7 +98,7 @@ const AgentPanel: React.FC<AgentPanelProps> = ({ agents }) => {
       {/* Content Area */}
       <div className="flex-1 overflow-hidden relative">
         {viewMode === 'list' ? (
-          <div className="flex flex-col gap-2 p-4 overflow-y-auto h-full w-64">
+          <div className="flex flex-col gap-2 p-4 overflow-y-auto h-full w-full">
             {agents.map(agent => (
               <AgentCard key={agent.id} {...agent} />
             ))}
