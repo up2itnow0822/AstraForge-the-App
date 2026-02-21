@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
+import * as pty from 'node-pty';
 import { LocalOrchestrationEngine } from '../core/orchestration/LocalOrchestrationEngine';
 import { LLMAgent } from '../core/agents/LLMAgent';
 import { MockAgent } from '../core/MockAgent';
@@ -7,6 +8,9 @@ import { AGENT_ROSTER, AgentConfig } from '../core/config/AgentConfig';
 
 let engine: LocalOrchestrationEngine;
 let mainWindow: BrowserWindow | null = null;
+
+// PTY session registry — keyed by terminalId
+const ptyProcesses = new Map<string, pty.IPty>();
 
 // Feature toggle for simulation mode
 const USE_REAL_LLM = true;
@@ -203,6 +207,62 @@ app.whenReady().then(() => {
     engine.requestRefinement(feedback);
     return { status: 'refinement-requested' };
   });
+
+  // ── Terminal / PTY IPC ──────────────────────────────────────────────────────
+  // Spawn a new PTY session for the given terminalId
+  ipcMain.on('terminal:create', (_event, { terminalId }: { terminalId: string }) => {
+    if (ptyProcesses.has(terminalId)) return; // already exists
+
+    const shell =
+      process.platform === 'win32'
+        ? 'powershell.exe'
+        : process.env.SHELL || '/bin/bash';
+
+    const ptyProcess = pty.spawn(shell, [], {
+      name: 'xterm-color',
+      cols: 80,
+      rows: 24,
+      cwd: process.cwd(),
+      env: process.env as Record<string, string>,
+    });
+
+    ptyProcesses.set(terminalId, ptyProcess);
+
+    ptyProcess.onData((data: string) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('terminal:data', { terminalId, data });
+      }
+    });
+
+    ptyProcess.onExit(({ exitCode }) => {
+      ptyProcesses.delete(terminalId);
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('terminal:exit', { terminalId, exitCode });
+      }
+    });
+  });
+
+  // Write user keystrokes to PTY
+  ipcMain.on('terminal:write', (_event, { terminalId, data }: { terminalId: string; data: string }) => {
+    const proc = ptyProcesses.get(terminalId);
+    if (proc) proc.write(data);
+  });
+
+  // Resize PTY to match xterm.js viewport
+  ipcMain.on('terminal:resize', (_event, { terminalId, cols, rows }: { terminalId: string; cols: number; rows: number }) => {
+    const proc = ptyProcesses.get(terminalId);
+    if (proc) proc.resize(cols, rows);
+  });
+
+  // Kill PTY on terminal close
+  ipcMain.on('terminal:close', (_event, { terminalId }: { terminalId: string }) => {
+    const proc = ptyProcesses.get(terminalId);
+    if (proc) {
+      proc.kill();
+      ptyProcesses.delete(terminalId);
+    }
+  });
+  // ── End Terminal IPC ────────────────────────────────────────────────────────
 
   // Apply generated file changes to disk
   ipcMain.handle('debate:apply-changes', async (event, changes: any[], basePath?: string) => {

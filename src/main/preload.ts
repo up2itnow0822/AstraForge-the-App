@@ -34,4 +34,45 @@ contextBridge.exposeInMainWorld('astraAPI', {
   saveAgentConfig: (agentId: string, config: unknown) =>
     ipcRenderer.invoke('config:save-agent-config', agentId, config),
   getAgentConfig: (agentId: string) => ipcRenderer.invoke('config:get-agent-config', agentId),
+
+  // ── Terminal / PTY API ───────────────────────────────────────────────────
+  // Exposed as window.astraAPI.terminal.* in the renderer
+  terminal: {
+    /** Spawn a new PTY session */
+    create: (terminalId: string) =>
+      ipcRenderer.send('terminal:create', { terminalId }),
+
+    /** Send keystrokes to the PTY */
+    write: (terminalId: string, data: string) =>
+      ipcRenderer.send('terminal:write', { terminalId, data }),
+
+    /** Notify the PTY of a viewport resize */
+    resize: (terminalId: string, cols: number, rows: number) =>
+      ipcRenderer.send('terminal:resize', { terminalId, cols, rows }),
+
+    /** Kill the PTY session */
+    close: (terminalId: string) =>
+      ipcRenderer.send('terminal:close', { terminalId }),
+
+    /** Subscribe to PTY output; returns an unsubscribe function */
+    onData: (callback: (payload: { terminalId: string; data: string }) => void) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        payload: { terminalId: string; data: string }
+      ) => callback(payload);
+      ipcRenderer.on('terminal:data', handler);
+      return () => ipcRenderer.removeListener('terminal:data', handler);
+    },
+
+    /** Subscribe to PTY exit events; returns an unsubscribe function */
+    onExit: (callback: (payload: { terminalId: string; exitCode: number }) => void) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        payload: { terminalId: string; exitCode: number }
+      ) => callback(payload);
+      ipcRenderer.on('terminal:exit', handler);
+      return () => ipcRenderer.removeListener('terminal:exit', handler);
+    },
+  },
+  // ── End Terminal API ─────────────────────────────────────────────────────
 });

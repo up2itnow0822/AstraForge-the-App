@@ -11,133 +11,174 @@ interface XTerminalProps {
   onTerminalClose?: (terminalId: string) => void;
 }
 
+// Detect Electron IPC mode: window.astraAPI.terminal is exposed by the preload script
+const isElectronTerminal = typeof window !== 'undefined' && !!window.astraAPI?.terminal;
+
+const XTERM_THEME = {
+  background: '#1e1e1e',
+  foreground: '#cccccc',
+  cursor: '#cccccc',
+  cursorAccent: '#1e1e1e',
+  selection: '#264f78',
+  black: '#000000',
+  red: '#cd3131',
+  green: '#0dbc79',
+  yellow: '#e5e510',
+  blue: '#2472c8',
+  magenta: '#bc3fbc',
+  cyan: '#11a8cd',
+  white: '#e5e5e5',
+  brightBlack: '#666666',
+  brightRed: '#f14c4c',
+  brightGreen: '#23d18b',
+  brightYellow: '#f5f543',
+  brightBlue: '#3b8eea',
+  brightMagenta: '#d670d6',
+  brightCyan: '#29b8db',
+  brightWhite: '#e5e5e5',
+};
+
 const XTerminal: React.FC<XTerminalProps> = ({ terminalId, onTerminalReady, onTerminalClose }) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstanceRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
 
+  // ── Core terminal setup ────────────────────────────────────────────────────
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    // Initialize xterm.js terminal
     const terminal = new Terminal({
       cursorBlink: true,
       cursorStyle: 'block',
       fontSize: 12,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: {
-        background: '#1e1e1e',
-        foreground: '#cccccc',
-        cursor: '#cccccc',
-        cursorAccent: '#1e1e1e',
-        selection: '#264f78',
-        black: '#000000',
-        red: '#cd3131',
-        green: '#0dbc79',
-        yellow: '#e5e510',
-        blue: '#2472c8',
-        magenta: '#bc3fbc',
-        cyan: '#11a8cd',
-        white: '#e5e5e5',
-        brightBlack: '#666666',
-        brightRed: '#f14c4c',
-        brightGreen: '#23d18b',
-        brightYellow: '#f5f543',
-        brightBlue: '#3b8eea',
-        brightMagenta: '#d670d6',
-        brightCyan: '#29b8db',
-        brightWhite: '#e5e5e5',
-      },
+      theme: XTERM_THEME,
       allowTransparency: false,
       scrollback: 1000,
     });
 
-    // Add addons
     const fitAddon = new FitAddon();
     const webLinksAddon = new WebLinksAddon();
 
     terminal.loadAddon(fitAddon);
     terminal.loadAddon(webLinksAddon);
-
-    // Open terminal in DOM
     terminal.open(terminalRef.current);
     fitAddon.fit();
 
     terminalInstanceRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
-    const sock = bridge.getSocket();
+    let cleanup: () => void;
 
-    // Handle terminal input
-    terminal.onData((data) => {
-      // Send input to server (no-op in Electron mode until IPC terminal is implemented)
-      sock?.emit('terminal:input', { terminalId, data });
-    });
+    if (isElectronTerminal) {
+      // ── Electron / IPC mode ────────────────────────────────────────────────
+      const api = window.astraAPI.terminal!;
 
-    // Handle terminal resize
-    const handleResize = () => {
-      if (fitAddonRef.current) {
-        fitAddonRef.current.fit();
-        const dimensions = terminalInstanceRef.current?.cols && terminalInstanceRef.current?.rows
-          ? { cols: terminalInstanceRef.current.cols, rows: terminalInstanceRef.current.rows }
-          : { cols: 80, rows: 24 };
+      // Forward xterm.js keystrokes → PTY
+      const dataDisposable = terminal.onData((data) => {
+        api.write(terminalId, data);
+      });
 
-        sock?.emit('terminal:resize', { terminalId, ...dimensions });
-      }
-    };
+      // Receive PTY output → xterm.js
+      const unsubData = api.onData((payload) => {
+        if (payload.terminalId === terminalId && terminalInstanceRef.current) {
+          terminalInstanceRef.current.write(payload.data);
+        }
+      });
 
-    // Initial resize
-    handleResize();
+      // Notify renderer when PTY exits
+      const unsubExit = api.onExit((payload) => {
+        if (payload.terminalId === terminalId && terminalInstanceRef.current) {
+          terminalInstanceRef.current.write(
+            `\r\n\x1b[33m[Process exited with code ${payload.exitCode}]\x1b[0m\r\n`
+          );
+        }
+      });
 
-    // Listen for window resize
-    window.addEventListener('resize', handleResize);
+      // Resize handler
+      const handleResize = () => {
+        if (fitAddonRef.current && terminalInstanceRef.current) {
+          fitAddonRef.current.fit();
+          const { cols, rows } = terminalInstanceRef.current;
+          api.resize(terminalId, cols, rows);
+        }
+      };
 
-    // Listen for server output
-    const handleTerminalOutput = (data: { terminalId: string; output: string }) => {
-      if (data.terminalId === terminalId && terminalInstanceRef.current) {
-        terminalInstanceRef.current.write(data.output);
-      }
-    };
+      handleResize();
+      window.addEventListener('resize', handleResize);
 
-    sock?.on('terminal:output', handleTerminalOutput);
+      // Spawn the PTY
+      api.create(terminalId);
+      onTerminalReady?.(terminalId);
 
-    // Create the terminal session on server
-    sock?.emit('terminal:create', { terminalId });
+      cleanup = () => {
+        window.removeEventListener('resize', handleResize);
+        dataDisposable.dispose();
+        unsubData();
+        unsubExit();
+        api.close(terminalId);
+        if (terminalInstanceRef.current) {
+          terminalInstanceRef.current.dispose();
+          terminalInstanceRef.current = null;
+        }
+        onTerminalClose?.(terminalId);
+      };
+    } else {
+      // ── Web / Socket.io mode ───────────────────────────────────────────────
+      const sock = bridge.getSocket();
 
-    // Notify parent component
-    onTerminalReady?.(terminalId);
+      const dataDisposable = terminal.onData((data) => {
+        sock?.emit('terminal:input', { terminalId, data });
+      });
 
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      sock?.off('terminal:output', handleTerminalOutput);
+      const handleResize = () => {
+        if (fitAddonRef.current && terminalInstanceRef.current) {
+          fitAddonRef.current.fit();
+          const { cols, rows } = terminalInstanceRef.current;
+          sock?.emit('terminal:resize', { terminalId, cols, rows });
+        }
+      };
 
-      // Close terminal session on server
-      sock?.emit('terminal:close', { terminalId });
+      handleResize();
+      window.addEventListener('resize', handleResize);
 
-      // Dispose terminal
-      if (terminalInstanceRef.current) {
-        terminalInstanceRef.current.dispose();
-        terminalInstanceRef.current = null;
-      }
+      const handleTerminalOutput = (data: { terminalId: string; output: string }) => {
+        if (data.terminalId === terminalId && terminalInstanceRef.current) {
+          terminalInstanceRef.current.write(data.output);
+        }
+      };
 
-      onTerminalClose?.(terminalId);
-    };
+      sock?.on('terminal:output', handleTerminalOutput);
+      sock?.emit('terminal:create', { terminalId });
+      onTerminalReady?.(terminalId);
+
+      cleanup = () => {
+        window.removeEventListener('resize', handleResize);
+        dataDisposable.dispose();
+        sock?.off('terminal:output', handleTerminalOutput);
+        sock?.emit('terminal:close', { terminalId });
+        if (terminalInstanceRef.current) {
+          terminalInstanceRef.current.dispose();
+          terminalInstanceRef.current = null;
+        }
+        onTerminalClose?.(terminalId);
+      };
+    }
+
+    return cleanup;
   }, [terminalId, onTerminalReady, onTerminalClose]);
 
-  // Handle resize when container changes
+  // ── ResizeObserver for container size changes ─────────────────────────────
   useEffect(() => {
-    const handleResize = () => {
-      if (fitAddonRef.current && terminalInstanceRef.current) {
-        fitAddonRef.current.fit();
-      }
-    };
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-    // Debounced resize
-    let timeoutId: NodeJS.Timeout;
     const observer = new ResizeObserver(() => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleResize, 100);
+      timeoutId = setTimeout(() => {
+        if (fitAddonRef.current && terminalInstanceRef.current) {
+          fitAddonRef.current.fit();
+        }
+      }, 100);
     });
 
     if (terminalRef.current) {
