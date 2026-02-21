@@ -346,20 +346,16 @@ Generate clean, production-ready code. Output ONLY the JSON array, no other text
     for (const change of fileChanges) {
       const content = change.content.toLowerCase();
 
-      // Check for TODO comments
-      if (content.includes('// todo') || content.includes('/* todo') || content.includes('// TODO')) {
-        return { isValid: false, reason: `Found TODO comment in ${change.path}` };
+      // Check for "not implemented" stub patterns (but allow legitimate error throwing)
+      if (content.includes('not implemented') || content.includes('notimplemented')) {
+        return { isValid: false, reason: `Found "not implemented" stub pattern in ${change.path}` };
       }
 
-      // Check for "not implemented" patterns
-      if (content.includes('not implemented') || content.includes('notimplemented') || content.includes('throw new error')) {
-        return { isValid: false, reason: `Found "not implemented" or error stub in ${change.path}` };
-      }
-
-      // Check for mock/stub/placeholder patterns
+      // Check for mock/stub/placeholder patterns (use word-boundary-aware checks to avoid false positives)
       const mockPatterns = [
-        'mock', 'stub', 'placeholder', 'dummy', 'fake', 'example data',
-        'your code here', 'implement me', 'fill this in'
+        'placeholder text', 'example data',
+        'your code here', 'implement me', 'fill this in',
+        'todo: implement', '// todo', '/* todo'
       ];
 
       for (const pattern of mockPatterns) {

@@ -143,6 +143,20 @@ app.whenReady().then(() => {
     }
   });
 
+  // Forward file changes (generated code) to renderer
+  engine.on('file_changes', (data: any) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('agent:file_changes', data);
+    }
+  });
+
+  // Forward user approval requests to renderer
+  engine.on('user_approval_required', (data: any) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('agent:update', { type: 'user_approval_required', ...data });
+    }
+  });
+
   createWindow();
 
   // IPC Handlers
@@ -177,6 +191,44 @@ app.whenReady().then(() => {
 
   ipcMain.handle('config:get-key', async (event, provider) => {
     return AgentConfig.getApiKey(provider);
+  });
+
+  // Debate flow: approve or refine
+  ipcMain.handle('debate:approve', async () => {
+    engine.approveProposal();
+    return { status: 'approved' };
+  });
+
+  ipcMain.handle('debate:refine', async (event, feedback: string) => {
+    engine.requestRefinement(feedback);
+    return { status: 'refinement-requested' };
+  });
+
+  // Apply generated file changes to disk
+  ipcMain.handle('debate:apply-changes', async (event, changes: any[], basePath?: string) => {
+    const fs = require('fs');
+    const path = require('path');
+    const resolvedBase = basePath || process.cwd();
+    const results: { path: string; success: boolean; error?: string }[] = [];
+
+    for (const change of changes) {
+      try {
+        const fullPath = path.join(resolvedBase, change.path);
+        const dir = path.dirname(fullPath);
+
+        if (change.action === 'delete') {
+          if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+        } else {
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(fullPath, change.content, 'utf8');
+        }
+        results.push({ path: change.path, success: true });
+      } catch (err: any) {
+        results.push({ path: change.path, success: false, error: err.message });
+      }
+    }
+
+    return { success: results.every(r => r.success), results };
   });
 });
 

@@ -248,6 +248,13 @@ engine.on('file_changes', (data: any) => {
   io.emit('file_changes', data);
 });
 
+// Forward user approval requests to renderer(s)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+engine.on('user_approval_required', (data: any) => {
+  console.log('[Server] Emitting user_approval_required to clients');
+  io.emit('agent_update', { type: 'user_approval_required', ...data });
+});
+
 // Helper to mask API keys
 function maskKey(key: string | undefined): string {
   if (!key) return '';
@@ -373,7 +380,7 @@ io.on('connection', (socket) => {
   });
 
   // Apply file changes to disk
-  socket.on('apply_file_changes', async (data: { changes: { path: string, action: string }[], basePath?: string }, callback: (result: { success: boolean, results: { path: string, success: boolean, error?: string }[] }) => void) => {
+  socket.on('apply_file_changes', async (data: { changes: { path: string, action: string, content?: string }[], basePath?: string }, callback: (result: { success: boolean, results: { path: string, success: boolean, error?: string }[] }) => void) => {
     console.log(`[apply_file_changes] Received ${data.changes.length} changes`);
     
     const results: { path: string, success: boolean, error?: string }[] = [];
@@ -394,7 +401,7 @@ io.on('connection', (socket) => {
           if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
           }
-          fs.writeFileSync(fullPath, change.content, 'utf8');
+          fs.writeFileSync(fullPath, change.content ?? '', 'utf8');
           results.push({ path: change.path, success: true });
         }
         

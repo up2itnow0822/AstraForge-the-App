@@ -66,10 +66,12 @@ const XTerminal: React.FC<XTerminalProps> = ({ terminalId, onTerminalReady, onTe
     terminalInstanceRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
+    const sock = bridge.getSocket();
+
     // Handle terminal input
     terminal.onData((data) => {
-      // Send input to server
-      bridge.socket?.emit('terminal:input', { terminalId, data });
+      // Send input to server (no-op in Electron mode until IPC terminal is implemented)
+      sock?.emit('terminal:input', { terminalId, data });
     });
 
     // Handle terminal resize
@@ -80,7 +82,7 @@ const XTerminal: React.FC<XTerminalProps> = ({ terminalId, onTerminalReady, onTe
           ? { cols: terminalInstanceRef.current.cols, rows: terminalInstanceRef.current.rows }
           : { cols: 80, rows: 24 };
 
-        bridge.socket?.emit('terminal:resize', { terminalId, ...dimensions });
+        sock?.emit('terminal:resize', { terminalId, ...dimensions });
       }
     };
 
@@ -97,10 +99,10 @@ const XTerminal: React.FC<XTerminalProps> = ({ terminalId, onTerminalReady, onTe
       }
     };
 
-    bridge.socket?.on('terminal:output', handleTerminalOutput);
+    sock?.on('terminal:output', handleTerminalOutput);
 
     // Create the terminal session on server
-    bridge.socket?.emit('terminal:create', { terminalId });
+    sock?.emit('terminal:create', { terminalId });
 
     // Notify parent component
     onTerminalReady?.(terminalId);
@@ -108,10 +110,10 @@ const XTerminal: React.FC<XTerminalProps> = ({ terminalId, onTerminalReady, onTe
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      bridge.socket?.off('terminal:output', handleTerminalOutput);
+      sock?.off('terminal:output', handleTerminalOutput);
 
       // Close terminal session on server
-      bridge.socket?.emit('terminal:close', { terminalId });
+      sock?.emit('terminal:close', { terminalId });
 
       // Dispose terminal
       if (terminalInstanceRef.current) {

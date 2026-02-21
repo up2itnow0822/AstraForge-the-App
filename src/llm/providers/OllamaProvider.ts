@@ -32,7 +32,7 @@ export class OllamaProvider extends BaseLLMProvider {
         throw new Error(`Ollama Error: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as { response: string; prompt_eval_count?: number; eval_count?: number };
       return {
         content: data.response,
         usage: {
@@ -115,7 +115,7 @@ export class OllamaProvider extends BaseLLMProvider {
       });
       
       if(!response.ok) return [];
-      const data = await response.json();
+      const data = await response.json() as { embedding?: number[] };
       return data.embedding || [];
      } catch (e) {
        return [];

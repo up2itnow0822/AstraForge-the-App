@@ -4,16 +4,23 @@ import { io, Socket } from 'socket.io-client';
 interface AstraAPI {
   onAgentUpdate: (callback: (data: unknown) => void) => void;
   removeAgentUpdateListener: () => void;
-  startDebate: (objective: string) => Promise<void>;
-  saveApiKey: (provider: string, key: string) => Promise<void>;
+  startDebate: (objective: string) => Promise<unknown>;
+  saveApiKey: (provider: string, key: string) => Promise<boolean>;
   getApiKey: (provider: string) => Promise<string>;
-  saveAgentConfig: (agentId: string, config: unknown) => Promise<void>;
+  saveAgentConfig: (agentId: string, config: unknown) => Promise<boolean>;
   getAgentConfig: (agentId: string) => Promise<unknown>;
+  // Debate flow
+  approveProposal: () => Promise<void>;
+  requestRefinement: (feedback: string) => Promise<void>;
+  applyFileChanges: (changes: unknown[], basePath?: string) => Promise<{ success: boolean; results: { path: string; success: boolean; error?: string }[] }>;
+  onFileChanges: (callback: (data: unknown) => void) => (() => void) | void;
+  removeFileChangesListener: () => void;
 }
 
 // Declare window for environments where DOM types might be missing in linter config
 declare const window: {
   astraAPI: AstraAPI;
+  location: { port: string; protocol: string; hostname: string; href: string };
   localStorage: {
     getItem: (key: string) => string | null;
   };
@@ -77,6 +84,8 @@ interface BridgeAPI {
   applyFileChanges: (changes: FileChange[], basePath?: string) => Promise<ApplyResult>;
   approveProposal: () => void;
   requestRefinement: (feedback: string) => void;
+  /** Returns the underlying Socket.io instance (null in Electron/IPC mode). Used by terminal components. */
+  getSocket: () => import('socket.io-client').Socket | null;
 }
 
 let socket: Socket | null = null;
@@ -240,7 +249,8 @@ export const bridge: BridgeAPI = {
 
   testConnection: async (provider: string, model: string, apiKey?: string, endpoint?: string): Promise<{ success: boolean; message: string }> => {
     if (isElectron && window?.astraAPI) {
-      return { success: false, message: "Not implemented in Electron yet" }; 
+      // Connection testing requires a live server round-trip; in Electron use server mode
+      return { success: false, message: "Connection testing requires the web server mode. Run `npm run dev` and open in browser to test connections." };
     } else {
       const s = getSocket();
       return new Promise((resolve, reject) => {
@@ -293,7 +303,14 @@ export const bridge: BridgeAPI = {
   },
   
   onFileChanges: (callback: (data: DebateResult) => void) => {
-    if (!isElectron) {
+    if (isElectron && window?.astraAPI) {
+      // Electron IPC path — delegate to preload
+      const unsubscribeIPC = window.astraAPI.onFileChanges((data: unknown) => {
+        callback(data as DebateResult);
+      });
+      return typeof unsubscribeIPC === 'function' ? unsubscribeIPC : undefined;
+    } else {
+      // Socket.io path
       // Ensure socket is initialized
       getSocket();
       
@@ -308,16 +325,16 @@ export const bridge: BridgeAPI = {
         console.log('[Bridge] Delivering cached file_changes to new listener');
         callback(cachedFileChanges);
       }
+
+      // Return an unsubscribe function for proper cleanup
+      return () => {
+        const index = fileChangesCallbacks.indexOf(callback);
+        if (index > -1) {
+          fileChangesCallbacks.splice(index, 1);
+          console.log('[Bridge] Removed specific file_changes listener, remaining:', fileChangesCallbacks.length);
+        }
+      };
     }
-    
-    // Return an unsubscribe function for proper cleanup
-    return () => {
-      const index = fileChangesCallbacks.indexOf(callback);
-      if (index > -1) {
-        fileChangesCallbacks.splice(index, 1);
-        console.log('[Bridge] Removed specific file_changes listener, remaining:', fileChangesCallbacks.length);
-      }
-    };
   },
   
   removeFileChangesListener: (callback?: (data: DebateResult) => void) => {
@@ -344,9 +361,9 @@ export const bridge: BridgeAPI = {
   },
   
   applyFileChanges: async (changes: FileChange[], basePath?: string): Promise<ApplyResult> => {
-    if (isElectron) {
-      // TODO: Implement Electron IPC version
-      return { success: false, results: [{ path: '', success: false, error: 'Not implemented in Electron yet' }] };
+    if (isElectron && window?.astraAPI) {
+      const result = await window.astraAPI.applyFileChanges(changes, basePath) as ApplyResult;
+      return result;
     } else {
       const s = getSocket();
       return new Promise((resolve, reject) => {
@@ -363,12 +380,26 @@ export const bridge: BridgeAPI = {
   },
 
   approveProposal: () => {
-    const s = getSocket();
-    s.emit('approve_proposal');
+    if (isElectron && window?.astraAPI) {
+      window.astraAPI.approveProposal();
+    } else {
+      const s = getSocket();
+      s.emit('approve_proposal');
+    }
   },
 
   requestRefinement: (feedback: string) => {
-    const s = getSocket();
-    s.emit('request_refinement', { feedback });
+    if (isElectron && window?.astraAPI) {
+      window.astraAPI.requestRefinement(feedback);
+    } else {
+      const s = getSocket();
+      s.emit('request_refinement', { feedback });
+    }
+  },
+
+  /** Returns the underlying Socket.io instance. Only available in web/server mode (returns null in Electron). */
+  getSocket: (): import('socket.io-client').Socket | null => {
+    if (isElectron) return null;
+    return getSocket();
   }
 };

@@ -63,6 +63,8 @@ export class LocalOrchestrationEngine extends EventEmitter {
     this.debateManager.on('agent-speaking', (data) => this.emit('agent-thinking', data));
     this.debateManager.on('state-change', (data) => this.emit('state-change', data));
     this.debateManager.on('file_changes', (data) => this.emit('file_changes', data));
+    // Forward user approval requests so IPC/Socket layers can relay to renderer
+    this.debateManager.on('user_approval_required', (data) => this.emit('user_approval_required', data));
 
     const success = await this.debateManager.startDebate(task.description);
     

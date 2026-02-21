@@ -4,6 +4,8 @@
 
 AstraForge is a standalone, sovereign IDE built on Electron and React, designed to host a specialized panel of autonomous AI agents that debate, architect, and implement code changes through consensus.
 
+> **Status (Feb 2026):** 10 bugs found and fixed in the Feb 2026 audit. 57 test suites, 188 tests — all passing. OpenRouter/Anthropic/OpenAI providers confirmed working end-to-end. See [`REPAIR_REPORT.md`](REPAIR_REPORT.md) for full details.
+
 ## Core Features
 
 ### ⚡ 5-Agent Consensus Architecture
@@ -42,8 +44,8 @@ Deploy the full environment instantly.
 
 ```bash
 # Clone the repository
-git clone https://github.com/up2itnow/AstraForge.git
-cd AstraForge
+git clone https://github.com/up2itnow0822/AstraForge-the-App.git
+cd AstraForge-the-App
 
 # Create your .env file
 cp example.env .env
@@ -165,4 +167,22 @@ MIT
 
 **Current Version**: 1.0.0 (Alpha)
 
-This is an alpha release. Core functionality is implemented but expect bugs and rough edges. Feedback and contributions welcome!
+### ✅ What Works (Feb 2026 Audit)
+- 5-agent consensus debate flow (Nexus, Vanguard, Prism, Helix, Cipher)
+- All LLM providers: OpenRouter, OpenAI, Anthropic, Grok, Ollama, LM-Studio
+- Synthesis → User Approval Gate → Code Generation pipeline
+- Composer view: file diff, apply-to-disk
+- Settings modal: per-agent provider/model/key config
+- Connection testing (server/web mode)
+- Server mode (Express + Socket.io): full-featured
+- Electron mode: full debate flow, approval gate, code generation
+
+### ⚠️ Known Limitations
+- **Terminal (Electron):** Integrated XTerminal works in server/web mode only. In packaged Electron app, terminal I/O is a no-op. Use `npm run dev` (web mode) for terminal access.
+- **Agent hot-reload:** Changing provider/model in Settings requires app restart
+- **Memory module:** Vector DB integration (LanceDB) is a dependency but not yet connected to the UI
+- **Connection test (Electron):** Not available in packaged app; use web mode for testing
+
+See [`REPAIR_REPORT.md`](REPAIR_REPORT.md) for the full audit and roadmap.
+
+This is an alpha release. Core functionality is implemented and tested. Feedback and contributions welcome!

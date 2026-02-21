@@ -7,7 +7,7 @@
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/up2itnow/AstraForge.git"
+    "url": "git+https://github.com/up2itnow0822/AstraForge-the-App.git"
   },
   "engines": {
     "node": "^18"
@@ -83,11 +83,11 @@
   },
   "types": "./out/extension.d.ts",
   "bugs": {
-    "url": "https://github.com/up2itnow/AstraForge/issues"
+    "url": "https://github.com/up2itnow0822/AstraForge-the-App/issues"
   },
-  "homepage": "https://github.com/up2itnow/AstraForge#readme",
+  "homepage": "https://github.com/up2itnow0822/AstraForge-the-App#readme",
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
     "@lancedb/lancedb": "^0.22.3",
