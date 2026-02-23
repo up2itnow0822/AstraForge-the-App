@@ -1,5 +1,8 @@
 # AstraForge: The Sovereign AI IDE
 
+[![Discord](https://img.shields.io/discord/1475549260140253194?label=Community&logo=discord&color=5865F2)](https://discord.gg/958AACqf7Y)
+
+
 > **The first Integrated Development Environment where AI isn't just a copilot—it's your engineering team.**
 
 AstraForge is a standalone, sovereign IDE built on Electron and React, designed to host a specialized panel of autonomous AI agents that debate, architect, and implement code changes through consensus.
