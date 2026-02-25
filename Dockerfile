@@ -13,9 +13,13 @@ RUN npm run build:server && npm run build:vite
 # Production Stage
 FROM node:20-alpine
 WORKDIR /app
+
+# node-pty requires native build tools
+RUN apk add --no-cache python3 make g++
+
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --only=production && apk del python3 make g++
 
 # Make sure dist/server/renderer exists (create it if needed, though build:vite should populate it)
 # If build:vite outputs to dist/renderer, we need to ensure the server finds it at dist/server/renderer
