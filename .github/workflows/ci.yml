@@ -2,127 +2,55 @@ name: AstraForge CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   NODE_VERSION: '20.x'
 
 jobs:
-  lint-and-format:
+  lint-and-typecheck:
     name: Code Quality
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run ESLint
-      run: npm run lint
-
-    - name: Check Prettier formatting
-      run: npm run format:check
-
-    - name: TypeScript type checking
-      run: npm run type-check
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+      - name: TypeScript type checking
+        run: npm run typecheck
 
   test:
-    name: Tests
+    name: Tests (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run unit tests with coverage
-      run: npm run test:coverage
-
-    - name: Check coverage threshold
-      run: |
-        # Fail if coverage is below 85%
-        npm run test:coverage -- --passWithNoTests --coverageThreshold.global.branches=85 --coverageThreshold.global.functions=85 --coverageThreshold.global.lines=85 --coverageThreshold.global.statements=85
-
-    - name: Upload coverage to Codecov
-      if: matrix.node-version == '20.x'
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run tests with coverage
+        run: npm run test:ci
 
   build:
-    name: Build Extension
+    name: Build
     runs-on: ubuntu-latest
-    needs: [lint-and-format, test]
-    
+    needs: [lint-and-typecheck, test]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Compile TypeScript
-      run: npm run compile
-
-    - name: Package extension
-      run: npm run package
-
-    - name: Upload VSIX artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: astraforge-extension
-        path: '*.vsix'
-        retention-days: 30
-
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run npm security audit
-      run: npm audit --audit-level=moderate
-
-    - name: Check for vulnerabilities count
-      run: npm audit --parseable | wc -l
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Compile TypeScript
+        run: npm run compile

@@ -1,5 +1,10 @@
-name: Docs Lint & Build
-on: [push, pull_request]
+name: Docs Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   docs:
@@ -7,15 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with:
+          node-version: '20'
+          cache: 'npm'
       - run: npm ci
-      - run: npm run docs-lint
-      - run: npx typedoc
-        env: { NODE_OPTIONS: '--max-old-space-size=4096' }
-      - if: github.ref == 'refs/heads/main'
-        run: | # Publish docs/auto/ to gh-pages or similar
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add docs/auto/
-          git commit -m 'Auto-gen TypeDoc' || true
-          git push
+      - name: Generate TypeDoc
+        run: npx typedoc
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'

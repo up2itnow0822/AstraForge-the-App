@@ -266,8 +266,8 @@ app.whenReady().then(() => {
 
   // Apply generated file changes to disk
   ipcMain.handle('debate:apply-changes', async (event, changes: any[], basePath?: string) => {
-    const fs = require('fs');
-    const path = require('path');
+    const fs = await import('fs');
+    const path = await import('path');
     const resolvedBase = basePath || process.cwd();
     const results: { path: string; success: boolean; error?: string }[] = [];
 
