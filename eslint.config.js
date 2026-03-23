@@ -29,5 +29,12 @@ export default [
       '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/ban-ts-comment': 'off'
     }
+  },
+  {
+    // Dynamic require() calls inside methods are intentional (child_process, util)
+    files: ['src/core/debate/DebateManager.ts'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off'
+    }
   }
 ];
