@@ -6,7 +6,7 @@ updates:
      interval: "weekly"
    open-pull-requests-limit: 5
    reviewers:
-     - "up2itnow"
+     - "up2itnow0822"
    ignore:
      - dependency-name: "*"
        update-types: ["version-update:semver-major"]

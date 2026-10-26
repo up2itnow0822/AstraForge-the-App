@@ -196,7 +196,7 @@ Built-in protection against abuse:
 
 - **GitHub Issues**: Non-security bugs and features
 - **Discussions**: General questions and community support
-- **Documentation**: https://github.com/up2itnow/AstraForge/docs
+- **Documentation**: https://github.com/up2itnow0822/AstraForge-the-App/docs
 
 ---
 
