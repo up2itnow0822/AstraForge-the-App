@@ -153,5 +153,8 @@
       "category": "Development"
     }
   },
-  "productName": "AstraForge"
+  "productName": "AstraForge",
+  "overrides": {
+    "undici": "^7.30.1"
+  }
 }
