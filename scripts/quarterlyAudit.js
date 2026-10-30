@@ -1,15 +1,17 @@
 import { exec } from 'child_process/promises';
+import { createRequire } from 'module';
 import puppeteer from 'puppeteer';
 import AxeCorePuppeteer from '@axe-core/puppeteer';
 import { Octokit } from '@octokit/rest';
-import { SecureLogger } from '../src/utils/secureLogger.js'; // Adjust if singleton
-
-// Assume llmManager is default export from ../src/utils/llmManager.js
+import { SecureLogger } from '../src/utils/secureLogger.js';
 import llmManager from '../src/utils/llmManager.js';
+
+const { requireGitHubTokenOrExit } = createRequire(import.meta.url)('./requireGitHubToken.cjs');
 
 const secureLogger = new SecureLogger(); // Or secureLogger if global instance
 
 async function main() {
+  requireGitHubTokenOrExit();
   const date = new Date().toISOString().split('T')[0];
   let vulns = 0;
   try {
@@ -77,7 +79,7 @@ async function main() {
 ## SOC2: ${ethicsReport.slice(0, 200)}
 ${vulns === 0 && numAxe === 0 && ethicsReport.includes('no issues found') ? 'All pass' : 'Action needed'}`;
 
-  const octokit = new Octokit({ auth: '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' });
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
   try {
     await octokit.rest.issues.create({
       owner: 'up2itnow',
@@ -92,4 +94,8 @@ ${vulns === 0 && numAxe === 0 && ethicsReport.includes('no issues found') ? 'All
   }
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  const message = err instanceof Error ? err.message : err;
+  console.error(message);
+  process.exit(1);
+});

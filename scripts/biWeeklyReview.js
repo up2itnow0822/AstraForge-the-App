@@ -1,10 +1,11 @@
 import cron from 'node-cron';
 import fetch from 'node-fetch';
+import { createRequire } from 'module';
 import { Octokit } from '@octokit/rest';
+import { Counter, Gauge } from 'prom-client';
 import secureLogger from '../src/utils/secureLogger.js';
 
-// Assume secureLogger exports default or adjust
-import { Counter, Gauge } from 'prom-client'; // Stub local if needed
+const { requireGitHubTokenOrExit } = createRequire(import.meta.url)('./requireGitHubToken.cjs');
 const localErrors = new Counter({ name: 'llm_errors_total_local', help: 'Local errors' });
 const localCalls = new Counter({ name: 'llm_calls_total_local', help: 'Local calls' });
 const uptimeGauge = new Gauge({ name: 'astraforge_uptime_seconds_local', help: 'Local uptime' });
@@ -42,7 +43,8 @@ async function generateReview() {
   
   const md = `# Bi-Weekly Review ${date}\n## Uptime: ${uptime}%\n## Velocity: ${velocity}x\n## Bugs: ${bugRate}%\n## Throughput: ${throughput} reqs\n## A/B Win: ${abWin}%\n${alert}`;
   
-  const octokit = new Octokit({ auth: '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' });
+  requireGitHubTokenOrExit();
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
   const issue = await octokit.rest.issues.create({
     owner: 'up2itnow',
     repo: 'AstraForge',
@@ -55,6 +57,8 @@ async function generateReview() {
   await secureLogger.info({ review: { kpis, issueUrl } });
   console.log('Review created:', issueUrl);
 }
+
+requireGitHubTokenOrExit();
 
 // Schedule bi-weekly (every Monday 12pm, est review bi-weekly)
 cron.schedule('0 12 * * 1', generateReview);
