@@ -6,7 +6,7 @@ Configuration for AI behavior when interacting with Codacy's MCP Server
 - ALWAYS use:
  - provider: gh
  - organization: up2itnow0822
- - repository: AstraForge
+ - repository: AstraForge-the-App
 - Avoid calling `git remote -v` unless really necessary
 
 ## CRITICAL: After ANY successful `edit_file` or `reapply` operation
