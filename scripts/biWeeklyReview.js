@@ -44,8 +44,8 @@ async function generateReview() {
   
   const octokit = new Octokit({ auth: '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' });
   const issue = await octokit.rest.issues.create({
-    owner: 'up2itnow',
-    repo: 'AstraForge',
+    owner: 'up2itnow0822',
+    repo: 'AstraForge-the-App',
     title: `[BI-WEEKLY] Review ${date}`,
     body: md,
     labels: ['kpi', 'review']
