@@ -121,7 +121,7 @@ describe('Quarterly Audit', () => {
     const date = new Date().toISOString().split('T')[0];
     expect(mockOctokitInstance.rest.issues.create).toHaveBeenCalledWith({
       owner: 'up2itnow0822',
-      repo: 'AstraForge',
+      repo: 'AstraForge-the-App',
       title: `[QUARTERLY] Audit ${date}`,
       body: expect.stringContaining('All pass'),
       labels: ['audit', 'security'],

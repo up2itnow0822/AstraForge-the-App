@@ -81,7 +81,7 @@ ${vulns === 0 && numAxe === 0 && ethicsReport.includes('no issues found') ? 'All
   try {
     await octokit.rest.issues.create({
       owner: 'up2itnow0822',
-      repo: 'AstraForge',
+      repo: 'AstraForge-the-App',
       title: `[QUARTERLY] Audit ${date}`,
       body: md,
       labels: ['audit', 'security']
