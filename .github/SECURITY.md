@@ -15,7 +15,7 @@ The extension adheres to [VS Code Extension Security Guidelines](https://code.vi
 We take security seriously and appreciate your efforts to disclose vulnerabilities responsibly.
 ### How to Report
 1. **Email**: Send details to security@up2itnow.com (preferred for sensitive issues).
-2. **GitHub Issue**: Create a private issue or use the [private vulnerability reporting](https://github.com/up2itnow/AstraForge/security/advisories/new) (if enabled).
+2. **GitHub Issue**: Create a private issue or use the [private vulnerability reporting](https://github.com/up2itnow0822/AstraForge-the-App/security/advisories/new) (if enabled).
 3. **PGP Key**: Optional encryption. Public key available upon request.
 Include:
 - Description of the vulnerability.

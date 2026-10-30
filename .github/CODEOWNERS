@@ -1,9 +1,9 @@
 # Code owners for pull request approvals
 # Documentation
-/docs/ @up2itnow
+/docs/ @up2itnow0822
 # LLM source code
-/src/llm/ @up2itnow
+/src/llm/ @up2itnow0822
 # All source code
-/src/ @up2itnow
+/src/ @up2itnow0822
 # Default for everything else
-* @up2itnow
+* @up2itnow0822
