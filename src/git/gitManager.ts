@@ -1,4 +1,21 @@
-import simpleGit, { SimpleGit } from 'simple-git';
+import { simpleGit, SimpleGit } from 'simple-git';
+
+/**
+ * Rejects branch names that git would treat as options (e.g. `-x`,
+ * `--receive-pack=evil`). Must run before any simple-git push call.
+ *
+ * @param branch Candidate branch or ref name
+ */
+function assertSafeGitBranch(branch: string): void {
+  if (typeof branch !== 'string' || branch.length === 0) {
+    throw new Error('Invalid branch name: expected a non-empty string');
+  }
+  if (branch.startsWith('-')) {
+    throw new Error(
+      `Invalid branch name: ${JSON.stringify(branch)} must not start with '-'`
+    );
+  }
+}
 
 export class GitManager {
   private git: SimpleGit;
@@ -42,8 +59,10 @@ export class GitManager {
    * @param branch
    */
   async pushToRemote(branch: string): Promise<boolean> {
+    assertSafeGitBranch(branch);
     try {
-      await this.git.push('origin', branch);
+      // '--' stops option parsing so the refspec cannot be read as a flag.
+      await this.git.push(['origin', '--', branch]);
       return true;
     } catch {
       return false;
