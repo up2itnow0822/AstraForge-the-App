@@ -8,19 +8,27 @@ on:
 jobs:
  snyk-monitor:
    runs-on: ubuntu-latest
+   env:
+     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
    steps:
+     - name: Skip when SNYK_TOKEN is unset
+       if: env.SNYK_TOKEN == ''
+       run: 'echo "::notice::snyk-monitor skipped: SNYK_TOKEN secret is not set"'
      - uses: actions/checkout@v3
      - name: Snyk Auth
+       if: env.SNYK_TOKEN != ''
        run: echo "${{ secrets.SNYK_TOKEN }}" | snyk auth
        env:
          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
      - name: Snyk Test
+       if: env.SNYK_TOKEN != ''
        uses: snyk/actions/node@master
        env:
          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
        with:
          args: --severity-threshold=high
      - name: Snyk Monitor
+       if: env.SNYK_TOKEN != ''
        uses: snyk/actions/node@master
        env:
          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
