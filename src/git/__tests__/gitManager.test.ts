@@ -1,8 +1,10 @@
 import { GitManager } from '../gitManager';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import simpleGit from 'simple-git';
+import { simpleGit } from 'simple-git';
 
-jest.mock('simple-git');
+jest.mock('simple-git', () => ({
+    simpleGit: jest.fn(),
+}));
 
 describe('GitManager', () => {
     let gitManager: GitManager;
@@ -50,6 +52,47 @@ describe('GitManager', () => {
         expect(result).toBe(true);
     });
 
+    it('trims leading whitespace on a normal branch before push', async () => {
+        const result = await gitManager.pushToRemote('  main');
+        expect(mockGit.push).toHaveBeenCalledWith('origin', 'main');
+        expect(result).toBe(true);
+    });
+
+    it('rejects a --receive-pack=evil branch and never calls push', async () => {
+        await expect(gitManager.pushToRemote('--receive-pack=evil')).rejects.toThrow(
+            /must not start with '-'/
+        );
+        expect(mockGit.push).not.toHaveBeenCalled();
+    });
+
+    it('rejects a -x branch and never calls push', async () => {
+        await expect(gitManager.pushToRemote('-x')).rejects.toThrow(
+            /must not start with '-'/
+        );
+        expect(mockGit.push).not.toHaveBeenCalled();
+    });
+
+    it('trims leading whitespace then rejects a leading-dash branch', async () => {
+        await expect(gitManager.pushToRemote('  -x')).rejects.toThrow(
+            /must not start with '-'/
+        );
+        expect(mockGit.push).not.toHaveBeenCalled();
+    });
+
+    it('rejects a leading + force-refspec and never calls push', async () => {
+        await expect(gitManager.pushToRemote('+main')).rejects.toThrow(
+            /must not start with '\+'/
+        );
+        expect(mockGit.push).not.toHaveBeenCalled();
+    });
+
+    it('rejects a colon refspec and never calls push', async () => {
+        await expect(gitManager.pushToRemote('HEAD:refs/heads/evil')).rejects.toThrow(
+            /must not contain ':'/
+        );
+        expect(mockGit.push).not.toHaveBeenCalled();
+    });
+
     it('should handle push errors return false', async () => {
         mockGit.push.mockRejectedValue(new Error('Push failed'));
         const result = await gitManager.pushToRemote('main');
@@ -60,6 +103,20 @@ describe('GitManager', () => {
         const result = await gitManager.pullFromRemote('main');
         expect(mockGit.pull).toHaveBeenCalledWith('origin', 'main');
         expect(result).toBe(true);
+    });
+
+    it('rejects a -x branch on pull and never calls pull', async () => {
+        await expect(gitManager.pullFromRemote('-x')).rejects.toThrow(
+            /must not start with '-'/
+        );
+        expect(mockGit.pull).not.toHaveBeenCalled();
+    });
+
+    it('rejects a colon refspec on pull and never calls pull', async () => {
+        await expect(gitManager.pullFromRemote('src:dst')).rejects.toThrow(
+            /must not contain ':'/
+        );
+        expect(mockGit.pull).not.toHaveBeenCalled();
     });
     
     it('should handle pull errors return false', async () => {
