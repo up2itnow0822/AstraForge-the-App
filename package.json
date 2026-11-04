@@ -155,6 +155,7 @@
   },
   "productName": "AstraForge",
   "overrides": {
-    "undici": "^7.30.1"
+    "undici": "^7.30.1",
+    "lodash": "^4.18.1"
   }
 }
